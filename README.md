@@ -4,6 +4,20 @@
 
 ---
 
+## 阅读导航
+
+| 关注点 | 看哪份文档 |
+|---|---|
+| 快速验收「是否达标」 | 本文件第一、二节 |
+| **如何扩到 1 万 / 100 万道题** | **`SCALE-OUT.md`**（含 8 个仓库实测的容量测算与瓶颈拆解） |
+| **build 环境在哪 / 三层如何各自扩容** | **`SCALE-OUT.md` 第一节** + `PIPELINE.md` §4.3 |
+| 导师 4 条反馈的验证结果 | `mentor-feedback-report.md` |
+| 流水线怎么跑、参数怎么配 | `PIPELINE.md` |
+| 验收标准逐条核对 | `requirements-check.md` |
+| 研发过程与踩坑记录 | `PROGRESS.md` |
+
+---
+
 ## 一、5 分钟快速验收（推荐路径）
 
 > **前置说明**：第 1、2 步**不需要安装任何依赖、不需要任何凭证**，用系统自带的
@@ -197,7 +211,8 @@ cp .env.example .env   # 然后填入自己的凭证
 ```
 ├── README.md                ← 本文件，验收入口（GitHub 首页）
 ├── PIPELINE.md              流水线完整文档（启动方式/参数配置/结果格式）
-├── mentor-feedback-report.md  导师反馈的逐条实测验证与整改方案
+├── SCALE-OUT.md             ⭐ Scale Out 方案（如何扩到 1万/100万道）
+├── mentor-feedback-report.md  导师反馈的逐条实测验证
 ├── TASK-SPEC.md             课题原文逐字备份（对照基准）
 ├── requirements-check.md    验收标准逐条核对 + 技术偏差说明
 ├── PROGRESS.md              研发全过程与 26 条踩坑记录

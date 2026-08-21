@@ -1,21 +1,12 @@
-# 凭证（绝不提交）
 .env
 *.pem
 *.key
-
-# Python
 __pycache__/
 *.py[cod]
 .venv/
 venv/
-*.egg-info/
 .pytest_cache/
-
-# 运行产物
 .work/
 .build/
-logs/
 data/state.db
-
-# 系统
 .DS_Store
