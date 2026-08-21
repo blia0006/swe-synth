@@ -189,9 +189,10 @@ DOCKER_HOST=ssh://docker-builder
 > base。`config/settings.yaml` 的 `image.base` 已指向该共享 base 镜像，新出的题目会
 > 自动走这条路径。
 >
-> 已交付的 19 道题镜像是升级前构建的，仍是单镜像形态（每个 ~7.5GB，因原基础层直接继承
+> 已交付的前 19 道题镜像是升级前构建的，仍是单镜像形态（每个 ~7.5GB，因原基础层直接继承
 > 官方 Debian 沙箱镜像 6.86GB）——**这些镜像不会被回溯重建**，以保持已验收证据链不变；
-> 上述升级只影响此后新产出的题目。
+> 第 20 道题 `swe-synth-0036` 已是升级后在生产流水线里跑出的产物（`Dockerfile FROM`
+> 共享 Ubuntu base），验证该架构在生产路径真实可用。
 
 ### 4.2 `config/settings.yaml`（可调参数）
 
@@ -278,8 +279,9 @@ PRETTY_NAME="Ubuntu 22.04.5 LTS"
 
 **该 base 已构建推送，并回填到 `config/settings.yaml` 的 `image.base`，是当前生产
 默认**——此后新出的题目镜像字面满足课题的 `ubuntu:22.04` 要求，且配合双镜像方案（见
-§4.3），每题只需 build/push 内容层（MB 级）。已交付的 19 道题镜像是升级前的产物，仍是
-Debian 基础层，不受影响（详见 §4.3 说明）。
+§4.3），每题只需 build/push 内容层（MB 级）。已交付的前 19 道题镜像是升级前的产物，仍是
+Debian 基础层，不受影响；第 20 道题 `swe-synth-0036` 已是该架构在生产环境下的实测
+产出（详见 §4.3 说明）。
 
 ### 6.2 SDK：`e2b-code-interpreter` 2.x（生产默认）+ `agent-sandbox` 互补
 

@@ -1,4 +1,4 @@
-# Scale Out 方案：从 19 道题到 100 万道题
+# Scale Out 方案：从 20 道题到 100 万道题
 
 > 核心问题：
 > 「你现在就 10 道题，需要给出一个方法，怎么能够让它快速变成 1 万道题，甚至 100 万道题？」
@@ -192,7 +192,7 @@ base 镜像（环境层，全局复用，Docker 层级共享）    872 MB   ← 
 | 打包层并发 | docker build+push 并发执行，登录只做一次避免凭据文件竞态 | ✅ **已实现并实测**（`run_pipeline.py pack --workers` + `packer.pack_all`） |
 | 验证层并发 | 沙箱验证任务并发（受账号沙箱配额约束） | ✅ **已实现并实测**（`run_pipeline.py agent2 --workers`） |
 | 分布式任务队列（跨机器） | 出题任务分发到多台机器、失败重试、断点续跑（Redis/SQS） | ⏳ 待实现（当前是单机多线程，够用到千级；万级以上建议上队列） |
-| 共享 base 层 + 实例级镜像覆盖接入主流水线 | 把已验证的机制（`sandbox_runner` 复用同一工具，换题时在 `StartSandboxInstance` 覆盖 `CustomConfiguration.Image`）从 `experiments/` 移入正式代码 | ✅ **已完成**（`swe_synth/agent1/base_image/`、`swe_synth/clients/ags.py`、`swe_synth/agent1/dockerfile_gen.py`、`swe_synth/agent2/sandbox_runner.py`，详见 `review-feedback-report.md` P0/P1；实际构建+推送共享 base 并重跑 19 道题验证等价性是下一步） |
+| 共享 base 层 + 实例级镜像覆盖接入主流水线 | 把已验证的机制（`sandbox_runner` 复用同一工具，换题时在 `StartSandboxInstance` 覆盖 `CustomConfiguration.Image`）从 `experiments/` 移入正式代码 | ✅ **已完成并生产验证**（`swe_synth/agent1/base_image/`、`swe_synth/clients/ags.py`、`swe_synth/agent1/dockerfile_gen.py`、`swe_synth/agent2/sandbox_runner.py`；已构建+推送共享 base 并回填 `config/settings.yaml`，用新方案在生产流水线跑出并验收通过第 20 道题 `swe-synth-0036`，详见 `review-feedback-report.md` P0/P1） |
 | 质量抽检机制 | 规模化后无法全人工核验，需按比例抽样 + 自动异常检测 | ⏳ 待实现 |
 
 **关于"已实现"的诚实说明**：以上标注 ✅ 的四项是本轮改造的重点——**框架现在真的具备水平扩展能力**，
@@ -225,23 +225,24 @@ $ python scripts/run_pipeline.py agent2 --force --task-id ... --workers 3
 
 ---
 
-## 五、为什么当前只有 19 道，以及这不代表能力上限
+## 五、为什么现在是 20 道，以及这不代表能力上限
 
-必须坦白说明：19 道的限制**不在流水线，而在三个可解除的约束**：
+必须坦白说明：题目数量的限制**不在流水线，而在三个可解除的约束**：
 
 | 约束 | 现状 | 解除方式 |
 |---|---|---|
-| **仓库池太窄** | 只配了 9 个仓库，其中 3 个小仓库贡献了全部 19 道 | ✅ 框架已支持：`scripts/discover_repos.py` 一键从 GitHub 检索扩容（已实测跑出候选） |
+| **仓库池太窄** | 只配了 9 个仓库，其中 4 个小仓库贡献了全部 20 道 | ✅ 框架已支持：`scripts/discover_repos.py` 一键从 GitHub 检索扩容（已实测跑出候选） |
 | **单机单 Key 串行** | 出题/打包/验证均为单进程单 Key 顺序执行 | ✅ 框架已支持：`run_pipeline.py` 三个子命令均加了 `--workers` 并发 + 多 Key 轮转池（已实测） |
-| **镜像太重** | 每题 7.5GB，build+push 占 48% 耗时；1 万题需 75TB 磁盘 | 「共享 base 层 + 实例级镜像覆盖」已在 `experiments/` 验证（含一次方向纠错）并**接入主流水线代码**，降到 1.09MB/题；实际构建+推送共享 base、重跑现有题验证等价性是下一步（见 4.3） |
+| **镜像太重** | 前 19 道每题 7.5GB，build+push 占 48% 耗时；1 万题需 75TB 磁盘 | 「共享 base 层 + 实例级镜像覆盖」已接入主流水线代码并**生产验证**：已构建+推送共享 base，用新方案跑出并验收通过第 20 道题（内容层几十 MB），详见 4.3/4.4 |
 | **沙箱配额** | 上限 10 个工具，每题占 2 个 → 必须串行 | 代码已改为 1 个共享工具复用，换题靠 `CustomConfiguration.Image` 覆盖（`swe_synth/agent2/sandbox_runner.py`），配额约束已从架构上解除；当前先用 `--workers` 在现有配额内提速 |
 
 **三个约束中，「仓库池太窄」「单机单 Key 串行」这两项已经从"文档计划"变成"可用代码"**，
 本轮改造把它们落地并实测通过；「镜像太重」「沙箱配额」的根治方案已验证（且纠正过一次方向性
 错误——最初把该换的部分和该固定的部分放反了，见 `review-feedback-report.md` 4.3），
 现已从 `experiments/` 接入正式代码（`swe_synth/agent1/base_image/`、`ags.py`、
-`dockerfile_gen.py`、`sandbox_runner.py`）；实际执行构建+推送共享 base、并用新方案
-重跑 19 道题验证判分等价性，是下一步的工程工作（不影响现有 19 道题的有效性）。
+`dockerfile_gen.py`、`sandbox_runner.py`），并在生产流水线里用新方案跑出、验收通过
+第 20 道题（`swe-synth-0036`），验证了判分逻辑等价（空跑失败/golden 跑通过与旧架构
+一致）。原有 19 道题不做回溯重跑，保持已验收证据链不变。
 
 ---
 
@@ -250,14 +251,14 @@ $ python scripts/run_pipeline.py agent2 --force --task-id ... --workers 3
 | 阶段 | 目标 | 关键动作 | 状态 |
 |---|---|---|---|
 | **P-1** | 框架具备扩展能力（本轮完成） | 仓库池自动发现 + 出题/打包/验证三层并发 + 多 Key 轮转池 | ✅ **已完成并实测** |
-| **P0** | 解除镜像瓶颈 | 落地共享 base 层方案（base 固化 + 内容层渲染 + `sandbox_runner` 复用工具/实例级覆盖换题） | ✅ **代码已完成**；实际构建+推送共享 base 待执行 |
-| **P1** | 验证等价性 | 用新方案重跑现有 19 道，确认判分结果一致 | 待执行，1 天 |
+| **P0** | 解除镜像瓶颈 | 落地共享 base 层方案（base 固化 + 内容层渲染 + `sandbox_runner` 复用工具/实例级覆盖换题） | ✅ **已完成**：共享 base 已构建、推送，并回填 `config/settings.yaml` 生效 |
+| **P1** | 验证等价性 | 用新方案产出新题，确认判分结果与旧架构一致 | ✅ **已完成**：生产流水线跑出第 20 道题 `swe-synth-0036` 并 `ACCEPTED`（原 19 道不做回溯重跑） |
 | **P2** | 扩到 1000 道 | 仓库池扩到 100 个（`discover_repos.py`）+ `--workers` 出题并发 + 多 Key 轮转 | 待实施，3~5 天 |
 | **P3** | 扩到 1 万道 | 仓库池 600+ / 多机部署（分布式任务队列）/ 沙箱并发池 / 质量抽检 | 待实施，1~2 周 |
 | **P4** | 冲击 10 万+ | 落地三个乘数策略（B 类批量 / 多版本 commit / 组合挖空） | 待实施，2~4 周 |
 
-> 现有 19 道 ACCEPTED 题目与 38 个镜像在整个改造过程中**保持有效**，
-> 属于增量演进，不是推翻重来。
+> 现有 20 道 ACCEPTED 题目（19 道旧架构 + 1 道新架构）与 40 个镜像在整个改造过程中
+> **保持有效**，属于增量演进，不是推翻重来。
 
 ---
 

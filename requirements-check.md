@@ -2,7 +2,7 @@
 
 > 用途：把课题原文的每一条要求拆成可勾选项，映射到具体交付物与代码位置，避免"做完了才发现漏项"。
 > 状态图例：✅ 已完成 / 🔨 进行中 / ⬜ 待做 / ⚠️ **有偏差或风险，需决策**
-> 最后核对：2026-08-14
+> 最后核对：2026-08-21（全量重新核对，覆盖最终 20 道题状态）
 
 ---
 
@@ -37,37 +37,38 @@
 
 ### 1.1 Agent1（出题 + 打包）
 
-> 状态口径：只认「已实测通过」，不认「代码已写完」。最新核查见 `midterm-audit.md`（2026-08-17）
+> 状态口径：只认「已实测通过」，不认「代码已写完」。下表为最终交付状态；
+> 早期进度快照见 `midterm-audit.md`（2026-08-17）与 `PROGRESS.md`。
 
 | # | 要求原文 | 落地位置 | 状态 |
 |---|---|---|---|
 | A1-1 | 基于 **TokenHub API** 调用 LLM | `swe_synth/clients/tokenhub.py` | ✅ 真实调用通过（`deepseek-v4-pro-202606`） |
-| A1-2 | **分析目标仓库结构** | `agent1/repo_analyzer.py`（目录树/AST/测试覆盖映射） | ✅ 实测：cachecontrol 得 11 候选、过滤 16 无判据 |
-| A1-3 | 生成一道软件工程题目：**功能实现 / 重构 / 模块添加** | `agent1/task_designer.py` / `module_designer.py` / `refactor_designer.py` | ✅ **三类全部实现且各有真实产出**（各 1 道真题） |
-| A1-4 | 编写 **Dockerfile + 构建脚本** | `agent1/dockerfile_gen.py` | ✅ 代码达标（6 类平台违规均被拦住），未真实 build |
-| A1-5 | **docker build** | `agent1/packer.py` | ⬜ 未实现 ⚠️ 需 Docker，见 §5.1 |
-| A1-6 | **docker push 到 TCR** | `agent1/packer.py` + `clients/tcr.py` | ⬜ 未实现（凭证与 push 权限已验证可用） |
+| A1-2 | **分析目标仓库结构** | `agent1/repo_analyzer.py`（目录树/AST/测试覆盖映射） | ✅ 实测：4 个仓库池全部跑通 |
+| A1-3 | 生成一道软件工程题目：**功能实现 / 重构 / 模块添加** | `agent1/task_designer.py` / `module_designer.py` / `refactor_designer.py` | ✅ **三类全部实现，共产出 20 道真题**（功能实现 8 / 模块添加 8 / 重构 4） |
+| A1-4 | 编写 **Dockerfile + 构建脚本** | `agent1/dockerfile_gen.py` | ✅ 20 份 Dockerfile 全部真实 build 成功 |
+| A1-5 | **docker build** | `agent1/packer.py` | ✅ 20 道题、40 个镜像全部真实 build 成功 |
+| A1-6 | **docker push 到 TCR** | `agent1/packer.py` + `clients/tcr.py` | ✅ 40 个镜像已推送至腾讯云 CCR 并设为公开（详见 §八/交付说明.md 第四节） |
 
 ### 1.2 Agent2（验证）
 
 | # | 要求原文 | 落地位置 | 状态 |
 |---|---|---|---|
-| A2-1 | **拉取 TCR 镜像** | 通过 `CreateSandboxTool(CustomConfiguration.Image=...)` 由平台拉取 | ⬜ 未实现 |
-| A2-2 | **在 SandBox 中启动容器** | `agent2/sandbox_runner.py` | 🔨 内置工具✅；**自定义镜像未验证（最高风险项）** |
+| A2-1 | **拉取 TCR 镜像** | `CreateSandboxTool(CustomConfiguration.Image=...)` 由平台拉取 | ✅ 20 道题均实测拉取成功 |
+| A2-2 | **在 SandBox 中启动容器** | `agent2/sandbox_runner.py` | ✅ 自定义镜像已在真实沙箱验证（空跑/golden 跑各一次，`verification.json` 留痕） |
 | A2-3 | **执行题目** | `/task/verify.sh` + `agent1/solvability.py` | ✅ 实测判分正确，solve-back 超出要求 |
-| A2-4 | **验证解的正确性** | `agent1/local_validator.py`（空解 FAIL + golden PASS 双向） | ✅ 逻辑已实测；需在沙箱侧再跑一遍 |
-| A2-5 | 校验与仓库现有 **PR/commit/bugfix 无重叠** | `agent2/overlap_check.py`（GitHub API） | ⬜ 未实现（**课题核心约束，不可缺**） |
+| A2-4 | **验证解的正确性** | `agent1/local_validator.py`（空解 FAIL + golden PASS 双向） | ✅ 20 道题均在沙箱侧完成双向验证 |
+| A2-5 | 校验与仓库现有 **PR/commit/bugfix 无重叠** | `agent2/overlap_check.py`（GitHub API） | ✅ 20 道题均已生成 `overlap_check.json` |
 
 ### 1.3 输出数据集
 
 | # | 要求原文 | 落地位置 | 状态 |
 |---|---|---|---|
-| D-1 | **≥10 道**通过验证的题目 | `data/tasks.jsonl` | ✅ **10 道**（三类齐全，LOCAL_OK；待 Agent2 升级为 ACCEPTED） |
-| D-2 | 每道含**题干描述** | `problem_statement` 字段 | ✅ 3 道均含 6 个必需小节 |
-| D-3 | 每道含 **TCR 镜像地址** | `image` / `solution_image` 字段 | ✅ 地址已拼装（未推镜像，build/push 待 Docker） |
+| D-1 | **≥10 道**通过验证的题目 | `data/tasks.jsonl` | ✅ **20 道**，全部 `state=ACCEPTED`（三类齐全） |
+| D-2 | 每道含**题干描述** | `problem_statement` 字段 | ✅ 20 道均含 6 个必需小节 |
+| D-3 | 每道含 **TCR 镜像地址** | `image` / `solution_image` 字段 | ✅ 40 个地址均已推送并可匿名拉取 |
 | D-4 | 每道含**验证脚本** | `verify_script` 字段 + 镜像内 `/task/verify.sh` | ✅ 脚本已实测可判分 |
-| D-5 | 每道含**通过证明** | `data/proofs/<task_id>/` | ✅ **3 套 proofs 已产出** |
-| D-6 | **JSON Lines** 格式 | 一行一题 | ✅ 3 条，`read_jsonl()` 逐行校验通过 |
+| D-5 | 每道含**通过证明** | `data/proofs/<task_id>/` | ✅ **20 套 proofs 已产出** |
+| D-6 | **JSON Lines** 格式 | 一行一题 | ✅ 20 条，`read_jsonl()` 逐行校验通过 |
 | — | **README.md** | 启动方式/参数配置/结果格式 | ✅ **已创建**（2026-08-18） |
 
 ---
@@ -76,13 +77,13 @@
 
 | # | 要求原文 | 现状 | 状态 |
 |---|---|---|---|
-| T-1 | 运行环境：腾讯云 Agent SandBox（自定义镜像沙箱） | 已跑通内置工具；自定义镜像待 M1 验证 | 🔨 |
-| T-2 | 镜像基于 **ubuntu:22.04 + Python 3.11 + Git + Docker CLI** | 已实测字面满足 | ✅ **见 §3.1** |
+| T-1 | 运行环境：腾讯云 Agent SandBox（自定义镜像沙箱） | 内置工具与自定义镜像均已实测跑通（20 道题全部沙箱验证） | ✅ |
+| T-2 | 镜像基于 **ubuntu:22.04 + Python 3.11 + Git + Docker CLI** | 已实测字面满足，`config/settings.yaml` 已切为生产默认 | ✅ **见 §3.1** |
 | T-3 | LLM：TokenHub API，模型 `deepseek-v4-pro` 或 `glm-5` | 两者均已确认在线可用 | ✅ 见 §3.3 |
-| T-4 | 镜像仓库：腾讯云 **TCR**，配置 `docker login` 凭证 | 7 个实例均属他人，归属待定 | ⚠️ 见 §5.2 |
+| T-4 | 镜像仓库：腾讯云 **TCR**，配置 `docker login` 凭证 | 用 CCR 个人版替代，已推 40 个镜像并设为公开 | ✅ 见 §5.2 |
 | T-5 | 编程语言：Python，**推荐 agent-sandbox Python SDK** | 用 `e2b-code-interpreter` **2.x**（已实测生产落地）+ `agent-sandbox` 互补 | ✅ 见 §3.2 |
-| T-6 | 目标仓库：**Star > 100** 的开源项目 | 待建 `config/repos.yaml`，需记录 star 数留证 | ⬜ |
-| T-7 | 核心约束：题目**不得与现有 issue/PR/commit/bugfix 重叠** | 方案已设计四层过滤 | ⬜ |
+| T-6 | 目标仓库：**Star > 100** 的开源项目 | `config/repos.yaml` 已建成，4 个仓库均已记录 star 数留证 | ✅ |
+| T-7 | 核心约束：题目**不得与现有 issue/PR/commit/bugfix 重叠** | 四层过滤已实现，20 道题均已生成 `overlap_check.json` | ✅ |
 
 ---
 
@@ -113,8 +114,9 @@ Python 3.11.16 / git 2.34.1 / Docker 29.1.3
 以及 `experiments/ubuntu-base/Dockerfile`、`experiments/verify_ubuntu_base.py`。
 
 **现已切换为生产默认**：`config/settings.yaml` 的 `image.base` 已指向该 Ubuntu
-共享 base 镜像，此后新出的题目自动走这条路径；已交付的 19 道题镜像是升级前构建的，
-仍为 Debian 基础层，不做回溯重建（保持已验收证据链不变）。
+共享 base 镜像，此后新出的题目自动走这条路径；已交付的前 19 道题镜像是升级前构建的，
+仍为 Debian 基础层，不做回溯重建（保持已验收证据链不变）。第 20 道题
+`swe-synth-0036` 已是该架构在生产流水线里实测跑出并通过验证的产物。
 
 → 此条已不需要报备为偏差，反而是本次验证的成果之一。
 
@@ -195,10 +197,10 @@ Python 3.11.16 / git 2.34.1 / Docker 29.1.3
 
 | 章节 | 内容 | 状态 |
 |---|---|---|
-| 启动方式 | `python scripts/run_pipeline.py --repos ... --n 10`；分阶段 `--only agent1\|agent2`；`--resume` | ⬜ |
-| 参数配置 | `.env` 全部变量说明 + `config/settings.yaml` 每项含义、默认值、取值范围 | ⬜ |
-| 结果文件格式 | `tasks.jsonl` 逐字段说明 + `proofs/` 目录结构 + 一条完整真实样例 | ⬜ |
-| （建议补充） | 架构图、与官方约束的技术权衡说明（§3.1/§3.2/§3.3）、成本与耗时统计、失败案例分析 | ⬜ |
+| 启动方式 | `python scripts/run_pipeline.py --repos ... --n 10`；分阶段 `--only agent1\|agent2`；`--resume` | ✅ |
+| 参数配置 | `.env` 全部变量说明 + `config/settings.yaml` 每项含义、默认值、取值范围 | ✅ |
+| 结果文件格式 | `tasks.jsonl` 逐字段说明 + `proofs/` 目录结构 + 一条完整真实样例 | ✅ |
+| （建议补充） | 架构图、与官方约束的技术权衡说明（§3.1/§3.2/§3.3）、成本与耗时统计、失败案例分析 | ✅ |
 
 ### 4.5 "双 Agent **协作**"要能体现
 
@@ -213,13 +215,14 @@ Agent1 ──产出──► TCR 镜像(:v1 / :v1-sol) + 镜像内 /task 契约 
 
 ---
 
-## 五、当前阻塞与决策项
+## 五、当前阻塞与决策项（历史决策记录，均已落地，保留供追溯）
 
-### 5.1 Docker（构建环节，可延后但必须解决）
+### 5.1 Docker（构建环节） —— ✅ 已解决：远端 amd64 构建机
+
 本机 macOS **arm64**，未装 Docker；沙箱只支持 `linux/amd64`，跨架构构建慢且易错。
-**选项**：① 装 Docker Desktop + `--platform=linux/amd64`（慢但可行）
-② 申请 amd64 CVM 构建机（推荐，快且无玄学错误）
-→ **不阻塞离线内核开发**，但 A1-5/A1-6 必须有它。
+**最终方案**：申请 amd64 CVM 作为远端构建机，本机通过 `DOCKER_HOST=ssh://` 直连其
+Docker daemon 执行 build/push（详见 `README.md` §4.3）。20 道题、40 个镜像均已
+用该方式真实 build + push 成功。
 
 ### 5.2 镜像仓库 —— ✅ **已决策：CCR 个人版 + 复用现有命名空间**
 
@@ -302,11 +305,11 @@ TCR_USERNAME=<腾讯云账号ID或子用户名>   # 控制台「访问凭证」�
 TCR_PASSWORD=<访问凭证密码>
 ```
 
-**待你操作**（控制台，5 分钟）：
-1. 容器镜像服务 → **个人版** → 命名空间 → 新建 `swe-synth-aziz`
-2. 同页「访问凭证」→ 生成/查看密码 → 填入 `.env` 的 `TCR_USERNAME` / `TCR_PASSWORD`
-3. README 中说明：**因课题为个人实习课题且团队企业版实例均属他人，选用同产品个人版（CCR），
-   平台官方支持 `personal` 类型，功能与验收要求完全等价。**
+**已完成操作**（原「待操作」清单，现状留痕）：
+1. 容器镜像服务 → 个人版 → 命名空间 → 已建（复用 `tcb-100008634787-zbaf`，见上文）
+2. 已生成访问凭证并配置到 `.env` 的 `TCR_USERNAME` / `TCR_PASSWORD`
+3. README 已说明：因课题为个人实习课题且团队企业版实例均属他人，选用同产品个人版（CCR），
+   平台官方支持 `personal` 类型，功能与验收要求完全等价。
 
 **风险与兜底**：若后续发现 CCR 个人版有镜像大小/数量限制影响批量出题，可平滑切到企业版
 （只需改 `.env` 三个变量 + 沙箱工具的 `ImageRegistryType`，代码无需改动 —— 因此
@@ -319,28 +322,21 @@ TCR_PASSWORD=<访问凭证密码>
 
 ---
 
-## 六、总体完成度自评（2026-08-18 晚更新）
+## 六、总体完成度自评（2026-08-21 最终更新）
 
 | 阶段 | 完成度 | 说明 |
 |---|---|---|
-| 环境打通（M0） | **85%** | 沙箱 ✅ LLM ✅ 权限 ✅；缺 Docker |
+| 环境打通（M0） | **100%** | 沙箱 ✅ LLM ✅ 权限 ✅ Docker（远端构建机）✅ |
 | 方案设计 | **100%** | `plan.md` + 本核对表 + `midterm-audit.md` |
-| 代码实现 | **95%** | Agent1 三类题型 + packer + Agent2（sandbox_runner/overlap_check/ags）全部就绪 |
-| 数据产出 | **100%** | ✅ 10 / 10 道题（三类齐全，覆盖 3 仓库） |
-| 文档交付 | **100%** | 进度/对标/验收核对齐全；README 已写 |
+| 代码实现 | **100%** | Agent1 三类题型 + packer + Agent2（sandbox_runner/overlap_check/ags）全部就绪并实测 |
+| 数据产出 | **100%** | ✅ 20 / 20 道题（三类齐全，覆盖 4 仓库，全部 `state=ACCEPTED`） |
+| 文档交付 | **100%** | 进度/对标/验收核对齐全；README 已写；交付说明.md 已产出 |
 
-**验收 8/10 项通过**（见 `validate` 实测输出）。剩余 2 项均为「外部条件未就绪」而非「未实现」：
+**验收 10/10 项全部通过**（见 `scripts/run_pipeline.py validate` 实测输出）：
+- 20 道题均已 `docker build` + `docker push` 到 CCR 并设为公开
+- 20 道题均已在真实沙箱中完成双 Agent 全流程验证（空跑失败 + golden 跑通过）
+- 20 道题均已完成 `GITHUB_TOKEN` 驱动的无重叠校验，`state=ACCEPTED`
 
-| 未通过项 | 阻塞条件 | 代码状态 |
-|---|---|---|
-| state=ACCEPTED（双 Agent 验证） | 需 Docker build/push 镜像（本机无） | ✅ `packer.py` + `sandbox_runner.py` 已就绪，Docker 一到即可跑 |
-| 无重叠校验 | 需 `GITHUB_TOKEN` | ✅ `overlap_check.py` + `github.py` 已就绪，token 一到即可跑 |
-
-**结题前的最后两步**（都只需用户补一个外部条件）：
-1. 装 Docker（或提供 amd64 构建机）→ `run_pipeline.py pack` + `verify` 走完 Agent2 全链路
-2. 填 `GITHUB_TOKEN` → 跑无重叠校验，state 升为 ACCEPTED
-
-**关键判断**：**没有任何验收项是"做不到"的**，全部有明确落地路径。
-三个偏差（§3.1/3.2/3.3）都已有兼容解法，只需在 README 中说明技术权衡。
-最大的**真实风险**不是平台，而是 **B/C 题型的 golden patch 由 LLM 生成、可能反复跑不通**
-—— 因此 A 类（挖空，golden 100% 可靠）必须占主力，先把 A 类打通并凑够数量，再补 B/C。
+**关键判断**：课题原文的每一条验收标准均已用真实数据、真实沙箱、真实镜像仓库跑通，
+三个技术权衡（§3.1/3.2/3.3，基础镜像 / SDK 版本 / 镜像仓库个人版）均已在 README 与
+`交付说明.md` 中说明并给出等价性论证。
