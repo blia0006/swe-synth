@@ -128,7 +128,61 @@ cp .env.example .env
 | `TCR_REGISTRY` / `TCR_NAMESPACE` / `TCR_USERNAME` / `TCR_PASSWORD` | 镜像仓库凭证 |
 | `TCR_REGISTRY_TYPE` | `personal`（CCR 个人版）/ `enterprise`（企业版） |
 | `GITHUB_TOKEN` | 仓库 clone + 无重叠交叉比对检索（`public_repo` 读权限即可） |
-| `DOCKER_HOST` | （可选）远端 amd64 构建机，如 `ssh://root@<IP>` |
+| `DOCKER_HOST` | **构建机地址**（见下方 §4.3），如 `ssh://root@<IP>`。留空则用本机 Docker |
+
+### 4.3 构建环境：`docker build` 到底在哪里执行
+
+> 这一节回答「题目镜像是在哪里 build 的」——**不在沙箱内，也通常不在开发机上**。
+
+流水线分三处执行，各有明确分工：
+
+```
+┌── 开发机（本地）───────────────────────────────────────────┐
+│  Agent1 出题：git clone → AST 挖空 → 调 LLM 写题干         │
+│               → 本地跑 pytest 做双向 sanity                │
+│  Agent2 验证：远程操控沙箱、收集结果、做判定                │
+│  ⚠️ 这两个 Agent 全程在本地运行，不进镜像                   │
+└────────────────┬──────────────────────────────────────────┘
+                 │ DOCKER_HOST=ssh://docker-builder
+                 ▼
+┌── 构建机（腾讯云 CVM，linux/amd64）───────────────────────┐
+│  docker build  →  docker push 到 CCR                      │
+└────────────────┬──────────────────────────────────────────┘
+                 │ 镜像地址
+                 ▼
+┌── AGS 沙箱 ───────────────────────────────────────────────┐
+│  只运行 pytest（通过 /task/verify.sh 判分）                │
+│  ⚠️ 沙箱内无 docker CLI、无 DinD，不能在此 build           │
+└───────────────────────────────────────────────────────────┘
+```
+
+**为什么 build 要放在远端构建机**
+
+| 原因 | 说明 |
+|---|---|
+| 架构必需 | 开发机若是 Apple Silicon（arm64），而 AGS 沙箱只接受 `linux/amd64`；跨架构构建走 QEMU 模拟，慢到不可用 |
+| 平台限制 | AGS 沙箱内没有 docker CLI，也未注入 `/var/run/docker.sock`（已实测），无法在沙箱内 build |
+| 与出题解耦 | 出题环节不需要 Docker，可在无 Docker 的机器上开发调试；只有打包环节需要 |
+
+**配置方式**（三种任选）
+
+```bash
+# 方式一：远端构建机（推荐，需先配好 SSH 免密）
+DOCKER_HOST=ssh://root@<构建机IP>
+# 或在 ~/.ssh/config 里定义好 Host 别名后：
+DOCKER_HOST=ssh://docker-builder
+
+# 方式二：本机 Docker（x86_64 机器上直接可用）
+# 留空 DOCKER_HOST 即可
+
+# 方式三：本机为 arm64 但仍想本地构建（很慢，仅调试用）
+# 留空 DOCKER_HOST，Docker Desktop 会用 QEMU 模拟 amd64
+```
+
+> 构建机参考规格：2 核 / 3.5GB 内存 / 50GB 磁盘即可跑通；
+> 磁盘需留足空间（每个题目镜像约 7.5GB，因平台强制继承的官方基础镜像达 6.86GB）。
+> 若采用 `mentor-feedback-report.md` 中验证过的「Ubuntu base + 内容镜像」双镜像
+> 方案，每题镜像可降到 1MB 级，磁盘与耗时压力大幅缓解。
 
 ### 4.2 `config/settings.yaml`（可调参数）
 

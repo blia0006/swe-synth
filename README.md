@@ -87,7 +87,7 @@ python3.11 -m venv .venv
 | Agent2 能拉取镜像并在 SandBox 中启动、执行验证流程 | ✅ | `verification.json` 中的 `empty_sandbox_id` / `golden_sandbox_id` |
 | Agent2 验证含：可解性验证 + 与已有 PR/commit/bugfix 交叉比对（GitHub API） | ✅ | `solve_back.json`（可解性）+ `overlap_check.json`（交叉比对） |
 | 最终产出 ≥10 道通过双 Agent 全流程验证的题目，JSON Lines 落盘 | ✅ **19 道** | `data/tasks.jsonl`，19 行全部 `state=ACCEPTED` |
-| 提供 README.md，说明流水线启动方式、参数配置、结果文件格式 | ✅ | `PIPELINE.md` 第三/四/五节（本文件为验收入口，流水线文档见 PIPELINE.md） |
+| 提供 README.md，说明流水线启动方式、参数配置、结果文件格式 | ✅ | `PIPELINE.md` 第三/四/五节（本文件为验收入口） |
 
 **结论：6/6 项全部达标，题目数超出要求近 2 倍。**
 
@@ -197,6 +197,7 @@ cp .env.example .env   # 然后填入自己的凭证
 ```
 ├── README.md                ← 本文件，验收入口（GitHub 首页）
 ├── PIPELINE.md              流水线完整文档（启动方式/参数配置/结果格式）
+├── mentor-feedback-report.md  导师反馈的逐条实测验证与整改方案
 ├── TASK-SPEC.md             课题原文逐字备份（对照基准）
 ├── requirements-check.md    验收标准逐条核对 + 技术偏差说明
 ├── PROGRESS.md              研发全过程与 26 条踩坑记录
