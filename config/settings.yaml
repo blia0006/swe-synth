@@ -119,3 +119,17 @@ output:
   proofs_dir: data/proofs
   state_db: data/state.db
   report: data/report.json    # 成本/耗时/通过率统计，用于结题报告
+
+# ---------- 规模化扩展（10 道 → 1 万/100 万道，见 SCALE-OUT.md）----------
+# 这些 worker 数只是默认值，CLI 上用 --workers 覆盖更方便（见 scripts/run_pipeline.py --help）。
+# 三个环节各自独立扩展，互不耦合：
+scale:
+  agent1_workers: 1   # 出题并发（按仓库分片）。真正的吞吐上限取决于 TOKENHUB_API_KEYS 的 Key 数量
+                       # （每个 Key 独立计入平台 QPM=60 限流，见 clients/tokenhub_pool.py），
+                       # worker 数超过 Key 数不会带来额外提速。
+  agent2_workers: 2   # 沙箱验证并发。上限受 AGS 账号的沙箱并发配额限制，需按实际配额调整
+  pack_workers: 4     # docker build+push 并发。build 是 CPU/IO 密集型，按构建机核数设置；
+                       # push 主要受限于出口带宽（见 mentor-feedback-report.md 的双镜像方案，
+                       # 落地后单题镜像 1MB 级，push 几乎不再是瓶颈）
+  id_block_size: 10000  # 并发 agent1 时每个仓库预留的 task_id 区间大小，避免并发写入撞车
+

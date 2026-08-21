@@ -18,6 +18,16 @@
     # 跳过 solve-back（更快，但题干准确性无保障，仅用于调试）
     python scripts/run_pipeline.py agent1 --repo psf/cachecontrol --n 1 --no-solve-back
 
+    # === 规模化扩展（10 道 → 1 万/100 万道，见 SCALE-OUT.md）===
+    # 1) 先扩大仓库候选池（人工维护的 repos.yaml 只有个位数，是产出小的根因）
+    python scripts/discover_repos.py --languages python --max-per-lang 300
+    # 2) 出题阶段用多 worker 并发 + 多 Key 轮转突破单 Key QPM=60 限流
+    #    （TOKENHUB_API_KEYS=key1,key2,key3,... 于 .env 配置，见 tokenhub_pool.py）
+    python scripts/run_pipeline.py agent1 --include-discovered --n 500 --workers 8
+    # 3) 打包/验证阶段同样支持并发
+    python scripts/run_pipeline.py pack --workers 6
+    python scripts/run_pipeline.py agent2 --workers 4
+
     # 查看已产出的数据集并逐行校验
     python scripts/run_pipeline.py validate
 
@@ -30,13 +40,16 @@ import argparse
 import json
 import sys
 import tempfile
+import threading
 import time
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from swe_synth.clients.tokenhub import TokenHubClient  # noqa: E402
+from swe_synth.clients.tokenhub_pool import TokenHubClientPool  # noqa: E402
 from swe_synth.config.loader import load_repos, load_settings  # noqa: E402
 from swe_synth.schemas.task import (SweTask, TaskState, TaskType,  # noqa: E402
                                     read_jsonl, write_jsonl)
@@ -48,21 +61,30 @@ TYPE_ALIASES = {
     "C": TaskType.REFACTORING,
 }
 
+_LOG_LOCK = threading.Lock()
+
 
 def _log(msg: str) -> None:
-    print(msg, flush=True)
+    # 加锁：agent1/agent2/pack 并发模式下多个 worker 线程会同时打印，
+    # 避免不同线程的日志行互相截断交错。
+    with _LOG_LOCK:
+        print(msg, flush=True)
 
 
 # ------------------------------------------------------------------ list-repos
 
 def cmd_list_repos(args: argparse.Namespace) -> int:
-    repos = load_repos(only_verified=args.verified_only)
+    repos = load_repos(only_verified=args.verified_only, include_discovered=args.include_discovered)
     print(f"候选仓库池（{len(repos)} 个）  ★=Star 数，课题要求 >100\n")
     print(f"{'状态':<6} {'仓库':<42} {'语言':<7} {'★':>7}  说明")
     print("-" * 100)
     for r in repos:
         mark = "✅验证" if r.verified else "  待验"
         print(f"{mark:<6} {r.name:<42} {r.language:<7} {r.stars:>7}  {r.notes[:40]}")
+    if args.include_discovered:
+        n_disc = sum(1 for r in repos if not r.verified)
+        print(f"\n（其中 {n_disc} 个来自自动发现，尚未跑过 baseline，"
+              f"实际能否出题由 agent1 首次尝试时自动判定）")
     return 0
 
 
@@ -72,7 +94,7 @@ def cmd_agent1(args: argparse.Namespace) -> int:
     from swe_synth.agent1.pipeline import run_agent1
 
     settings = load_settings()
-    repos = load_repos()
+    repos = load_repos(include_discovered=args.include_discovered)
     if args.repo:
         repos = [r for r in repos if r.name == args.repo]
         if not repos:
@@ -93,11 +115,18 @@ def cmd_agent1(args: argparse.Namespace) -> int:
             task_types.append(TYPE_ALIASES[c])
 
     try:
-        client = TokenHubClient(model=settings.model_task_design,
-                                default_max_tokens=settings.max_tokens)
+        pool = TokenHubClientPool(model=settings.model_task_design,
+                                  default_max_tokens=settings.max_tokens)
     except Exception as e:  # noqa: BLE001
         print(f"❌ TokenHub 初始化失败：{e}")
         return 1
+    n_workers = max(1, args.workers if args.workers is not None
+                    else settings.get("scale.agent1_workers", 1))
+    if n_workers > 1 and len(pool) == 1:
+        _log(f"⚠️  --workers {n_workers} 但只配置了 1 个 Key（TOKENHUB_API_KEYS 未设置）。"
+             f"多 worker 仍会并发跑，但都挤在同一个 Key 的 QPM=60 限流桶里，"
+             f"吞吐不会随 worker 数线性提升 —— 建议在 .env 配置多个 Key 才能真正提速。")
+    _log(f"LLM 客户端池：{len(pool)} 个 Key（并发 worker 数：{n_workers}）")
 
     # ⚠️ 隔离性修复：工作副本必须放在项目树之外（系统临时目录），而不是
     # ROOT/".work"。原因：项目根目录本身含 .env（密钥）等文件，若仓库测试
@@ -160,24 +189,80 @@ def cmd_agent1(args: argparse.Namespace) -> int:
     t0 = time.time()
     target = args.n
 
-    for spec in repos:
-        got = sum(1 for r in all_results if r.accepted)
-        if got >= target:
-            break
-        res = run_agent1(
-            spec, settings, client,
-            work_root=work_root, build_root=build_root, proofs_root=proofs_root,
-            task_id_start=seq,
-            max_tasks=min(args.per_repo, target - got),
-            max_candidates=args.max_candidates,
-            base_python=args.python or sys.executable,
-            do_solve_back=not args.no_solve_back,
-            used_symbols=used_symbols,
-            task_types=task_types,
-            on_progress=_log,
-        )
-        all_results += res
-        seq += sum(1 for r in res if r.accepted)
+    if n_workers <= 1:
+        # 单 worker：与旧版本完全一致的顺序循环，行为零变化。
+        client = pool.lease()
+        for spec in repos:
+            got = sum(1 for r in all_results if r.accepted)
+            if got >= target:
+                break
+            res = run_agent1(
+                spec, settings, client,
+                work_root=work_root, build_root=build_root, proofs_root=proofs_root,
+                task_id_start=seq,
+                max_tasks=min(args.per_repo, target - got),
+                max_candidates=args.max_candidates,
+                base_python=args.python or sys.executable,
+                do_solve_back=not args.no_solve_back,
+                used_symbols=used_symbols,
+                task_types=task_types,
+                on_progress=_log,
+            )
+            all_results += res
+            seq += sum(1 for r in res if r.accepted)
+    else:
+        # 多 worker 并发：按仓库分片并发跑 run_agent1，每个仓库独占一段
+        # task_id 区间（ID_BLOCK），避免并发写入 proofs/build 目录时 task_id 撞车。
+        # ⚠️ used_symbols 是跨线程共享的 set：不同仓库的靶点 key 天然带仓库/文件路径前缀，
+        # 实践中不会跨仓库撞车，因此无需加锁（同一仓库内部仍是单线程执行，内部去重不受影响）。
+        ID_BLOCK = int(settings.get("scale.id_block_size", 10000))
+        repo_iter = iter(repos)
+        in_flight: dict = {}
+        idx = 0
+        results_lock_free = all_results  # 仅在主线程读写，无需加锁
+
+        def submit_next(executor: ThreadPoolExecutor) -> bool:
+            nonlocal idx
+            got = sum(1 for r in results_lock_free if r.accepted)
+            if got >= target:
+                return False
+            try:
+                spec = next(repo_iter)
+            except StopIteration:
+                return False
+            fut = executor.submit(
+                run_agent1, spec, settings, pool.lease(),
+                work_root=work_root, build_root=build_root, proofs_root=proofs_root,
+                task_id_start=seq + idx * ID_BLOCK,
+                max_tasks=min(args.per_repo, target - got),
+                max_candidates=args.max_candidates,
+                base_python=args.python or sys.executable,
+                do_solve_back=not args.no_solve_back,
+                used_symbols=used_symbols,
+                task_types=task_types,
+                on_progress=_log,
+            )
+            idx += 1
+            in_flight[fut] = spec.name
+            return True
+
+        with ThreadPoolExecutor(max_workers=n_workers) as executor:
+            for _ in range(n_workers):
+                if not submit_next(executor):
+                    break
+            while in_flight:
+                done, _ = wait(list(in_flight.keys()), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    name = in_flight.pop(fut)
+                    try:
+                        res = fut.result()
+                    except Exception as e:  # noqa: BLE001
+                        _log(f"❌ {name} worker 异常：{e}")
+                        res = []
+                    all_results += res
+                    submit_next(executor)
+
+    pool.refresh_usage()
 
     # 落盘（JSON Lines，验收要求的格式）
     # ⚠️ 幂等保护：落盘前重新读取文件的最新 task_id 集合再过滤。
@@ -203,9 +288,10 @@ def cmd_agent1(args: argparse.Namespace) -> int:
         "accepted": n_ok,
         "accepted_by_type": by_type,
         "pass_rate": round(n_ok / n_try, 3) if n_try else 0.0,
-        "llm_usage": client.usage.summary(),
-        "llm_cost_estimate_cny": client.usage.cost_estimate(
+        "llm_usage": pool.usage.summary(),
+        "llm_cost_estimate_cny": pool.usage.cost_estimate(
             *settings.price_of(settings.model_task_design)),
+        "llm_pool": {"n_keys": len(pool), "per_key": pool.per_key_summary()},
         "by_stage": {},
         "results": [r.to_dict() for r in all_results],
     }
@@ -223,7 +309,7 @@ def cmd_agent1(args: argparse.Namespace) -> int:
         print("题型分布：" + ", ".join(f"{k}={v}" for k, v in sorted(by_type.items())))
     if report["by_stage"]:
         print("失败分布：" + ", ".join(f"{k}={v}" for k, v in report["by_stage"].items()))
-    print(f"LLM 用量：{client.usage.calls} 次调用，"
+    print(f"LLM 用量：{pool.usage.calls} 次调用（{len(pool)} 个 Key），"
           f"成本≈{report['llm_cost_estimate_cny']} 元")
     print(f"数据集：{settings.tasks_jsonl}（共 {len(existing) + len(new_tasks)} 条）")
     print(f"通过证明：{proofs_root}/<task_id>/")
@@ -283,13 +369,13 @@ def cmd_agent2(args: argparse.Namespace) -> int:
     reuse_tool = bool(settings.get("sandbox.reuse_tool", True))
     registry_type = _os.environ.get("TCR_REGISTRY_TYPE", "personal")
 
-    n_accepted, n_pending = 0, 0
-    for t in targets:
+    def verify_one(t: SweTask) -> bool:
+        """验证单道题，返回是否 ACCEPTED。原地修改 t（每道题是独立对象，
+        并发 worker 间无共享可变状态，线程安全）。"""
         _log(f"\n{'=' * 72}\n{t.task_id}  ({t.task_type.value}/{t.difficulty.value})  {t.repo}")
         if not t.image or not t.solution_image:
             _log("  ⏭  缺少镜像地址，跳过")
-            n_pending += 1
-            continue
+            return False
 
         proof_dir = Path(t.validation.proof_dir or (settings.proofs_dir / t.task_id))
         proof_dir.mkdir(parents=True, exist_ok=True)
@@ -306,8 +392,7 @@ def cmd_agent2(args: argparse.Namespace) -> int:
                 )
             except SandboxVerifyError as e:
                 _log(f"  ❌ 沙箱验证环境错误：{e}")
-                n_pending += 1
-                continue
+                return False
             t.validation.sandbox_tool = t.task_id
             t.validation.sandbox_instance_id = vres.empty_sandbox_id
             t.validation.empty_solution_result = "pass" if (vres.empty_run or {}).get("passed") else "fail"
@@ -346,12 +431,10 @@ def cmd_agent2(args: argparse.Namespace) -> int:
                 )
             except GitHubError as e:
                 _log(f"  ❌ 无重叠校验失败（GitHub API）：{e}")
-                n_pending += 1
-                continue
+                return False
             except LLMError as e:
                 _log(f"  ❌ 无重叠校验失败（LLM 裁决）：{e}")
-                n_pending += 1
-                continue
+                return False
             t.overlap_check = report.check
             overlap_ok = report.check.passed
             (proof_dir / "overlap_check.json").write_text(
@@ -365,11 +448,27 @@ def cmd_agent2(args: argparse.Namespace) -> int:
         # ---------- 3) 终判
         if sandbox_ok and overlap_ok:
             t.state = TaskState.ACCEPTED
-            n_accepted += 1
             _log(f"  🎉 {t.task_id} → ACCEPTED")
-        else:
-            n_pending += 1
-            _log(f"  ⚠️  {t.task_id} 尚未满足 ACCEPTED 条件（保留状态 {t.state.value}），需复核")
+            return True
+        _log(f"  ⚠️  {t.task_id} 尚未满足 ACCEPTED 条件（保留状态 {t.state.value}），需复核")
+        return False
+
+    n_accepted = 0
+    n_workers2 = max(1, args.workers if args.workers is not None
+                      else settings.get("scale.agent2_workers", 1))
+    if n_workers2 <= 1:
+        for t in targets:
+            if verify_one(t):
+                n_accepted += 1
+    else:
+        # 并发验证：每道题是独立的沙箱实例 + 独立对象，天然无共享可变状态。
+        # 并发数建议不超过 AGS 账号的沙箱并发配额（见 settings.yaml scale.agent2_workers）。
+        with ThreadPoolExecutor(max_workers=n_workers2) as executor:
+            futs = {executor.submit(verify_one, t): t for t in targets}
+            for fut in futs:
+                if fut.result():
+                    n_accepted += 1
+    n_pending = len(targets) - n_accepted
 
     write_jsonl(tasks, settings.tasks_jsonl)
     print("\n" + "=" * 72)
@@ -438,9 +537,12 @@ def cmd_pack(args: argparse.Namespace) -> int:
         return 1
 
     task_ids = args.task_id or None
+    n_workers3 = max(1, args.workers if args.workers is not None
+                      else settings.get("scale.pack_workers", 1))
     try:
         results = pack_all(build_root, settings, task_ids=task_ids,
-                           platform=args.platform)
+                           platform=args.platform, max_workers=n_workers3,
+                           on_progress=_log)
     except DockerError as e:
         print(f"❌ {e}")
         return 1
@@ -465,6 +567,8 @@ def main() -> int:
 
     p_list = sub.add_parser("list-repos", help="列出候选仓库池")
     p_list.add_argument("--verified-only", action="store_true", help="只显示已验证的仓库")
+    p_list.add_argument("--include-discovered", action="store_true",
+                        help="同时列出 config/repos.discovered.yaml 里自动发现的候选")
     p_list.set_defaults(func=cmd_list_repos)
 
     p1 = sub.add_parser("agent1", help="出题 + 生成构建上下文（不含 build/push）")
@@ -478,18 +582,28 @@ def main() -> int:
     p1.add_argument("--no-solve-back", action="store_true",
                     help="跳过 solve-back 可解性验证（更快但题干准确性无保障，仅调试用）")
     p1.add_argument("--verified-only", action="store_true", help="只用已验证的仓库")
+    p1.add_argument("--include-discovered", action="store_true",
+                    help="连同 repos.discovered.yaml 里自动发现的候选一起用（规模化扩展）")
+    p1.add_argument("--workers", type=int, default=None,
+                    help="并发处理的仓库数（默认取 settings.yaml 的 scale.agent1_workers；"
+                         "配合多 Key TOKENHUB_API_KEYS 才能线性提速）")
     p1.set_defaults(func=cmd_agent1)
 
     p_pack = sub.add_parser("pack", help="docker build + push 到 TCR（需 Docker）")
     p_pack.add_argument("--task-id", action="append", dest="task_id",
                         help="只打包指定题目（可多次；默认全部）")
     p_pack.add_argument("--platform", default=None, help="构建平台（默认取 settings.yaml）")
+    p_pack.add_argument("--workers", type=int, default=None,
+                        help="并发 build+push 的题目数（默认取 settings.yaml 的 scale.pack_workers）")
     p_pack.set_defaults(func=cmd_pack)
 
     p_a2 = sub.add_parser("agent2", help="沙箱双向验证 + 无重叠校验（通过则 state -> ACCEPTED）")
     p_a2.add_argument("--task-id", action="append", dest="task_id",
                       help="只验证指定题目（可多次；默认全部未 ACCEPTED 的题目）")
     p_a2.add_argument("--force", action="store_true", help="即使已 ACCEPTED 也重跑（配合 --task-id 使用）")
+    p_a2.add_argument("--workers", type=int, default=None,
+                      help="并发验证的题目数（默认取 settings.yaml 的 scale.agent2_workers，"
+                           "受 AGS 沙箱并发配额限制）")
     p_a2.add_argument("--skip-sandbox", action="store_true", help="跳过沙箱验证，沿用历史结果")
     p_a2.add_argument("--skip-overlap", action="store_true", help="跳过无重叠校验，沿用历史结果")
     p_a2.set_defaults(func=cmd_agent2)

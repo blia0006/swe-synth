@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import threading
 import time
 from dataclasses import dataclass, field
 from typing import Any
@@ -36,7 +37,12 @@ class EmptyContentError(LLMError):
 
 @dataclass
 class LLMUsage:
-    """累计用量与成本统计。"""
+    """累计用量与成本统计。
+
+    多 Key 并发场景下，多个 worker 线程可能共享同一个底层 `_client`
+    （或该对象被 `TokenHubClientPool` 聚合），故所有写操作都加锁，
+    避免计数竞态导致统计失真。
+    """
 
     calls: int = 0
     prompt_tokens: int = 0
@@ -45,13 +51,35 @@ class LLMUsage:
     retries: int = 0
     failures: int = 0
     by_model: dict[str, int] = field(default_factory=dict)
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False, compare=False)
 
     def add(self, model: str, pt: int, ct: int, reasoning: int = 0) -> None:
-        self.calls += 1
-        self.prompt_tokens += pt
-        self.completion_tokens += ct
-        self.reasoning_chars += reasoning
-        self.by_model[model] = self.by_model.get(model, 0) + 1
+        with self._lock:
+            self.calls += 1
+            self.prompt_tokens += pt
+            self.completion_tokens += ct
+            self.reasoning_chars += reasoning
+            self.by_model[model] = self.by_model.get(model, 0) + 1
+
+    def record_retry(self) -> None:
+        with self._lock:
+            self.retries += 1
+
+    def record_failure(self) -> None:
+        with self._lock:
+            self.failures += 1
+
+    def merge_from(self, other: "LLMUsage") -> None:
+        """把另一份用量累加进来（多 Key 池聚合各 Key 的统计用）。"""
+        with self._lock, other._lock:
+            self.calls += other.calls
+            self.prompt_tokens += other.prompt_tokens
+            self.completion_tokens += other.completion_tokens
+            self.reasoning_chars += other.reasoning_chars
+            self.retries += other.retries
+            self.failures += other.failures
+            for k, v in other.by_model.items():
+                self.by_model[k] = self.by_model.get(k, 0) + v
 
     def cost_estimate(self, price_in: float, price_out: float) -> float:
         """按「元/百万 tokens」价格估算总成本。"""
@@ -164,7 +192,7 @@ class TokenHubClient:
 
                 if not content and not allow_empty:
                     # 思维链占满额度的典型症状：finish_reason == "length"
-                    self.usage.retries += 1
+                    self.usage.record_retry()
                     last_err = EmptyContentError(
                         f"content 为空（finish_reason={choice.finish_reason}，"
                         f"reasoning {len(reasoning)} 字符）"
@@ -178,14 +206,14 @@ class TokenHubClient:
                 msg = str(e).lower()
                 # 限流 / 服务端瞬时错误 → 退避重试；其余直接失败，避免无谓等待
                 if any(k in msg for k in ("rate", "429", "timeout", "502", "503", "504", "overload")):
-                    self.usage.retries += 1
+                    self.usage.record_retry()
                     self._sleep_backoff(attempt)
                     continue
                 if isinstance(e, EmptyContentError):
                     continue
                 break
 
-        self.usage.failures += 1
+        self.usage.record_failure()
         raise LLMError(f"LLM 调用失败（重试 {self.max_retries} 次）：{last_err}") from last_err
 
     def chat_json(

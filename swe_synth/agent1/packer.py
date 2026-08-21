@@ -113,10 +113,16 @@ def pack_task(
     username: str | None = None,
     password: str | None = None,
     platform: str | None = None,
+    skip_login: bool = False,
 ) -> list[PackResult]:
     """把一个题目的两份镜像（`:v1` 题目镜像 + `:v1-sol` 答案镜像）build + push。
 
     返回两个 PackResult（题目镜像、答案镜像）。
+
+    `skip_login=True`：供 `pack_all` 并发打包多个题目时使用 —— 登录只需做一次，
+    并发场景下让每个 worker 各自重复 `docker login` 会并发写同一份
+    `~/.docker/config.json`，存在把凭据文件写坏的风险，因此改为调用方
+    统一在派发并发任务前登录一次。
     """
     import os
 
@@ -133,10 +139,10 @@ def pack_task(
     if not base.is_dir():
         raise DockerError(f"构建上下文不存在：{base}（先跑 agent1 产出）")
 
-    # 登录一次即可
-    rc, out = docker_login(registry, username, password)
-    if rc != 0:
-        raise DockerError(f"docker login {registry} 失败：{out[-500:]}")
+    if not skip_login:
+        rc, out = docker_login(registry, username, password)
+        if rc != 0:
+            raise DockerError(f"docker login {registry} 失败：{out[-500:]}")
 
     results: list[PackResult] = []
     for sub, is_sol in (("task", False), ("sol", True)):
@@ -171,12 +177,53 @@ def pack_all(
     *,
     task_ids: list[str] | None = None,
     platform: str | None = None,
+    max_workers: int = 1,
+    on_progress: "callable" = print,
 ) -> list[PackResult]:
-    """打包 `.build/` 下所有（或指定）题目的镜像。"""
+    """打包 `.build/` 下所有（或指定）题目的镜像。
+
+    `max_workers > 1` 时并发 build+push 多个题目 —— 这是「1 万道题」规模下
+    打包环节的水平扩展点：docker build 本身 CPU/IO 密集但彼此独立
+    （不同 task_id 的构建上下文互不相干），并发数建议按构建机的
+    CPU 核数/磁盘 IO 能力设置（见 `config/settings.yaml` 的 `scale.pack_workers`）。
+    """
+    import os
+
     build_root = Path(build_root)
     ids = task_ids or sorted(d.name for d in build_root.iterdir()
                              if d.is_dir() and d.name.startswith("swe-synth-"))
-    out: list[PackResult] = []
-    for tid in ids:
-        out += pack_task(tid, build_root, settings, platform=platform)
-    return out
+    if not ids:
+        return []
+
+    # 登录只做一次（见 pack_task 的 skip_login 说明），避免并发写坏 docker 凭据文件
+    registry = os.environ.get("TCR_REGISTRY", "").rstrip("/")
+    username = os.environ.get("TCR_USERNAME", "")
+    password = os.environ.get("TCR_PASSWORD", "")
+    if not registry or not username or not password:
+        raise DockerError("未配置 TCR_REGISTRY / TCR_USERNAME / TCR_PASSWORD（见 .env）")
+    rc, out = docker_login(registry, username, password)
+    if rc != 0:
+        raise DockerError(f"docker login {registry} 失败：{out[-500:]}")
+
+    out_results: list[PackResult] = []
+    if max_workers <= 1:
+        for tid in ids:
+            out_results += pack_task(tid, build_root, settings, platform=platform, skip_login=True)
+            on_progress(f"  ✅ 打包完成：{tid}")
+        return out_results
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futs = {
+            ex.submit(pack_task, tid, build_root, settings, platform=platform, skip_login=True): tid
+            for tid in ids
+        }
+        for fut in as_completed(futs):
+            tid = futs[fut]
+            try:
+                out_results += fut.result()
+                on_progress(f"  ✅ 打包完成：{tid}")
+            except DockerError as e:
+                on_progress(f"  ❌ 打包失败：{tid}：{e}")
+    return out_results

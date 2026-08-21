@@ -138,8 +138,8 @@ def load_settings(path: str | Path | None = None) -> Settings:
     return Settings(raw=_load_yaml(p))
 
 
-def load_repos(path: str | Path | None = None, *, only_verified: bool = False) -> list[RepoSpec]:
-    p = Path(path) if path else PROJECT_ROOT / "config" / "repos.yaml"
+def _load_repo_file(p: Path) -> list[RepoSpec]:
+    """解析一个 repos-schema 的 YAML 文件（`repos.yaml` 或 `repos.discovered.yaml` 共用）。"""
     data = _load_yaml(p)
     defaults = data.get("defaults") or {}
     out: list[RepoSpec] = []
@@ -148,8 +148,37 @@ def load_repos(path: str | Path | None = None, *, only_verified: bool = False) -
         merged.pop("python_version", None)
         merged.pop("test_framework", None)
         merged.pop("baseline_required", None)
-        spec = RepoSpec(**merged)
-        if only_verified and not spec.verified:
-            continue
-        out.append(spec)
+        try:
+            out.append(RepoSpec(**merged))
+        except ValueError:
+            continue  # Star<100 等不合规候选，静默跳过（多为自动发现产出）
+    return out
+
+
+def load_repos(
+    path: str | Path | None = None,
+    *,
+    only_verified: bool = False,
+    include_discovered: bool = False,
+    discovered_path: str | Path | None = None,
+) -> list[RepoSpec]:
+    """加载候选仓库池。
+
+    `include_discovered=True` 时，额外合并 `config/repos.discovered.yaml`
+    （由 `scripts/discover_repos.py` 自动发现产出），使仓库池可从手工维护的
+    个位数规模扩展到数百/数千个 —— 这是「10 道 → 1 万道」扩容链路的入口。
+    人工维护的 `repos.yaml` 优先：重名时以其为准（已验证的元数据更可信）。
+    """
+    p = Path(path) if path else PROJECT_ROOT / "config" / "repos.yaml"
+    out = _load_repo_file(p)
+    if include_discovered:
+        dp = Path(discovered_path) if discovered_path else PROJECT_ROOT / "config" / "repos.discovered.yaml"
+        if dp.exists():
+            seen = {r.name for r in out}
+            for r in _load_repo_file(dp):
+                if r.name not in seen:
+                    out.append(r)
+                    seen.add(r.name)
+    if only_verified:
+        out = [r for r in out if r.verified]
     return out

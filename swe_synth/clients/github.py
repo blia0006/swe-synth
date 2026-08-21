@@ -141,6 +141,36 @@ class GitHubClient:
             page += 1
         return out[:max_results]
 
+    def search_repositories(
+        self, query: str, *, sort: str = "stars", order: str = "desc",
+        max_results: int = 100,
+    ) -> list[dict]:
+        """检索仓库（`/search/repositories`），供仓库池自动扩容用。
+
+        `query` 用 GitHub 搜索语法拼好，例如：
+        ``"language:python stars:>100 pushed:>2024-01-01 archived:false"``。
+        单页最多 100 条，`max_results` 超过 100 会自动翻页
+        （GitHub 搜索接口硬限：单次查询最多返回 1000 条，超出需拆分 query）。
+        """
+        out: list[dict] = []
+        per_page = min(max_results, 100)
+        page = 1
+        while len(out) < max_results and page <= 10:
+            data, _ = self._get(
+                f"{self.BASE}/search/repositories",
+                params={"q": query, "sort": sort, "order": order,
+                        "per_page": per_page, "page": page},
+                cache_key=f"repo_search_{abs(hash(query)) % 10**9}_{page}",
+            )
+            items = data.get("items", []) if isinstance(data, dict) else []
+            if not items:
+                break
+            out += items
+            if len(items) < per_page:
+                break
+            page += 1
+        return out[:max_results]
+
     def file_commits(self, repo: str, path: str, *, per_page: int = 10) -> list[dict]:
         """目标文件的提交历史（用于「时间隔离」与「无重叠」判断）。"""
         data, _ = self._get(
