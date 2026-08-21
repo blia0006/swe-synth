@@ -1,0 +1,15 @@
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -44,11 +44,7 @@
+ 
+     def sign(self, value: str | bytes) -> bytes:
+         """Signs the given string and also attaches time information."""
+-        value = want_bytes(value)
+-        timestamp = base64_encode(int_to_bytes(self.get_timestamp()))
+-        sep = want_bytes(self.sep)
+-        value = value + sep + timestamp
+-        return value + sep + self.get_signature(value)
++        raise NotImplementedError("TODO: implement this function")
+ 
+     # Ignore overlapping signatures check, return_timestamp is the only
+     # parameter that affects the return type.

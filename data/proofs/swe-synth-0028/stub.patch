@@ -1,0 +1,14 @@
+--- a/src/itsdangerous/serializer.py
++++ b/src/itsdangerous/serializer.py
+@@ -279,10 +279,7 @@
+         """Creates a new instance of the signer to be used. The default
+         implementation uses the :class:`.Signer` base class.
+         """
+-        if salt is None:
+-            salt = self.salt
+-
+-        return self.signer(self.secret_keys, salt=salt, **self.signer_kwargs)
++        raise NotImplementedError("TODO: implement this function")
+ 
+     def iter_unsigners(self, salt: str | bytes | None = None) -> cabc.Iterator[Signer]:
+         """Iterates over all signers to be tried for unsigning. Starts

@@ -1,0 +1,163 @@
+diff --git a/cachecontrol/rfc7234_freshness.py b/cachecontrol/rfc7234_freshness.py
+new file mode 100644
+--- /dev/null
++++ b/cachecontrol/rfc7234_freshness.py
+@@ -0,0 +1,65 @@
++# SPDX-FileCopyrightText: 2024 Your Name
++#
++# SPDX-License-Identifier: Apache-2.0
++from __future__ import annotations
++
++from datetime import datetime
++from typing import Mapping
++
++
++def compute_freshness_lifetime(headers: Mapping[str, str]) -> int | None:
++    """计算响应新鲜度生命周期（秒）。
++
++    根据 HTTP 缓存规范（RFC 7234）从响应头中提取新鲜度信息。
++
++    参数：
++        headers: 响应头字典，键大小写不敏感。
++
++    返回：
++        int: 生命周期秒数；若无法确定则返回 None。
++    """
++    raise NotImplementedError(...)
++
++
++def compute_current_age(
++    headers: Mapping[str, str],
++    request_time: datetime,
++    response_time: datetime,
++    now: datetime,
++) -> int:
++    """计算响应当前年龄（秒）。
++
++    根据 RFC 7234 的算法，结合 Age 头、Date 头以及请求/响应/当前时间。
++
++    参数：
++        headers: 响应头字典。
++        request_time: 请求发送时间。
++        response_time: 响应接收时间。
++        now: 当前时间。
++
++    返回：
++        int: 当前年龄（非负秒数）。
++    """
++    raise NotImplementedError(...)
++
++
++def is_fresh(
++    headers: Mapping[str, str],
++    request_time: datetime,
++    response_time: datetime,
++    now: datetime,
++) -> bool:
++    """判断响应是否新鲜。
++
++    新鲜度由生命周期和当前年龄决定。
++
++    参数：
++        headers: 响应头字典。
++        request_time: 请求发送时间。
++        response_time: 响应接收时间。
++        now: 当前时间。
++
++    返回：
++        bool: 若响应新鲜则 True，否则 False。
++    """
++    raise NotImplementedError(...)
+diff --git a/tests/test_rfc7234_freshness_synth.py b/tests/test_rfc7234_freshness_synth.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_rfc7234_freshness_synth.py
+@@ -0,0 +1,88 @@
++# SPDX-FileCopyrightText: 2024 Your Name
++#
++# SPDX-License-Identifier: Apache-2.0
++from datetime import datetime
++
++from cachecontrol.rfc7234_freshness import (
++    compute_current_age,
++    compute_freshness_lifetime,
++    is_fresh,
++)
++
++
++class TestFreshnessLifetime:
++    def test_max_age(self):
++        headers = {"cache-control": "max-age=600"}
++        assert compute_freshness_lifetime(headers) == 600
++
++    def test_no_cache(self):
++        headers = {"cache-control": "no-cache"}
++        assert compute_freshness_lifetime(headers) == 0
++
++    def test_no_store(self):
++        headers = {"cache-control": "no-store"}
++        assert compute_freshness_lifetime(headers) == 0
++
++    def test_expires_future(self):
++        headers = {
++            "date": "Tue, 21 Oct 2014 07:28:00 GMT",
++            "expires": "Tue, 21 Oct 2014 08:28:00 GMT",
++        }
++        assert compute_freshness_lifetime(headers) == 3600
++
++    def test_expires_past(self):
++        headers = {
++            "date": "Tue, 21 Oct 2014 07:28:00 GMT",
++            "expires": "Tue, 21 Oct 2014 06:28:00 GMT",
++        }
++        assert compute_freshness_lifetime(headers) == 0
++
++    def test_unknown(self):
++        headers = {"cache-control": "public"}
++        assert compute_freshness_lifetime(headers) is None
++
++
++class TestCurrentAge:
++    def test_no_age_no_date(self):
++        headers = {}
++        req = datetime(2020, 1, 1, 0, 0, 0)
++        resp = datetime(2020, 1, 1, 0, 0, 10)
++        now = datetime(2020, 1, 1, 0, 0, 25)
++        assert compute_current_age(headers, req, resp, now) == 25
++
++    def test_with_age_header(self):
++        headers = {"age": "100"}
++        req = datetime(2020, 1, 1, 0, 0, 0)
++        resp = datetime(2020, 1, 1, 0, 0, 10)
++        now = datetime(2020, 1, 1, 0, 0, 25)
++        assert compute_current_age(headers, req, resp, now) == 125
++
++    def test_with_date_header(self):
++        headers = {"date": "Tue, 21 Oct 2014 07:28:00 GMT"}
++        req = datetime(2014, 10, 21, 7, 28, 0)
++        resp = datetime(2014, 10, 21, 7, 28, 10)
++        now = datetime(2014, 10, 21, 7, 28, 25)
++        assert compute_current_age(headers, req, resp, now) == 25
++
++
++class TestIsFresh:
++    def test_fresh_true(self):
++        headers = {"cache-control": "max-age=600"}
++        req = datetime(2020, 1, 1, 0, 0, 0)
++        resp = datetime(2020, 1, 1, 0, 0, 10)
++        now = datetime(2020, 1, 1, 0, 0, 25)
++        assert is_fresh(headers, req, resp, now) is True
++
++    def test_fresh_false_expired(self):
++        headers = {"cache-control": "max-age=5"}
++        req = datetime(2020, 1, 1, 0, 0, 0)
++        resp = datetime(2020, 1, 1, 0, 0, 10)
++        now = datetime(2020, 1, 1, 0, 0, 25)
++        assert is_fresh(headers, req, resp, now) is False
++
++    def test_fresh_unknown(self):
++        headers = {}
++        req = datetime(2020, 1, 1, 0, 0, 0)
++        resp = datetime(2020, 1, 1, 0, 0, 10)
++        now = datetime(2020, 1, 1, 0, 0, 25)
++        assert is_fresh(headers, req, resp, now) is False

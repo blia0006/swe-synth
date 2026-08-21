@@ -1,0 +1,121 @@
+# === 流水线配置 ===
+#
+# 所有可调参数集中在此，便于复现与调参（README 会逐项说明）。
+# 凭证一律不放这里，只从 .env 读取。
+
+# ---------- LLM 模型分工 ----------
+# 依据实测价格（元/百万 tokens）与能力做分工，详见 PROGRESS.md 三·8
+models:
+  # 出题：质量优先。deepseek-v4-pro-202606 属课题推荐的 deepseek-v4-pro 系列，
+  # 但价格 3/6 vs 12/24，便宜 4 倍
+  task_design: deepseek-v4-pro-202606
+  # 仓库分析：上下文大、任务简单，用最便宜的
+  repo_analyze: deepseek-v4-flash
+  # 去重裁决：判断题，用便宜的
+  overlap_judge: deepseek-v4-flash
+  # 课题原文推荐的备选模型，用于交叉验证出题质量
+  cross_check: glm-5
+
+  pricing:                    # 仅用于成本估算报告
+    deepseek-v4-pro-202606: {input: 3.0, output: 6.0}
+    deepseek-v4-flash: {input: 1.0, output: 2.0}
+    glm-5: {input: 4.0, output: 18.0}
+
+llm:
+  # ⚠️ 必须给足：推理模型的思维链会占用 max_tokens，太小会导致 content 为空（已实测）
+  max_tokens: 8192
+  temperature: 0.3
+  timeout_sec: 300
+  max_retries: 4
+  # 所有模型 QPM=60（实测），并发上限须保守
+  max_concurrency: 4
+
+# ---------- 挖空靶点筛选 ----------
+stubbing:
+  min_body_lines: 4           # 太短没难度
+  max_body_lines: 60          # 太长牵连广、题干难写清
+  keep_docstring: true        # 保留 docstring：题干信息来源 + 符合"结构完整"要求
+  require_test_coverage: true # 无测试覆盖 = 无法自动判分，直接排除
+  max_fail_to_pass: 50        # 变红用例过多说明挖空牵连过广
+  candidates_per_repo: 8      # 每仓库最多尝试的候选数
+
+# ---------- 重构题（C 类）靶点筛选与判据 ----------
+# 重构题的判据是自动生成的「重构守卫测试」（见 swe_synth/agent1/refactor_metrics.py）：
+#   FAIL_TO_PASS = 守卫测试（静态指标，重构前必红、重构后必绿）
+#   PASS_TO_PASS = 既有测试（全程必绿 → 行为等价的机器证明）
+refactoring:
+  min_body_lines: 12          # 太短的函数没有重构空间，指标降不下来
+  min_cyclomatic: 6           # 圈复杂度低 = 没有坏味道，不值得出题
+  max_file_lines: 600         # 文件过大时做题者与 solve-back 都难以整体把握
+  min_body_drop: 3            # 参考重构至少要让有效行数减少这么多，否则视为没重构
+  slack_ratio: 0.25           # 阈值在 [重构后, 重构前) 区间内留给做题者的余量比例
+
+# ---------- 本地 sanity ----------
+local_validation:
+  timeout_sec: 900
+  check_determinism: true     # 连跑两次结果须一致，剔除 flaky
+  check_network_isolation: true  # 试跑 --network none，不通则打标 needs_network
+
+# ---------- 题型配比（课题原文列举三类，需都有覆盖）----------
+task_mix:
+  target_total: 12            # 目标产出（要求 ≥10，多做 2 道留余量）
+  # 实测通过率 67% → 需准备 ≥18 个候选
+  min_candidates: 20
+  quota:
+    feature_implementation: 6   # A 挖空题：golden 100% 可靠，作为主力
+    module_addition: 3          # B 新增模块：golden 由 LLM 生成，风险较高
+    refactoring: 3              # C 重构：行为等价 + 静态指标
+  difficulty_quota:             # 难度覆盖
+    easy: 3
+    medium: 6
+    hard: 3
+
+# ---------- 镜像 ----------
+image:
+  # ⚠️ 平台硬约束：必须 FROM 官方基础镜像，否则沙箱起不来（详见 requirements-check.md §3.1）
+  base: ccr.ccs.tencentyun.com/ags-image/sandbox-code:latest
+  platform: linux/amd64       # 沙箱仅支持 amd64
+  tag_task: v1                # 题目镜像（无答案）
+  tag_solution: v1-sol        # 含 golden.patch，仅 Agent2 使用，防泄题
+  # 镜像内额外安装，以满足课题要求的运行时（Git + Docker CLI + Python 3.11）
+  extra_packages: [git, docker.io, python3.11, python3.11-venv, python3.11-dev]
+  task_venv: /opt/venv311     # 题目代码运行在 3.11 venv 中
+
+# ---------- 沙箱 ----------
+sandbox:
+  timeout_sec: 1800
+  cpu: "2"
+  memory: 4Gi
+  network_mode: PUBLIC
+  # 官方推荐的健康探针配置（照抄同事已验证可用的沙箱工具）
+  probe:
+    path: /health
+    port: 49983
+    ready_timeout_ms: 30000
+    probe_timeout_ms: 5000
+    probe_period_ms: 10000
+    failure_threshold: 3
+  # 沙箱按时长计费，必须兜底清理
+  always_kill: true
+  reuse_tool: true            # 同一题重跑时复用沙箱工具，省创建开销
+
+# ---------- 去重（课题核心约束）----------
+overlap_check:
+  # 时间隔离：优先选长期未改动的模块
+  min_months_since_change: 12
+  no_open_pr_months: 6
+  # 三级过滤
+  bm25_top_k: 20
+  embedding_threshold: 0.85
+  llm_judge: true
+  github:
+    max_retries: 5
+    backoff_base_sec: 2
+    cache_dir: .cache/github  # ETag 缓存，规避 search API 30 req/min 限流
+
+# ---------- 输出 ----------
+output:
+  tasks_jsonl: data/tasks.jsonl
+  proofs_dir: data/proofs
+  state_db: data/state.db
+  report: data/report.json    # 成本/耗时/通过率统计，用于结题报告

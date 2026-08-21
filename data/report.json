@@ -1,0 +1,72 @@
+{
+  "ts": "2026-08-21T03:04:30+0800",
+  "duration_sec": 1566.2,
+  "task_types_requested": [
+    "feature_implementation"
+  ],
+  "attempts": 5,
+  "accepted": 1,
+  "accepted_by_type": {
+    "feature_implementation": 1
+  },
+  "pass_rate": 0.2,
+  "llm_usage": {
+    "calls": 16,
+    "prompt_tokens": 18693,
+    "completion_tokens": 119013,
+    "reasoning_chars": 382753,
+    "retries": 5,
+    "failures": 0,
+    "by_model": {
+      "deepseek-v4-pro-202606": 8,
+      "deepseek-v4-flash": 8
+    }
+  },
+  "llm_cost_estimate_cny": 0.7702,
+  "by_stage": {
+    "LOCAL_SANITY": 1,
+    "SOLVE_BACK": 3
+  },
+  "results": [
+    {
+      "candidate": "cachecontrol/caches/file_cache.py::_FileCacheMixin.get",
+      "accepted": false,
+      "stage": "LOCAL_SANITY",
+      "reason": "挖空后没有任何测试变红 —— 该函数无有效测试覆盖，无法自动判分",
+      "task_id": null,
+      "duration_sec": 2.5
+    },
+    {
+      "candidate": "cachecontrol/serialize.py::Serializer.loads",
+      "accepted": false,
+      "stage": "SOLVE_BACK",
+      "reason": "题干可能不准确或过于含糊：2 次尝试均未通过（最好一次 FAIL_TO_PASS 0/9）。常见原因是题干描述的行为与真实实现不一致。",
+      "task_id": null,
+      "duration_sec": 464.6
+    },
+    {
+      "candidate": "cachecontrol/serialize.py::Serializer.dumps",
+      "accepted": false,
+      "stage": "SOLVE_BACK",
+      "reason": "题干可能不准确或过于含糊：2 次尝试均未通过（最好一次 FAIL_TO_PASS 0/7）。常见原因是题干描述的行为与真实实现不一致。",
+      "task_id": null,
+      "duration_sec": 373.5
+    },
+    {
+      "candidate": "cachecontrol/heuristics.py::LastModified.update_headers",
+      "accepted": true,
+      "stage": "BUILD_CTX_READY",
+      "reason": "出题成功：本地 sanity + solve-back + schema 全部通过",
+      "task_id": "swe-synth-0034",
+      "duration_sec": 624.1
+    },
+    {
+      "candidate": "cachecontrol/serialize.py::Serializer._loads_v4",
+      "accepted": false,
+      "stage": "SOLVE_BACK",
+      "reason": "题干可能不准确或过于含糊：2 次尝试均未通过（最好一次 FAIL_TO_PASS 0/5）。常见原因是题干描述的行为与真实实现不一致。",
+      "task_id": null,
+      "duration_sec": 78.8
+    }
+  ]
+}

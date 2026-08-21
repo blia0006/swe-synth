@@ -1,0 +1,70 @@
+s.sessions.Session object at 0x10830a4d0>, cache = None
+cache_etags = True, serializer = None, heuristic = <Mock id='4432373136'>
+controller_class = None, adapter_class = None, cacheable_methods = None
+
+    def CacheControl(
+        sess: requests.Session,
+        cache: BaseCache | None = None,
+        cache_etags: bool = True,
+        serializer: Serializer | None = None,
+        heuristic: BaseHeuristic | None = None,
+        controller_class: type[CacheController] | None = None,
+        adapter_class: type[CacheControlAdapter] | None = None,
+        cacheable_methods: Collection[str] | None = None,
+    ) -> requests.Session:
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+cachecontrol/wrapper.py:30: NotImplementedError
+_________ TestReleaseConnection.test_not_modified_releases_connection __________
+
+self = <tests.test_etag.TestReleaseConnection object at 0x1082d9ad0>
+server = <cherrypy._cpserver.Server object at 0x1075d9650>
+url = 'http://127.0.0.1:64402/'
+
+    def test_not_modified_releases_connection(self, server, url):
+>       sess = CacheControl(requests.Session())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_etag.py:155: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+sess = <requests.sessions.Session object at 0x10829edd0>, cache = None
+cache_etags = True, serializer = None, heuristic = None, controller_class = None
+adapter_class = None, cacheable_methods = None
+
+    def CacheControl(
+        sess: requests.Session,
+        cache: BaseCache | None = None,
+        cache_etags: bool = True,
+        serializer: Serializer | None = None,
+        heuristic: BaseHeuristic | None = None,
+        controller_class: type[CacheController] | None = None,
+        adapter_class: type[CacheControlAdapter] | None = None,
+        cacheable_methods: Collection[str] | None = None,
+    ) -> requests.Session:
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+cachecontrol/wrapper.py:30: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_expires_heuristics.py::TestUseExpiresHeuristic::test_expires_heuristic_arg
+FAILED tests/test_etag.py::TestReleaseConnection::test_not_modified_releases_connection
+ERROR tests/test_expires_heuristics.py::TestHeuristicWithoutWarning::test_no_header_change_means_no_warning_header
+ERROR tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_301
+ERROR tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_304
+ERROR tests/test_expires_heuristics.py::TestOneDayCache::test_cache_for_one_day
+ERROR tests/test_expires_heuristics.py::TestExpiresAfter::test_expires_after_one_day
+ERROR tests/test_expires_heuristics.py::TestLastModified::test_last_modified
+ERROR tests/test_redirects.py::TestPermanentRedirects::test_redirect_response_is_cached
+ERROR tests/test_redirects.py::TestPermanentRedirects::test_bust_cache_on_redirect
+ERROR tests/test_redirects.py::TestMultipleChoicesRedirects::test_multiple_choices_is_cacheable
+ERROR tests/test_redirects.py::TestMultipleChoicesRedirects::test_bust_cache_on_redirect
+ERROR tests/test_etag.py::TestETag::test_etags_get_example - NotImplementedEr...
+ERROR tests/test_etag.py::TestETag::test_etags_get_no_cache - NotImplementedE...
+ERROR tests/test_etag.py::TestETag::test_etags_get_with_range - NotImplemente...
+ERROR tests/test_etag.py::TestDisabledETags::test_expired_etags_if_none_match_response
+ERROR tests/test_chunked_response.py::TestChunkedResponses::test_cache_chunked_response
+ERROR tests/test_chunked_response.py::TestChunkedResponses::test_stream_is_cached
+ERROR tests/test_chunked_response.py::TestChunkedResponses::test_stream_is_not_cached_when_content_is_not_read
+==================== 2 failed, 9 passed, 17 errors in 0.72s ====================

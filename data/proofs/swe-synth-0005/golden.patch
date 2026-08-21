@@ -1,0 +1,48 @@
+--- a/cachecontrol/vary_matcher.py
++++ b/cachecontrol/vary_matcher.py
+@@ -15,7 +15,7 @@
+         Args:
+             vary: The value of the ``Vary`` response header, or ``None`` if absent.
+         """
+-        raise NotImplementedError("__init__ is not implemented")
++        self.vary = vary
+ 
+     def parse(self) -> list[str] | None:
+         """Parse the Vary header value.
+@@ -26,7 +26,11 @@
+             ``None`` or an empty string (meaning no varying). Returns ``None``
+             also for the special value ``*``.
+         """
+-        raise NotImplementedError("parse is not implemented")
++        if self.vary is None or self.vary == "":
++            return []
++        if self.vary.strip() == "*":
++            return None
++        return [name.strip().lower() for name in self.vary.split(",") if name.strip()]
+ 
+     def matches(
+         self,
+@@ -43,4 +47,22 @@
+         Returns:
+             ``True`` if the variant can be used, ``False`` otherwise.
+         """
+-        raise NotImplementedError("matches is not implemented")
++        vary_names = self.parse()
++        if vary_names is None:
++            # '*' means the response varies on something unspecified, so
++            # we cannot safely reuse it.
++            return False
++        for name in vary_names:
++            cached_value = self._get_header(cached_headers, name)
++            request_value = self._get_header(request_headers, name)
++            if cached_value != request_value:
++                return False
++        return True
++
++    @staticmethod
++    def _get_header(headers: Mapping[str, str], name: str) -> str:
++        """Case-insensitive lookup of a header value."""
++        for key, value in headers.items():
++            if key.lower() == name:
++                return value
++        return ""

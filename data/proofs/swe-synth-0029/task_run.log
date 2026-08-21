@@ -1,0 +1,57 @@
+ PASSED [ 55%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_bad_signature_exception[serializer_factory1] PASSED [ 57%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_bad_payload_exception[Serializer] PASSED [ 60%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_bad_payload_exception[serializer_factory1] PASSED [ 62%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_loads_unsafe[Serializer] PASSED [ 64%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_loads_unsafe[serializer_factory1] PASSED [ 66%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_file[Serializer] PASSED [ 68%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_file[serializer_factory1] PASSED [ 71%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_alt_salt[Serializer] PASSED [ 73%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_alt_salt[serializer_factory1] PASSED [ 75%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_signer_cls[Serializer] PASSED [ 77%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_signer_cls[serializer_factory1] PASSED [ 80%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_signer_kwargs[Serializer] PASSED [ 82%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_signer_kwargs[serializer_factory1] PASSED [ 84%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer_kwargs[Serializer] PASSED [ 86%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer_kwargs[serializer_factory1] PASSED [ 88%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_fallback_signers[Serializer] PASSED [ 91%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_fallback_signers[serializer_factory1] PASSED [ 93%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_iter_unsigners[Serializer] PASSED [ 95%]
+tests/test_itsdangerous/test_serializer.py::TestSerializer::test_iter_unsigners[serializer_factory1] PASSED [ 97%]
+tests/test_itsdangerous/test_serializer.py::test_digests PASSED          [100%]
+
+=================================== FAILURES ===================================
+______________________ test_target_function_is_simplified ______________________
+
+    def test_target_function_is_simplified():
+        """目标函数的有效代码行数必须降下来（把职责拆分到更小的单元中）。"""
+        lines, _, node = _target()
+        n = _effective_body_lines(node, lines)
+>       assert n <= MAX_TARGET_BODY_LINES, (
+            "%s 的函数体仍有 %d 行有效代码（重构前 %d 行），要求不超过 %d 行。"
+            "请将独立职责提取为单独的函数/方法，而不是原地压缩代码。"
+            % (SYMBOL, n, BEFORE["body_lines"], MAX_TARGET_BODY_LINES)
+        )
+E       AssertionError: Serializer.iter_unsigners 的函数体仍有 13 行有效代码（重构前 13 行），要求不超过 10 行。请将独立职责提取为单独的函数/方法，而不是原地压缩代码。
+E       assert 13 <= 10
+
+tests/test_itsdangerous/test_refactor_guard_swe_synth_0029.py:136: AssertionError
+___________________ test_target_function_complexity_reduced ____________________
+
+    def test_target_function_complexity_reduced():
+        """目标函数的圈复杂度必须降下来（分支/循环/短路判断更少）。"""
+        _, _, node = _target()
+        cx = _cyclomatic(node)
+>       assert cx <= MAX_TARGET_COMPLEXITY, (
+            "%s 的圈复杂度仍为 %d（重构前 %d），要求不超过 %d。"
+            "请减少嵌套分支，把条件判断收敛到辅助函数中。"
+            % (SYMBOL, cx, BEFORE["cyclomatic"], MAX_TARGET_COMPLEXITY)
+        )
+E       AssertionError: Serializer.iter_unsigners 的圈复杂度仍为 6（重构前 6），要求不超过 4。请减少嵌套分支，把条件判断收敛到辅助函数中。
+E       assert 6 <= 4
+
+tests/test_itsdangerous/test_refactor_guard_swe_synth_0029.py:147: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_itsdangerous/test_refactor_guard_swe_synth_0029.py::test_target_function_is_simplified
+FAILED tests/test_itsdangerous/test_refactor_guard_swe_synth_0029.py::test_target_function_complexity_reduced
+========================= 2 failed, 43 passed in 0.04s =========================

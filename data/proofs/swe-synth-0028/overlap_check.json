@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "method": "github_search+bm25+embedding+llm_judge",
+  "queried": [
+    "make_signer",
+    "serializer",
+    "signer_kwargs",
+    "itsdangerous"
+  ],
+  "top_candidates": [],
+  "target_file_last_modified": "2025-05-28T20:55:38Z",
+  "months_since_last_change": 14.7,
+  "verdict_reason": "未检索到与本题相关的 issue/PR"
+}

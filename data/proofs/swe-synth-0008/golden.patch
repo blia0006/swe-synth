@@ -1,0 +1,125 @@
+--- a/cachecontrol/rfc7234_freshness.py
++++ b/cachecontrol/rfc7234_freshness.py
+@@ -4,7 +4,56 @@
+ from __future__ import annotations
+ 
+ from datetime import datetime
++from email.utils import parsedate_to_datetime
+ from typing import Mapping
++
++
++def _normalize_headers(headers: Mapping[str, str]) -> dict[str, str]:
++    """将头字段名统一转为小写，便于后续查找。"""
++    return {key.lower(): value for key, value in headers.items()}
++
++
++def _parse_cache_control(value: str) -> list[str]:
++    """解析 Cache-Control 头，返回指令字符串列表（去除空白）。"""
++    return [directive.strip() for directive in value.split(",") if directive.strip()]
++
++
++def _has_directive(directives: list[str], name: str) -> bool:
++    """检查指令列表中是否存在给定名称的指令（无值形式）。"""
++    return any(directive == name for directive in directives)
++
++
++def _get_directive_value(directives: list[str], name: str) -> str | None:
++    """获取指令的值（如 max-age=600 返回 "600"），若无此指令返回 None。"""
++    for directive in directives:
++        if directive == name:
++            return ""
++        if directive.startswith(name + "="):
++            return directive[len(name) + 1:]
++    return None
++
++
++def _parse_date(value: str | None) -> datetime | None:
++    """解析 HTTP 日期字符串，失败返回 None。"""
++    if value is None:
++        return None
++    try:
++        return parsedate_to_datetime(value)
++    except (TypeError, ValueError, IndexError, OverflowError):
++        return None
++
++
++def _parse_age(value: str | None) -> int:
++    """解析 Age 头字符串，返回非负整数，无效或缺失返回 0。"""
++    if value is None:
++        return 0
++    try:
++        age = int(value)
++        if age < 0:
++            return 0
++        return age
++    except (ValueError, TypeError):
++        return 0
+ 
+ 
+ def compute_freshness_lifetime(headers: Mapping[str, str]) -> int | None:
+@@ -18,7 +67,32 @@
+     返回：
+         int: 生命周期秒数；若无法确定则返回 None。
+     """
+-    raise NotImplementedError(...)
++    normalized = _normalize_headers(headers)
++    cache_control = normalized.get("cache-control")
++    if cache_control is not None:
++        directives = _parse_cache_control(cache_control)
++        if _has_directive(directives, "no-store") or _has_directive(directives, "no-cache"):
++            return 0
++        max_age_str = _get_directive_value(directives, "max-age")
++        if max_age_str is not None and max_age_str != "":
++            try:
++                max_age = int(max_age_str)
++                if max_age >= 0:
++                    return max_age
++            except ValueError:
++                pass  # ignore invalid max-age, fall through
++
++    expires_str = normalized.get("expires")
++    date_str = normalized.get("date")
++    expires_dt = _parse_date(expires_str)
++    date_dt = _parse_date(date_str)
++    if expires_dt is not None and date_dt is not None:
++        delta_seconds = int((expires_dt - date_dt).total_seconds())
++        if delta_seconds > 0:
++            return delta_seconds
++        else:
++            return 0
++    return None
+ 
+ 
+ def compute_current_age(
+@@ -40,7 +114,20 @@
+     返回：
+         int: 当前年龄（非负秒数）。
+     """
+-    raise NotImplementedError(...)
++    normalized = _normalize_headers(headers)
++    date_value = _parse_date(normalized.get("date"))
++    if date_value is None:
++        apparent_age = 0
++    else:
++        apparent_age = max(0, int((response_time - date_value).total_seconds()))
++
++    age_value = _parse_age(normalized.get("age"))
++    response_delay = max(0, int((response_time - request_time).total_seconds()))
++    corrected_age_value = age_value + response_delay
++    corrected_initial_age = max(apparent_age, corrected_age_value)
++
++    resident_time = max(0, int((now - response_time).total_seconds()))
++    return corrected_initial_age + resident_time
+ 
+ 
+ def is_fresh(
+@@ -62,4 +149,8 @@
+     返回：
+         bool: 若响应新鲜则 True，否则 False。
+     """
+-    raise NotImplementedError(...)
++    lifetime = compute_freshness_lifetime(headers)
++    if lifetime is None:
++        return False
++    current_age = compute_current_age(headers, request_time, response_time, now)
++    return current_age < lifetime

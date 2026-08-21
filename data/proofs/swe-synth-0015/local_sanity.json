@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "reason": "双向 sanity 通过：题目态必红、golden 态必绿、原有用例未被破坏",
+  "fail_to_pass": [
+    "tests/test_backoff_calculator_synth.py::test_attempts_possible_within_budget",
+    "tests/test_backoff_calculator_synth.py::test_attempts_possible_within_budget_zero",
+    "tests/test_backoff_calculator_synth.py::test_exponential_delay_basic",
+    "tests/test_backoff_calculator_synth.py::test_exponential_delay_with_max_delay",
+    "tests/test_backoff_calculator_synth.py::test_invalid_attempt",
+    "tests/test_backoff_calculator_synth.py::test_invalid_budget",
+    "tests/test_backoff_calculator_synth.py::test_invalid_initial_delay",
+    "tests/test_backoff_calculator_synth.py::test_invalid_max_delay",
+    "tests/test_backoff_calculator_synth.py::test_invalid_multiplier",
+    "tests/test_backoff_calculator_synth.py::test_total_delay_until_attempt",
+    "tests/test_backoff_calculator_synth.py::test_total_delay_with_cap"
+  ],
+  "pass_to_pass": [],
+  "deterministic": true,
+  "duration_sec": 2.71,
+  "stub_summary": {
+    "returncode": 1,
+    "n_passed": 0,
+    "n_failed": 11
+  },
+  "golden_summary": {
+    "returncode": 0,
+    "n_passed": 11,
+    "n_failed": 0
+  }
+}

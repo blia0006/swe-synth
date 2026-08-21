@@ -1,0 +1,105 @@
+bool: 若响应新鲜则 True，否则 False。
+        """
+>       raise NotImplementedError(...)
+E       NotImplementedError: Ellipsis
+
+cachecontrol/rfc7234_freshness.py:65: NotImplementedError
+_____________________ TestIsFresh.test_fresh_false_expired _____________________
+
+self = <tests.test_rfc7234_freshness_synth.TestIsFresh object at 0x10955c710>
+
+    def test_fresh_false_expired(self):
+        headers = {"cache-control": "max-age=5"}
+        req = datetime(2020, 1, 1, 0, 0, 0)
+        resp = datetime(2020, 1, 1, 0, 0, 10)
+        now = datetime(2020, 1, 1, 0, 0, 25)
+>       assert is_fresh(headers, req, resp, now) is False
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_rfc7234_freshness_synth.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+headers = {'cache-control': 'max-age=5'}
+request_time = datetime.datetime(2020, 1, 1, 0, 0)
+response_time = datetime.datetime(2020, 1, 1, 0, 0, 10)
+now = datetime.datetime(2020, 1, 1, 0, 0, 25)
+
+    def is_fresh(
+        headers: Mapping[str, str],
+        request_time: datetime,
+        response_time: datetime,
+        now: datetime,
+    ) -> bool:
+        """判断响应是否新鲜。
+    
+        新鲜度由生命周期和当前年龄决定。
+    
+        参数：
+            headers: 响应头字典。
+            request_time: 请求发送时间。
+            response_time: 响应接收时间。
+            now: 当前时间。
+    
+        返回：
+            bool: 若响应新鲜则 True，否则 False。
+        """
+>       raise NotImplementedError(...)
+E       NotImplementedError: Ellipsis
+
+cachecontrol/rfc7234_freshness.py:65: NotImplementedError
+________________________ TestIsFresh.test_fresh_unknown ________________________
+
+self = <tests.test_rfc7234_freshness_synth.TestIsFresh object at 0x10955ccd0>
+
+    def test_fresh_unknown(self):
+        headers = {}
+        req = datetime(2020, 1, 1, 0, 0, 0)
+        resp = datetime(2020, 1, 1, 0, 0, 10)
+        now = datetime(2020, 1, 1, 0, 0, 25)
+>       assert is_fresh(headers, req, resp, now) is False
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_rfc7234_freshness_synth.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+headers = {}, request_time = datetime.datetime(2020, 1, 1, 0, 0)
+response_time = datetime.datetime(2020, 1, 1, 0, 0, 10)
+now = datetime.datetime(2020, 1, 1, 0, 0, 25)
+
+    def is_fresh(
+        headers: Mapping[str, str],
+        request_time: datetime,
+        response_time: datetime,
+        now: datetime,
+    ) -> bool:
+        """判断响应是否新鲜。
+    
+        新鲜度由生命周期和当前年龄决定。
+    
+        参数：
+            headers: 响应头字典。
+            request_time: 请求发送时间。
+            response_time: 响应接收时间。
+            now: 当前时间。
+    
+        返回：
+            bool: 若响应新鲜则 True，否则 False。
+        """
+>       raise NotImplementedError(...)
+E       NotImplementedError: Ellipsis
+
+cachecontrol/rfc7234_freshness.py:65: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_max_age
+FAILED tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_no_cache
+FAILED tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_no_store
+FAILED tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_expires_future
+FAILED tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_expires_past
+FAILED tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_unknown
+FAILED tests/test_rfc7234_freshness_synth.py::TestCurrentAge::test_no_age_no_date
+FAILED tests/test_rfc7234_freshness_synth.py::TestCurrentAge::test_with_age_header
+FAILED tests/test_rfc7234_freshness_synth.py::TestCurrentAge::test_with_date_header
+FAILED tests/test_rfc7234_freshness_synth.py::TestIsFresh::test_fresh_true - ...
+FAILED tests/test_rfc7234_freshness_synth.py::TestIsFresh::test_fresh_false_expired
+FAILED tests/test_rfc7234_freshness_synth.py::TestIsFresh::test_fresh_unknown
+======================== 12 failed, 35 passed in 0.74s =========================

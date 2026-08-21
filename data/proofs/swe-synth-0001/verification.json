@@ -1,0 +1,64 @@
+{
+  "task_id": "swe-synth-0001",
+  "passed": true,
+  "reason": "双向验证通过：空解失败（题目有内容）、参考解通过（题目可解）",
+  "empty_sandbox_id": "cgfkxsgzbpjkbyv22lmz4ndimgsn6mx3qpq6t7ph",
+  "golden_sandbox_id": "jlabu7cihhsqv3c2tobeg3ryxpy62t4u3ti7wlqw",
+  "empty_run": {
+    "task_id": "swe-synth-0001",
+    "passed": false,
+    "fail_to_pass": {
+      "total": 19,
+      "passed": 0,
+      "failing": [
+        "tests/test_chunked_response.py::TestChunkedResponses::test_cache_chunked_response",
+        "tests/test_chunked_response.py::TestChunkedResponses::test_stream_is_cached",
+        "tests/test_chunked_response.py::TestChunkedResponses::test_stream_is_not_cached_when_content_is_not_read",
+        "tests/test_etag.py::TestDisabledETags::test_expired_etags_if_none_match_response",
+        "tests/test_etag.py::TestETag::test_etags_get_example",
+        "tests/test_etag.py::TestETag::test_etags_get_no_cache",
+        "tests/test_etag.py::TestETag::test_etags_get_with_range",
+        "tests/test_etag.py::TestReleaseConnection::test_not_modified_releases_connection",
+        "tests/test_expires_heuristics.py::TestExpiresAfter::test_expires_after_one_day",
+        "tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_301",
+        "tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_304",
+        "tests/test_expires_heuristics.py::TestHeuristicWithoutWarning::test_no_header_change_means_no_warning_header",
+        "tests/test_expires_heuristics.py::TestLastModified::test_last_modified",
+        "tests/test_expires_heuristics.py::TestOneDayCache::test_cache_for_one_day",
+        "tests/test_expires_heuristics.py::TestUseExpiresHeuristic::test_expires_heuristic_arg",
+        "tests/test_redirects.py::TestMultipleChoicesRedirects::test_bust_cache_on_redirect",
+        "tests/test_redirects.py::TestMultipleChoicesRedirects::test_multiple_choices_is_cacheable",
+        "tests/test_redirects.py::TestPermanentRedirects::test_bust_cache_on_redirect",
+        "tests/test_redirects.py::TestPermanentRedirects::test_redirect_response_is_cached"
+      ]
+    },
+    "pass_to_pass": {
+      "total": 9,
+      "passed": 9,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 1,
+    "n_collected": 28,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "golden_run": {
+    "task_id": "swe-synth-0001",
+    "passed": true,
+    "fail_to_pass": {
+      "total": 19,
+      "passed": 19,
+      "failing": []
+    },
+    "pass_to_pass": {
+      "total": 9,
+      "passed": 9,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 0,
+    "n_collected": 28,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "duration_sec": 343.6
+}
