@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """验证「双镜像方案」：base 镜像提供环境 + 题目镜像作为 image volume 挂载
 
-对应导师反馈 4：
+对应双镜像方案最初尝试的架构（后来确认方向反了，见 verify_customconfig_switch.py）：
     「一个是 env+工具的 base image（放在 volume image mount 位置），
       题目 image（放在标准 tools 的 image 地方），
       每次换题就通过 e2b custom config 覆盖」
@@ -124,7 +124,7 @@ def main() -> int:
     ags = AGSClient()
 
     log("=" * 72)
-    log("双镜像方案验证（导师反馈 4）")
+    log("双镜像方案验证（初版方向，已被 verify_customconfig_switch.py 纠正）")
     log("=" * 72)
     log(f"  base 镜像（环境）  : {BASE_IMAGE}")
     log(f"  题目镜像（内容）  : {CONTENT_IMAGE}")

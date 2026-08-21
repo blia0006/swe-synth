@@ -1,0 +1,33 @@
+============================= test session starts ==============================
+collecting ... collected 28 items
+
+tests/test_expires_heuristics.py::TestHeuristicWithoutWarning::test_no_header_change_means_no_warning_header PASSED [  3%]
+tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_301 PASSED [  7%]
+tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_304 PASSED [ 10%]
+tests/test_expires_heuristics.py::TestUseExpiresHeuristic::test_expires_heuristic_arg PASSED [ 14%]
+tests/test_expires_heuristics.py::TestOneDayCache::test_cache_for_one_day PASSED [ 17%]
+tests/test_expires_heuristics.py::TestExpiresAfter::test_expires_after_one_day PASSED [ 21%]
+tests/test_expires_heuristics.py::TestLastModified::test_last_modified PASSED [ 25%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_no_expiry_is_inferred_when_no_last_modified_is_present PASSED [ 28%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expires_is_not_replaced_when_present PASSED [ 32%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used PASSED [ 35%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_cache_control_present PASSED [ 39%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_status_is_unknown PASSED [ 42%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used_when_cache_control_public PASSED [ 46%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_not_added_when_response_more_recent_than_24_hours PASSED [ 50%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_is_not_added_when_heuristic_was_not_used PASSED [ 53%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expiry_is_no_more_that_twenty_four_hours PASSED [ 57%]
+tests/test_redirects.py::TestPermanentRedirects::test_redirect_response_is_cached PASSED [ 60%]
+tests/test_redirects.py::TestPermanentRedirects::test_bust_cache_on_redirect PASSED [ 64%]
+tests/test_redirects.py::TestMultipleChoicesRedirects::test_multiple_choices_is_cacheable PASSED [ 67%]
+tests/test_redirects.py::TestMultipleChoicesRedirects::test_bust_cache_on_redirect PASSED [ 71%]
+tests/test_etag.py::TestETag::test_etags_get_example PASSED              [ 75%]
+tests/test_etag.py::TestETag::test_etags_get_no_cache PASSED             [ 78%]
+tests/test_etag.py::TestETag::test_etags_get_with_range PASSED           [ 82%]
+tests/test_etag.py::TestDisabledETags::test_expired_etags_if_none_match_response PASSED [ 85%]
+tests/test_etag.py::TestReleaseConnection::test_not_modified_releases_connection PASSED [ 89%]
+tests/test_chunked_response.py::TestChunkedResponses::test_cache_chunked_response PASSED [ 92%]
+tests/test_chunked_response.py::TestChunkedResponses::test_stream_is_cached PASSED [ 96%]
+tests/test_chunked_response.py::TestChunkedResponses::test_stream_is_not_cached_when_content_is_not_read PASSED [100%]
+
+============================== 28 passed in 0.90s ==============================

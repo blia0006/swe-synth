@@ -367,7 +367,12 @@ def cmd_agent2(args: argparse.Namespace) -> int:
 
     sandbox_timeout = int(settings.get("sandbox.timeout_sec", 900))
     reuse_tool = bool(settings.get("sandbox.reuse_tool", True))
+    shared_tool_name = settings.get("sandbox.shared_tool_name", "swe-synth-shared-runner")
     registry_type = _os.environ.get("TCR_REGISTRY_TYPE", "personal")
+    # 双镜像方案：共享工具首次创建时，把共享 base 镜像额外挂到一个只读挂载卷
+    # （StorageMounts，见 sandbox_runner._ensure_shared_tool），已实测验证
+    # （experiments/verify_dual_image_v2.py）。
+    base_image = settings.get("image.base") or None
 
     def verify_one(t: SweTask) -> bool:
         """验证单道题，返回是否 ACCEPTED。原地修改 t（每道题是独立对象，
@@ -389,11 +394,13 @@ def cmd_agent2(args: argparse.Namespace) -> int:
                 vres = verify_task(
                     t, image_registry_type=registry_type,
                     timeout=sandbox_timeout, reuse_tool=reuse_tool,
+                    shared_tool_name=shared_tool_name,
+                    base_image=base_image,
                 )
             except SandboxVerifyError as e:
                 _log(f"  ❌ 沙箱验证环境错误：{e}")
                 return False
-            t.validation.sandbox_tool = t.task_id
+            t.validation.sandbox_tool = shared_tool_name
             t.validation.sandbox_instance_id = vres.empty_sandbox_id
             t.validation.empty_solution_result = "pass" if (vres.empty_run or {}).get("passed") else "fail"
             t.validation.golden_solution_result = "pass" if (vres.golden_run or {}).get("passed") else "fail"

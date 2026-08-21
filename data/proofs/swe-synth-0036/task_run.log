@@ -1,0 +1,99 @@
+tedError
+E       NotImplementedError
+
+cachecontrol/http_date_utils.py:15: NotImplementedError
+________________________ test_parse_missing_gmt_raises _________________________
+
+    def test_parse_missing_gmt_raises():
+        with pytest.raises(ValueError):
+>           parse_http_date("Sun, 06 Nov 1994 08:49:37")
+
+tests/test_http_date_utils_synth.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+date_str = 'Sun, 06 Nov 1994 08:49:37'
+
+    def parse_http_date(date_str: str) -> int:
+        """Parse an HTTP date string to a Unix timestamp.
+    
+        Supports IMF-fixdate, RFC 850 legacy, and asctime formats.
+        All dates are interpreted as GMT.
+        Returns the timestamp as an integer number of seconds since the Unix epoch.
+        Raises ValueError if the string cannot be parsed.
+        """
+>       raise NotImplementedError
+E       NotImplementedError
+
+cachecontrol/http_date_utils.py:15: NotImplementedError
+____________________________ test_format_http_date _____________________________
+
+    def test_format_http_date():
+>       assert format_http_date(784111777) == "Sun, 06 Nov 1994 08:49:37 GMT"
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_http_date_utils_synth.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+timestamp = 784111777
+
+    def format_http_date(timestamp: int) -> str:
+        """Format a Unix timestamp as an IMF-fixdate HTTP date string.
+    
+        The returned string uses English abbreviations and the GMT timezone.
+        """
+>       raise NotImplementedError
+E       NotImplementedError
+
+cachecontrol/http_date_utils.py:23: NotImplementedError
+_______________________________ test_format_zero _______________________________
+
+    def test_format_zero():
+>       assert format_http_date(0) == "Thu, 01 Jan 1970 00:00:00 GMT"
+               ^^^^^^^^^^^^^^^^^^^
+
+tests/test_http_date_utils_synth.py:49: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+timestamp = 0
+
+    def format_http_date(timestamp: int) -> str:
+        """Format a Unix timestamp as an IMF-fixdate HTTP date string.
+    
+        The returned string uses English abbreviations and the GMT timezone.
+        """
+>       raise NotImplementedError
+E       NotImplementedError
+
+cachecontrol/http_date_utils.py:23: NotImplementedError
+________________________________ test_roundtrip ________________________________
+
+    def test_roundtrip():
+        for ts in (0, 784111777, -1):
+>           assert parse_http_date(format_http_date(ts)) == ts
+                                   ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_http_date_utils_synth.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+timestamp = 0
+
+    def format_http_date(timestamp: int) -> str:
+        """Format a Unix timestamp as an IMF-fixdate HTTP date string.
+    
+        The returned string uses English abbreviations and the GMT timezone.
+        """
+>       raise NotImplementedError
+E       NotImplementedError
+
+cachecontrol/http_date_utils.py:23: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_http_date_utils_synth.py::test_parse_imf_fixdate - NotImple...
+FAILED tests/test_http_date_utils_synth.py::test_parse_rfc850 - NotImplemente...
+FAILED tests/test_http_date_utils_synth.py::test_parse_asctime - NotImplement...
+FAILED tests/test_http_date_utils_synth.py::test_parse_rfc850_century_rule - ...
+FAILED tests/test_http_date_utils_synth.py::test_parse_invalid_raises - NotIm...
+FAILED tests/test_http_date_utils_synth.py::test_parse_missing_gmt_raises - N...
+FAILED tests/test_http_date_utils_synth.py::test_format_http_date - NotImplem...
+FAILED tests/test_http_date_utils_synth.py::test_format_zero - NotImplemented...
+FAILED tests/test_http_date_utils_synth.py::test_roundtrip - NotImplementedError
+========================= 9 failed, 35 passed in 0.79s =========================

@@ -29,7 +29,7 @@
 | 目标文件 12 个月未大改、近 6 月无相关 open PR | 去污染的「时间隔离」层要求 |
 
 **结论**：不需要你指定具体仓库，我会按上述标准建 `config/repos.yaml` 候选池；
-但如果导师/课题有**指定仓库**（比如希望覆盖某些项目），现在告诉我可以直接锁定。
+但如果课题有**指定仓库**（比如希望覆盖某些项目），现在告诉我可以直接锁定。
 
 ---
 
@@ -80,7 +80,7 @@
 | T-2 | 镜像基于 **ubuntu:22.04 + Python 3.11 + Git + Docker CLI** | 已实测字面满足 | ✅ **见 §3.1** |
 | T-3 | LLM：TokenHub API，模型 `deepseek-v4-pro` 或 `glm-5` | 两者均已确认在线可用 | ✅ 见 §3.3 |
 | T-4 | 镜像仓库：腾讯云 **TCR**，配置 `docker login` 凭证 | 7 个实例均属他人，归属待定 | ⚠️ 见 §5.2 |
-| T-5 | 编程语言：Python，**推荐 agent-sandbox Python SDK** | 目前用 `e2b-code-interpreter` | ⚠️ 见 §3.2 |
+| T-5 | 编程语言：Python，**推荐 agent-sandbox Python SDK** | 用 `e2b-code-interpreter` **2.x**（已实测生产落地）+ `agent-sandbox` 互补 | ✅ 见 §3.2 |
 | T-6 | 目标仓库：**Star > 100** 的开源项目 | 待建 `config/repos.yaml`，需记录 star 数留证 | ⬜ |
 | T-7 | 核心约束：题目**不得与现有 issue/PR/commit/bugfix 重叠** | 方案已设计四层过滤 | ⬜ |
 
@@ -109,10 +109,14 @@ Python 3.11.16 / git 2.34.1 / Docker 29.1.3
 镜像体积 872MB（原 6.86GB 基础层 → 降 87%）
 ```
 
-**详细实测过程与脚本**：见 `mentor-feedback-report.md` §「反馈1」，
+**详细实测过程与脚本**：见 `review-feedback-report.md` §「意见1」，
 以及 `experiments/ubuntu-base/Dockerfile`、`experiments/verify_ubuntu_base.py`。
 
-→ 此条已不需要向导师报备为偏差，反而是本次导师反馈验证的成果之一。
+**现已切换为生产默认**：`config/settings.yaml` 的 `image.base` 已指向该 Ubuntu
+共享 base 镜像，此后新出的题目自动走这条路径；已交付的 19 道题镜像是升级前构建的，
+仍为 Debian 基础层，不做回溯重建（保持已验收证据链不变）。
+
+→ 此条已不需要报备为偏差，反而是本次验证的成果之一。
 
 ### 3.2 `agent-sandbox` SDK vs `e2b-code-interpreter`
 
@@ -120,13 +124,15 @@ Python 3.11.16 / git 2.34.1 / Docker 29.1.3
 
 | SDK | 定位 | 用途 |
 |---|---|---|
-| `e2b-code-interpreter` (1.x) | **创建/连接沙箱实例**（官方文档明确支持的兼容路径） | `Sandbox(template="工具名")` |
+| `e2b-code-interpreter` (**2.x，生产默认**) | **创建/连接沙箱实例**（官方文档明确支持的兼容路径） | `Sandbox.connect()` |
 | `agent-sandbox` (0.0.30) | **连接已有实例后操作其内部能力**（`base_url` 直连） | `bash` / `code` / `file` / `jupyter` / `shell` / `browser` / `skills` |
 
 → **结论：两者不冲突，是互补的**。官方文档同时列出 E2B 兼容路径。
-→ **决定**：`requirements.txt` **两个都装**；`clients/sandbox.py` 做统一封装，
-  实例创建走 e2b（已实测跑通），`verify.sh` 执行优先走 `agent-sandbox` 的 bash 能力
-  以贴合"推荐"，并保留 e2b `commands.run` 作为兜底。README 中说明。
+→ **决定**：`requirements.txt` **两个都装**（`e2b-code-interpreter>=2.9.0,<3.0.0`）；
+  `clients/sandbox.py` 做统一封装，实例创建走 e2b（已实测跑通，2.x 客户端的 Key 格式
+  校验用官方开关 `E2B_VALIDATE_API_KEY=false` 跳过，鉴权/协议不受影响），`verify.sh`
+  执行优先走 `agent-sandbox` 的 bash 能力以贴合"推荐"，并保留 e2b `commands.run`
+  作为兜底。README §6.2 中说明。
 
 ### 3.3 模型选择（要求 `deepseek-v4-pro` 或 `glm-5`）
 
@@ -309,7 +315,7 @@ TCR_PASSWORD=<访问凭证密码>
 ### 5.3 `ubuntu:22.04` 是否硬性要求 —— ✅ 已解决，见 §3.1
 
 不再是需要报备的偏差：已实测基于 `ubuntu:22.04` 构建自定义镜像并在真实沙箱中启动成功，
-字面满足课题要求。详见 §3.1 与 `mentor-feedback-report.md`。
+字面满足课题要求。详见 §3.1 与 `review-feedback-report.md`。
 
 ---
 

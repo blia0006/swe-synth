@@ -1,0 +1,87 @@
+diff --git a/cachecontrol/http_date_utils.py b/cachecontrol/http_date_utils.py
+new file mode 100644
+--- /dev/null
++++ b/cachecontrol/http_date_utils.py
+@@ -0,0 +1,23 @@
++# SPDX-FileCopyrightText: 2024 CacheControl contributors
++#
++# SPDX-License-Identifier: Apache-2.0
++from __future__ import annotations
++
++
++def parse_http_date(date_str: str) -> int:
++    """Parse an HTTP date string to a Unix timestamp.
++
++    Supports IMF-fixdate, RFC 850 legacy, and asctime formats.
++    All dates are interpreted as GMT.
++    Returns the timestamp as an integer number of seconds since the Unix epoch.
++    Raises ValueError if the string cannot be parsed.
++    """
++    raise NotImplementedError
++
++
++def format_http_date(timestamp: int) -> str:
++    """Format a Unix timestamp as an IMF-fixdate HTTP date string.
++
++    The returned string uses English abbreviations and the GMT timezone.
++    """
++    raise NotImplementedError
+diff --git a/tests/test_http_date_utils_synth.py b/tests/test_http_date_utils_synth.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_http_date_utils_synth.py
+@@ -0,0 +1,54 @@
++# SPDX-FileCopyrightText: 2024 CacheControl contributors
++#
++# SPDX-License-Identifier: Apache-2.0
++
++import calendar
++
++import pytest
++
++from cachecontrol.http_date_utils import format_http_date, parse_http_date
++
++
++def test_parse_imf_fixdate():
++    assert parse_http_date("Sun, 06 Nov 1994 08:49:37 GMT") == 784111777
++
++
++def test_parse_rfc850():
++    assert parse_http_date("Sunday, 06-Nov-94 08:49:37 GMT") == 784111777
++
++
++def test_parse_asctime():
++    assert parse_http_date("Sun Nov  6 08:49:37 1994") == 784111777
++
++
++def test_parse_rfc850_century_rule():
++    # year 70 -> 1970, year 00 -> 2000
++    expected_70 = calendar.timegm((1970, 11, 6, 0, 0, 0, 0, 0, -1))
++    expected_00 = calendar.timegm((2000, 11, 6, 0, 0, 0, 0, 0, -1))
++    assert parse_http_date("Sunday, 06-Nov-70 00:00:00 GMT") == expected_70
++    assert parse_http_date("Sunday, 06-Nov-00 00:00:00 GMT") == expected_00
++
++
++def test_parse_invalid_raises():
++    with pytest.raises(ValueError):
++        parse_http_date("not a date")
++    with pytest.raises(ValueError):
++        parse_http_date("")
++
++
++def test_parse_missing_gmt_raises():
++    with pytest.raises(ValueError):
++        parse_http_date("Sun, 06 Nov 1994 08:49:37")
++
++
++def test_format_http_date():
++    assert format_http_date(784111777) == "Sun, 06 Nov 1994 08:49:37 GMT"
++
++
++def test_format_zero():
++    assert format_http_date(0) == "Thu, 01 Jan 1970 00:00:00 GMT"
++
++
++def test_roundtrip():
++    for ts in (0, 784111777, -1):
++        assert parse_http_date(format_http_date(ts)) == ts

@@ -4,7 +4,7 @@
 ==================
 
 有了腾讯云 SecretId/SecretKey 之后，用 OpenAPI 把「账号里到底有什么」查清楚，
-自动产出可直接填进 .env 的值，不用等导师逐个确认。
+自动产出可直接填进 .env 的值，不用逐项人工确认。
 
 它回答 PROGRESS.md 里这几个未确认项：
     · 我这个子用户到底有哪些权限？（决定后面哪一步会被卡）
@@ -84,7 +84,7 @@ def explain_error(e: Exception) -> str:
         return "资源不存在或参数不对（也可能是该产品尚未开通）"
     if "not open" in msg.lower() or "未开通" in msg:
         return "该云产品尚未开通 → 去控制台开通，或提单申请"
-    return "未归类错误，把完整信息发给导师定位更快"
+    return "未归类错误，需要人工介入定位"
 
 
 def client_of(module_name: str, client_cls: str, version: str, region: str):
@@ -363,7 +363,7 @@ def probe_ags(region: str) -> dict:
 # ---------------------------------------------------------------- 4. TokenHub
 
 def probe_tokenhub(region: str) -> dict:
-    """TokenHub 是腾讯云正式产品（有 OpenAPI），API Key 可自助创建，无需问导师。"""
+    """TokenHub 是腾讯云正式产品（有 OpenAPI），API Key 可自助创建，无需额外审批。"""
     title("4. TokenHub LLM 网关")
     out: dict = {}
     try:
@@ -493,7 +493,7 @@ def main() -> int:
        AGS_SANDBOX_TEMPLATE           ← 第 3 节的沙箱工具名称
        AGS_ROLE_ARN                   ← 第 1 节的角色 ARN
        E2B_API_KEY                    ← AGS 控制台新建（明文只显示一次）
-       TOKENHUB_API_KEY               ← 第 4 节：控制台自助创建，无需问导师
+       TOKENHUB_API_KEY               ← 第 4 节：控制台自助创建，无需额外审批
                                         https://console.cloud.tencent.com/tokenhub/apikey
        GITHUB_TOKEN                   ← GitHub 自助生成（public_repo 读权限即可）
 

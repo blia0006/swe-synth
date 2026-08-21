@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """把 Ubuntu 版基础镜像推到 CCR 并在真实 AGS 沙箱里验证
 
-对应导师反馈 1（Ubuntu 基础层）与 4（DinD / 双镜像方案）的实测。
+对应 Ubuntu 基础层可行性与 DinD / 双镜像方案的实测。
 
 流程
 ----
@@ -34,7 +34,7 @@ TOOL = "swe-synth-ubuntu-probe"
 
 # 沙箱内要跑的验证脚本
 PROBE = r"""
-echo "### 1. 发行版（导师反馈1：需为 Ubuntu）"
+echo "### 1. 发行版（要求：需为 Ubuntu）"
 cat /etc/os-release | head -3
 
 echo
@@ -44,7 +44,7 @@ git --version
 docker --version 2>&1 | head -1
 
 echo
-echo "### 3. DinD 可用性（导师反馈4）"
+echo "### 3. DinD 可用性"
 if [ -S /var/run/docker.sock ]; then
     echo "docker.sock 存在"
     docker info >/dev/null 2>&1 && echo "DinD: 可用" || echo "DinD: sock 存在但连不上 dockerd"

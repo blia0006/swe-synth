@@ -152,7 +152,7 @@ def check_tokenhub() -> Result:
     model = env("TOKENHUB_MODEL", "deepseek-v4-pro")
     if not key:
         return _skip("tokenhub LLM 网关", "TOKENHUB_API_KEY 未配置",
-                     "内部平台申请 Key / 问导师是否有团队共用 Key")
+                     "内部平台申请 Key / 确认是否有团队共用 Key")
     try:
         from openai import OpenAI
     except ImportError:
@@ -359,6 +359,10 @@ def check_sandbox() -> Result:
         return _fail("sandbox Agent 沙箱", "E2B_DOMAIN 未配置",
                      "必须设为 ap-guangzhou.tencentags.com，否则会打到 E2B 官方")
 
+    # e2b 2.x 默认强制校验 API Key 必须是 "e2b_" 前缀，AGS 的 Key 是 "ark_xxx" 格式
+    # 会被拦在客户端；官方留的开关 E2B_VALIDATE_API_KEY=false 可跳过纯格式校验
+    # （不影响鉴权/协议本身），必须在 import e2b 系列包之前设置生效。
+    os.environ.setdefault("E2B_VALIDATE_API_KEY", "false")
     try:
         from e2b_code_interpreter import Sandbox
     except ImportError:
@@ -372,8 +376,8 @@ def check_sandbox() -> Result:
     try:
         t0 = time.time()
         # SDK 形态兼容：
-        #   e2b 1.x → Sandbox(template=...)（腾讯云 AGS 用这一支，Key 形如 ark_xxx）
-        #   e2b 2.x → Sandbox.create(...)，且强制校验 Key 必须 e2b_ 前缀，与腾讯云不兼容
+        #   e2b 2.x（生产默认）→ Sandbox.create(...)，配合 E2B_VALIDATE_API_KEY=false 已实测走通
+        #   e2b 1.x（兜底）    → Sandbox(template=...)
         if hasattr(Sandbox, "create"):
             sbx = Sandbox.create(template=template, timeout=600)
         else:

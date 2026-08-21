@@ -1,6 +1,6 @@
 # Ubuntu 版沙箱基础镜像（验证「基础层从 Debian 换成 Ubuntu」的可行性）
 #
-# 背景（导师反馈 1）
+# 背景
 # -----------------
 # 官方 ags-image/sandbox-code 底层是 Debian 13 (trixie)，但客户环境几乎都是 Ubuntu。
 # 课题原文也明确要求 ubuntu:22.04。

@@ -469,7 +469,7 @@ commands.run 默认执行身份=user，默认目录=/home/user | /init 存在（
 → ⚠️ Python 是 **3.12**、系统是 **Debian**，与课题要求的 ubuntu22.04+3.11 有偏差，
   解法见 `requirements-check.md` §3.1（基础层服从平台，镜像内另装 3.11 供题目使用）。
 
-**7. ⭐ TokenHub 是腾讯云正式产品，API Key 可自助创建（不用问导师）**
+**7. ⭐ TokenHub 是腾讯云正式产品，API Key 可自助创建（不用额外审批）**
 - 域名 `tokenhub.tencentmaas.com` **公网可达**（CNAME → `ias.tencent-cloud.net`，即腾讯云 API 网关），
   不需要连内网。无 Key 时返回 `401001`，带错 Key 返回 `401002` 并附官方申请地址
 - **控制台入口**：`https://console.cloud.tencent.com/tokenhub/apikey`
@@ -520,7 +520,7 @@ models:
 已在 `requirements.txt` 锁 `>=1.5.0,<2.0.0`，`check_env.py` 也做了双形态兼容。
 
 ### 进行中 / 阻塞（2026-08-18 晚更新）
-- [x] **`TOKENHUB_API_KEY`**：自助创建即可，已不再是阻塞项，也不用问导师
+- [x] **`TOKENHUB_API_KEY`**：自助创建即可，已不再是阻塞项
 - [ ] **`GITHUB_TOKEN` 未填** ← ⚠️ 结题前的最后两个阻塞之一（自助 5 分钟，`public_repo` 读权限即可）
 - [ ] **本机未装 Docker** ← ⚠️ 结题前的最后两个阻塞之一（装 Docker Desktop，或用 `DOCKER_HOST` 指 amd64 构建机）
 - [x] TCR 命名空间：已决策复用空的 `tcb-100008634787-zbaf`（见上「4」）

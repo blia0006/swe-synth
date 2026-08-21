@@ -1,6 +1,6 @@
 # 题目内容镜像（Content-only Image）—— 双镜像方案的「题目」那一半
 #
-# 导师反馈 4 提出的架构：
+# 双镜像方案最初尝试的架构（后来确认方向反了，见 ../verify_customconfig_switch.py）：
 #     base image（env + 工具链）→ 放 volume image mount 位置
 #     题目 image                → 放标准 tools 的 image 位置
 #     每次换题 → 通过 e2b custom config / MountOptions 覆盖

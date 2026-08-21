@@ -1,4 +1,4 @@
-"""腾讯云 AGS（Agent Sandbox）客户端：沙箱工具的创建与查询。
+"""腾讯云 AGS（Agent Sandbox）客户端：沙箱工具的创建、查询与实例级换题。
 
 Agent2 的「自定义镜像起沙箱」依赖本模块：把 Agent1 推送到 CCR 的题目镜像
 注册成一个「沙箱工具」，再用 E2B SDK 以该工具名启动沙箱实例。
@@ -14,6 +14,13 @@ CreateSandboxTool（/document/product/1814/124812）关键参数：
                               · Image 是镜像地址（不是 ImageUri）
                               · ImageRegistryType 枚举：enterprise / personal / custom
                               · Ports 是数组，元素含 Port(Integer) / Protocol
+
+StartSandboxInstance 同样接受可选的 `CustomConfiguration`，且其中的 `Image`
+可以覆盖工具创建时的默认镜像——也就是说切换题目不需要重新创建/删除工具，
+只需复用同一个 ToolId、在每次启动实例时传不同的 `Image`（已实测验证，见
+`experiments/verify_customconfig_switch.py`：全程 1 个工具、2 次实例分别
+拿到不同题目内容、环境层输出一致）。这是双镜像方案在生产流水线里的落地
+方式：`start_instance()` 封装了这个实例级覆盖。
 
 安全
 ----
@@ -92,6 +99,7 @@ class AGSClient:
         probe_period_ms: int = 10000,
         probe_failure_threshold: int = 3,
         probe_success_threshold: int = 1,
+        storage_mounts: list[dict[str, Any]] | None = None,
     ) -> str:
         """把镜像注册为沙箱工具，返回 ToolId。
 
@@ -106,6 +114,16 @@ class AGSClient:
           因此 Command/Args 默认沿用同款取值，不会打断 S6-Overlay 对 envd 的托管。
         · Probe 默认值取自 `config/settings.yaml` 的 `sandbox.probe`（探测
           `/health:49983`，即基础镜像内置 envd 的健康检查端口）。
+
+        `storage_mounts`：双镜像方案的「挂载卷」半边——每项
+        `{"name", "image", "mount_path", "read_only"?, "image_registry_type"?, "sub_path"?}`，
+        构造 `StorageMount(StorageSource=StorageSource(Image=ImageStorageSource(...)))`。
+        **镜像引用在这里（工具创建时）就固定死了**：`StartSandboxInstance` 的
+        `MountOptions`（见 `start_instance`）只能覆盖 `MountPath`/`SubPath`/`ReadOnly`，
+        没有 `Reference` 字段——即挂载卷指向的镜像内容无法按实例切换（已用 SDK
+        model 定义确认，`MountOption` 没有任何镜像/引用类字段）。因此挂载卷天生
+        只适合放「不随题目变化」的内容（比如共享 base 镜像），题目内容仍必须走
+        `CustomConfiguration.Image` 的实例级覆盖（见 `start_instance`）。
         """
         role_arn = role_arn or os.environ.get("AGS_ROLE_ARN", "")
         if not role_arn:
@@ -123,6 +141,94 @@ class AGSClient:
         net.NetworkMode = network_mode
         req.NetworkConfiguration = net
 
+        if storage_mounts:
+            req.StorageMounts = self._build_storage_mounts(storage_mounts)
+
+        req.CustomConfiguration = self._build_custom_configuration(
+            image,
+            image_registry_type=image_registry_type,
+            command=command,
+            args=args,
+            cpu=cpu,
+            memory=memory,
+            probe_path=probe_path,
+            probe_port=probe_port,
+            probe_ready_timeout_ms=probe_ready_timeout_ms,
+            probe_timeout_ms=probe_timeout_ms,
+            probe_period_ms=probe_period_ms,
+            probe_failure_threshold=probe_failure_threshold,
+            probe_success_threshold=probe_success_threshold,
+        )
+
+        rsp = self._cli.CreateSandboxTool(req)
+        return getattr(rsp, "ToolId", "")
+
+    # ------------------------------------------------------------ 挂载卷（双镜像方案的固定半边）
+    def _build_storage_mounts(self, mounts: list[dict[str, Any]]) -> list[Any]:
+        """构造 `StorageMounts`（工具级，镜像引用创建后不可变，见 `create_tool` 说明）。
+
+        每项 dict 支持的 key：`name`（必填）、`image`（必填，镜像地址）、
+        `mount_path`（必填）、`read_only`（默认 True）、
+        `image_registry_type`（默认 "personal"）、`sub_path`（可选）。
+        """
+        m = self._m
+        out = []
+        for spec in mounts:
+            img_src = m.ImageStorageSource()
+            img_src.Reference = spec["image"]
+            img_src.ImageRegistryType = spec.get("image_registry_type", "personal")
+            if spec.get("sub_path"):
+                img_src.SubPath = spec["sub_path"]
+
+            src = m.StorageSource()
+            src.Image = img_src
+
+            mount = m.StorageMount()
+            mount.Name = spec["name"]
+            mount.StorageSource = src
+            mount.MountPath = spec["mount_path"]
+            mount.ReadOnly = spec.get("read_only", True)
+            out.append(mount)
+        return out
+
+    def _build_mount_options(self, options: list[dict[str, Any]]) -> list[Any]:
+        """构造 `MountOptions`（实例级，只能改 `MountPath`/`SubPath`/`ReadOnly`，
+        不能改镜像引用——`MountOption` model 没有 `Reference` 字段）。
+        """
+        m = self._m
+        out = []
+        for spec in options:
+            opt = m.MountOption()
+            opt.Name = spec["name"]
+            if spec.get("mount_path"):
+                opt.MountPath = spec["mount_path"]
+            if spec.get("sub_path"):
+                opt.SubPath = spec["sub_path"]
+            if "read_only" in spec:
+                opt.ReadOnly = spec["read_only"]
+            out.append(opt)
+        return out
+
+    # ------------------------------------------------------------ 实例级换题（双镜像方案）
+    def _build_custom_configuration(
+        self,
+        image: str,
+        *,
+        image_registry_type: str = "personal",
+        command: list[str] | None = None,
+        args: list[str] | None = None,
+        cpu: str = "2",
+        memory: str = "4Gi",
+        probe_path: str = "/health",
+        probe_port: int = 49983,
+        probe_ready_timeout_ms: int = 30000,
+        probe_timeout_ms: int = 5000,
+        probe_period_ms: int = 10000,
+        probe_failure_threshold: int = 3,
+        probe_success_threshold: int = 1,
+    ):
+        """构造 `CustomConfiguration`，`create_tool` 与 `start_instance` 共用。"""
+        m = self._m
         custom = m.CustomConfiguration()
         custom.Image = image
         custom.ImageRegistryType = image_registry_type
@@ -146,11 +252,61 @@ class AGSClient:
         probe.FailureThreshold = probe_failure_threshold
         probe.SuccessThreshold = probe_success_threshold
         custom.Probe = probe
+        return custom
 
-        req.CustomConfiguration = custom
+    def start_instance(
+        self,
+        tool_id: str,
+        *,
+        image_override: str | None = None,
+        timeout: str = "15m",
+        image_registry_type: str = "personal",
+        cpu: str = "2",
+        memory: str = "4Gi",
+        mount_options: list[dict[str, Any]] | None = None,
+    ) -> tuple[str, str | None]:
+        """启动一个沙箱实例，可选按实例覆盖题目镜像 / 挂载路径。
 
-        rsp = self._cli.CreateSandboxTool(req)
-        return getattr(rsp, "ToolId", "")
+        双镜像方案的核心 API：沙箱工具只创建一次（默认镜像随便填，通常是
+        共享 base 镜像本身），之后每道题验证时都调用这个方法、传入
+        `image_override=task.image` / `task.solution_image`，不再为每道题
+        创建/删除沙箱工具（已实测验证，见
+        `experiments/verify_customconfig_switch.py`）。
+
+        `mount_options`：实例级覆盖工具上已声明的 `StorageMounts`（按 `name`
+        匹配），只能改 `mount_path`/`sub_path`/`read_only`，**不能**换挂载卷
+        指向的镜像内容（`MountOption` model 无 `Reference` 字段）。不传则沿用
+        工具创建时的挂载配置（见 `create_tool` 的 `storage_mounts`）。
+
+        返回 `(instance_id, effective_image)`；`effective_image` 为空表示
+        未覆盖，实际生效的是工具创建时的默认镜像。
+        """
+        m = self._m
+        req = m.StartSandboxInstanceRequest()
+        req.ToolId = tool_id
+        req.Timeout = timeout
+        if image_override:
+            req.CustomConfiguration = self._build_custom_configuration(
+                image_override,
+                image_registry_type=image_registry_type,
+                cpu=cpu,
+                memory=memory,
+            )
+        if mount_options:
+            req.MountOptions = self._build_mount_options(mount_options)
+        rsp = self._cli.StartSandboxInstance(req)
+        inst = rsp.Instance
+        effective_image = getattr(
+            getattr(inst, "CustomConfiguration", None), "Image", None
+        )
+        return getattr(inst, "InstanceId", ""), effective_image
+
+    def stop_instance(self, instance_id: str) -> None:
+        """停止/回收一个沙箱实例（按实例计费的资源需要显式回收）。"""
+        m = self._m
+        req = m.StopSandboxInstanceRequest()
+        req.InstanceId = instance_id
+        self._cli.StopSandboxInstance(req)
 
     # ------------------------------------------------------------ 查询
     def list_tools(self) -> list[dict[str, Any]]:

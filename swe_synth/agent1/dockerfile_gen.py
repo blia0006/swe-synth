@@ -11,8 +11,11 @@
 
 平台硬约束（违反则沙箱起不来，详见 requirements-check.md §3.1）
 -------------------------------------------------------------
-    · 必须 FROM ccr.ccs.tencentyun.com/ags-image/sandbox-code:latest
-      （裸 ubuntu:22.04 没有 /init(S6) 与 envd，run_code/commands/files 全失效）
+    · 必须 FROM 一个带有 /init(S6) 与 envd 的镜像——可以是官方
+      ccr.ccs.tencentyun.com/ags-image/sandbox-code:latest，也可以是内部维护的
+      共享 base 镜像（swe_synth/agent1/base_image/，已把 S6/envd 从官方镜像搬到
+      Ubuntu 22.04 之上，双镜像方案的「环境层」，详见该目录下 Dockerfile 头部说明）。
+      裸 ubuntu:22.04（未搬运这两个组件）没有这两样，run_code/commands/files 全失效。
     · USER 保持 root、WORKDIR 保持 /
     · 不依赖 Dockerfile 的 ENV（快照启动不生效，须走 API 的 Env 参数）
     · 不覆盖 ENTRYPOINT（若覆盖须回填 Command=["/init"]）
@@ -83,47 +86,37 @@ class BuildContext:
 _DOCKERFILE_TMPL = """\
 # 题目镜像：{task_id}（{repo} @ {base_commit}）
 #
-# ⚠️ 基础镜像不可更换：官方要求自定义沙箱必须继承 ags-image/sandbox-code，
-#    其中包含 S6-Overlay(/init)、envd(49983)、run-code(49999)。
-#    使用裸 ubuntu:22.04 会导致 run_code / commands.run / files.* 全部失效。
+# 基础镜像：官方 ags-image/sandbox-code，或内部维护的共享 base 镜像
+# （swe_synth/agent1/base_image/，双镜像方案的「环境层」——已内置 S6/envd +
+#  git/docker CLI + Python 3.11 venv + pip 镜像源）。两者都能保证
+# S6-Overlay(/init)、envd(49983)、run-code(49999) 齐全；裸 ubuntu:22.04
+# （未搬运这两个组件）会导致 run_code / commands.run / files.* 全部失效。
 FROM {base_image}
 
 # ⚠️ 不设置 USER / WORKDIR / ENV —— 快照启动要求 root + WORKDIR=/，且镜像 ENV 不生效。
 #    需要传环境变量时走 CreateSandboxTool 的 Env 参数（并设 S6_KEEP_ENV=1）。
 
-# 加速：官方 deb.debian.org 在境内下载很慢，替换为清华 TUNA 镜像
-# （只替换 host，路径/组件不变，签名校验 Signed-By 保持不变，不影响完整性校验）
-RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \\
-        sed -i 's|deb.debian.org|mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list.d/debian.sources; \\
-    fi; \\
-    if [ -f /etc/apt/sources.list ]; then \\
-        sed -i 's|deb.debian.org|mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list; \\
+# 环境层自愈安装：如果 FROM 的是共享 base 镜像，下面这些依赖（apt 包 / uv /
+# Python 3.11 venv / pip 镜像源）已经装好，这一层几乎是空操作，仅体现为几 MB
+# 的内容层；如果 FROM 的是裸官方镜像（尚未构建/切换共享 base），则照常从零
+# 安装一遍，行为与切换前完全一致——因此换不换共享 base 都不会导致构建失败，
+# 只是有没有拿到体积/速度收益的区别。
+RUN if [ ! -x {venv}/bin/python ]; then \\
+        if [ -f /etc/apt/sources.list.d/debian.sources ]; then \\
+            sed -i 's|deb.debian.org|mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list.d/debian.sources; \\
+        fi; \\
+        if [ -f /etc/apt/sources.list ]; then \\
+            sed -i 's|deb.debian.org|mirrors.tuna.tsinghua.edu.cn|g; s|archive.ubuntu.com|mirrors.tuna.tsinghua.edu.cn|g; s|security.ubuntu.com|mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list; \\
+        fi; \\
+        chmod o-w /usr/bin; \\
+        apt-get update; \\
+        apt-get install -y --no-install-recommends {packages}; \\
+        rm -rf /var/lib/apt/lists/*; \\
+        command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh; \\
+        uv venv --python 3.11 --seed {venv}; \\
+        {venv}/bin/python -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple; \\
+        {venv}/bin/python -m pip install --no-cache-dir -q --upgrade pip setuptools wheel; \\
     fi
-
-# 修复基础镜像遗留问题：/usr/bin 权限异常为全局可写(777)，会导致
-# docker.io 等包的 postinst 脚本（Perl -T taint 模式）因 PATH 含"不安全目录"而报错退出。
-# 仅去掉 world-write 位，不影响正常读取执行，属于安全加固。
-RUN chmod o-w /usr/bin
-
-# 课题要求的运行时工具链：Git + Docker CLI
-RUN set -eux; \\
-    apt-get update; \\
-    apt-get install -y --no-install-recommends {packages}; \\
-    rm -rf /var/lib/apt/lists/*
-
-# Python 3.11 通过 uv 拉取独立运行时安装（不依赖系统 apt 源版本，
-# 避免基础镜像底层系统升级后 apt 源不再提供 python3.11 系列包）
-RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
-
-# 题目代码运行在独立的 Python 3.11 虚拟环境中（满足课题「Python 3.11」要求）
-# --seed：venv 内自带 pip/setuptools/wheel，兼容后续 `python -m pip install` 用法
-RUN {venv}/bin/python -V || uv venv --python 3.11 --seed {venv}
-
-# 加速：pip 默认走官方 PyPI 在境内很慢，配置清华 TUNA 镜像（写入 venv 内 pip.conf，
-# 全局生效，后续 upgrade / install_block 都会自动走镜像，无需逐条加 -i 参数）
-RUN {venv}/bin/python -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-
-RUN {venv}/bin/python -m pip install --no-cache-dir -q --upgrade pip setuptools wheel
 
 # 仓库代码（构建期已固定到 base_commit 并应用 stub patch，保证可复现）
 COPY repo/ /workspace/repo/
@@ -412,12 +405,27 @@ def docker_push_cmd(image: str) -> list[str]:
 
 # ------------------------------------------------------------------ 约束自检
 
-def audit_dockerfile(dockerfile: str, *, expect_solution: bool = False) -> list[str]:
+_APPROVED_BASE_MARKERS = ("ags-image/sandbox-code", "swe-synth-base")
+
+
+def audit_dockerfile(
+    dockerfile: str,
+    *,
+    expect_solution: bool = False,
+    approved_base_markers: tuple[str, ...] = _APPROVED_BASE_MARKERS,
+) -> list[str]:
     """检查 Dockerfile 是否违反平台硬约束，返回问题列表（空 = 合规）。
 
     这些约束一旦违反，**沙箱会起不来或内置能力失效**，而且报错通常很隐晦
     （表现为创建实例超时或 run_code 无响应），排查成本极高。
     因此在构建前就静态拦住 —— 比事后到云上 debug 便宜得多。
+
+    `approved_base_markers`：FROM 行需要命中其中任意一个子串才算合规。
+    默认同时接受官方镜像（ags-image/sandbox-code）与内部共享 base 镜像
+    （命名约定含 swe-synth-base，见 swe_synth/agent1/base_image/）——
+    两者都已验证内置 S6/envd，因此都能让沙箱正常起来。这里只能做字符串级
+    静态检查，共享 base 是否真的内置了这两个组件，由该镜像自身的构建/发布
+    流程保证，不在每道题构建时重新校验。
     """
     problems: list[str] = []
     # 只看有效指令行，忽略注释与空行（注释里出现 USER 等字样不算违规）
@@ -429,10 +437,14 @@ def audit_dockerfile(dockerfile: str, *, expect_solution: bool = False) -> list[
     def has_instr(name: str) -> bool:
         return any(re.match(rf"^{name}\b", ln, re.I) for ln in lines)
 
-    if not any(re.match(r"^FROM\s+.*ags-image/sandbox-code", ln, re.I) for ln in lines):
+    from_lines = [ln for ln in lines if re.match(r"^FROM\s+", ln, re.I)]
+    if not any(
+        any(marker in ln for marker in approved_base_markers) for ln in from_lines
+    ):
         problems.append(
-            "未继承官方基础镜像 ags-image/sandbox-code —— "
-            "沙箱将缺少 /init(S6)、envd(49983)、run-code(49999)，run_code/commands/files 全部失效"
+            "未继承受信任的基础镜像（官方 ags-image/sandbox-code 或内部共享 base "
+            "swe-synth-base）—— 沙箱可能缺少 /init(S6)、envd(49983)、run-code(49999)，"
+            "run_code/commands/files 存在失效风险"
         )
     if has_instr("USER"):
         problems.append("设置了 USER —— 快照启动要求保持 root，会导致启动失败")

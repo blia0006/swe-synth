@@ -22,7 +22,7 @@
   - 只有 `CustomConfiguration.Image` 能在 `StartSandboxInstance` 时
     按实例整体覆盖。
 
-这与导师原话完全吻合：「题目 image 放在标准 tools 的 image 地方，
+这与最初的架构设想完全吻合：「题目 image 放在标准 tools 的 image 地方，
 每次换题就通过 custom config 覆盖」——换的应该是 `CustomConfiguration.Image`，
 而不是 `StorageMounts`。
 

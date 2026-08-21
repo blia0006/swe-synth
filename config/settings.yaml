@@ -72,8 +72,16 @@ task_mix:
 
 # ---------- 镜像 ----------
 image:
-  # ⚠️ 平台硬约束：必须 FROM 官方基础镜像，否则沙箱起不来（详见 requirements-check.md §3.1）
-  base: ccr.ccs.tencentyun.com/ags-image/sandbox-code:latest
+  # 必须 FROM 一个带 S6/envd 的基础镜像，否则沙箱起不来（详见 requirements-check.md §3.1）。
+  #
+  # 双镜像方案（环境层与内容层分离，见 SCALE-OUT.md + review-feedback-report.md §4.5）
+  # 已固化到 swe_synth/agent1/base_image/，构建脚本产出的地址已回填到下面这行——
+  # 所有新出的题目镜像自动只剩 COPY 内容层（体积从每题 ~7.5GB 降到 MB 级）；
+  # agent2/sandbox_runner.py 首次创建共享沙箱工具时，还会把这个 base 镜像额外
+  # 通过 StorageMounts 挂载到 /mnt/base-env（只读、创建时固定一次，不随题目切换）。
+  # 没有共享 base 也不影响功能——dockerfile_gen.py 里环境安装步骤是自愈式的，
+  # 检测到共享 base 没有预装依赖时会照常从零安装。
+  base: ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-base:ubuntu22.04-v1
   platform: linux/amd64       # 沙箱仅支持 amd64
   tag_task: v1                # 题目镜像（无答案）
   tag_solution: v1-sol        # 含 golden.patch，仅 Agent2 使用，防泄题
@@ -97,7 +105,14 @@ sandbox:
     failure_threshold: 3
   # 沙箱按时长计费，必须兜底清理
   always_kill: true
-  reuse_tool: true            # 同一题重跑时复用沙箱工具，省创建开销
+  # 全流水线只维护 1 个共享沙箱工具（见 agent2/sandbox_runner.py），题目/答案镜像
+  # 切换通过 StartSandboxInstance 的实例级 CustomConfiguration.Image 覆盖完成，
+  # 不再随题目数创建新工具；共享工具首次创建时还会把 image.base 额外挂载到
+  # /mnt/base-env（StorageMounts，只读、固定不变）——双镜像方案的两半各自
+  # 落在最匹配的 API 位置（已实测验证，见 experiments/verify_dual_image_v2.py
+  # 与 review-feedback-report.md §4.5）。
+  reuse_tool: true             # false 仅用于调试：强制删除重建共享工具
+  shared_tool_name: swe-synth-shared-runner
 
 # ---------- 去重（课题核心约束）----------
 overlap_check:
@@ -129,7 +144,7 @@ scale:
                        # worker 数超过 Key 数不会带来额外提速。
   agent2_workers: 2   # 沙箱验证并发。上限受 AGS 账号的沙箱并发配额限制，需按实际配额调整
   pack_workers: 4     # docker build+push 并发。build 是 CPU/IO 密集型，按构建机核数设置；
-                       # push 主要受限于出口带宽（见 mentor-feedback-report.md 的双镜像方案，
+                       # push 主要受限于出口带宽（见 review-feedback-report.md 的双镜像方案，
                        # 落地后单题镜像 1MB 级，push 几乎不再是瓶颈）
   id_block_size: 10000  # 并发 agent1 时每个仓库预留的 task_id 区间大小，避免并发写入撞车
 
