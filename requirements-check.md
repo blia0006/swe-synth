@@ -77,7 +77,7 @@
 | # | 要求原文 | 现状 | 状态 |
 |---|---|---|---|
 | T-1 | 运行环境：腾讯云 Agent SandBox（自定义镜像沙箱） | 已跑通内置工具；自定义镜像待 M1 验证 | 🔨 |
-| T-2 | 镜像基于 **ubuntu:22.04 + Python 3.11 + Git + Docker CLI** | 与平台硬约束冲突 | ⚠️ **见 §3.1，最重要的偏差** |
+| T-2 | 镜像基于 **ubuntu:22.04 + Python 3.11 + Git + Docker CLI** | 已实测字面满足 | ✅ **见 §3.1** |
 | T-3 | LLM：TokenHub API，模型 `deepseek-v4-pro` 或 `glm-5` | 两者均已确认在线可用 | ✅ 见 §3.3 |
 | T-4 | 镜像仓库：腾讯云 **TCR**，配置 `docker login` 凭证 | 7 个实例均属他人，归属待定 | ⚠️ 见 §5.2 |
 | T-5 | 编程语言：Python，**推荐 agent-sandbox Python SDK** | 目前用 `e2b-code-interpreter` | ⚠️ 见 §3.2 |
@@ -86,42 +86,33 @@
 
 ---
 
-## 三、⚠️ 需要决策的偏差（重点）
+## 三、✅ 曾经的偏差，已用实测方案解决
 
-### 3.1 「ubuntu:22.04 + Python 3.11」与平台硬约束冲突 —— ✅ **已决策：兼容方案**
+### 3.1 「ubuntu:22.04 + Python 3.11」—— ✅ **已实测字面满足，不再是偏差**
 
 **课题要求**：沙箱镜像基于 `ubuntu:22.04 + Python 3.11 + Git + Docker CLI`。
 
-**官方文档明确规定**（`/document/product/1814/129691`，2026-07-15 更新）：
-> 需要代码解释器能力（`run_code` / `commands.run` / `files.*`）→ **必须**
-> `FROM ccr.ccs.tencentyun.com/ags-image/sandbox-code:latest`。
-> 裸 `ubuntu:22.04` 里没有 `/init`(S6-Overlay)、没有 envd 与 run-code 服务，
-> 49999/49983 端口与 `/health` 探针全部不可用，沙箱**起不来**。
+**历史背景**：官方基础镜像 `ccr.ccs.tencentyun.com/ags-image/sandbox-code:latest`
+实测为 **Debian 13 (trixie) + Python 3.12.11**（非 ubuntu:22.04 + 3.11），
+曾经因为「自定义镜像必须继承该基础镜像才能获得 `commands.run`/`files.*` 能力」
+被当作平台硬约束下的偏差处理。
 
-而官方基础镜像实测为 **Debian + Python 3.12.11**（非 ubuntu22.04 + 3.11）。
+**✅ 现已解决**：实测拆解官方镜像发现，提供沙箱管理能力的组件（`envd` + S6-Overlay
+`/init`）是**静态链接**、可跨发行版搬运的；而依赖 Debian glibc 的 `jupyter`/`uvicorn`
+只服务于本项目从未使用的 `run_code` 能力，可整体剔除。据此以 `ubuntu:22.04` 为基础层
+做多阶段构建，真实沙箱内实测通过：
 
-**✅ 已采纳方案：基础层服从平台，工具链满足课题**
-```dockerfile
-FROM ccr.ccs.tencentyun.com/ags-image/sandbox-code:latest   # 平台硬约束：保住沙箱能力
-# 满足课题要求的工具链
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        git docker.io python3.11 python3.11-venv python3.11-dev \
-    && rm -rf /var/lib/apt/lists/*
-# 题目仓库用 python3.11 建 venv，测试在 3.11 下跑 → 实质满足「Python 3.11」
-RUN python3.11 -m venv /opt/venv311
-# ⚠️ 严格遵守：不改 USER(root) / 不改 WORKDIR(/) / 不依赖 ENV / 不覆盖 ENTRYPOINT(/init)
+```
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+Python 3.11.16 / git 2.34.1 / Docker 29.1.3
+沙箱工具创建成功 → ACTIVE；实例启动成功 → commands.run 正常
+镜像体积 872MB（原 6.86GB 基础层 → 降 87%）
 ```
 
-**必须在 README 写明的技术权衡**（原文照抄可用）：
-> 课题要求镜像基于 `ubuntu:22.04`。但腾讯云 Agent Sandbox 官方文档规定：若需使用
-> `run_code` / `commands.run` / `files.*` 等代码解释器能力，自定义镜像**必须**继承官方
-> `ags-image/sandbox-code` 基础镜像（内含 S6-Overlay `/init`、envd 与 run-code 服务，
-> 监听 49983/49999）。使用裸 `ubuntu:22.04` 将导致沙箱无法启动、Agent2 无法执行验证。
-> 因此本项目采用**兼容方案**：以官方基础镜像（Debian）为基础层以保证平台能力，
-> 并在镜像内额外安装 `Python 3.11 + Git + Docker CLI`，题目代码与测试全部运行在
-> Python 3.11 虚拟环境中，**实质满足课题的运行时要求**。
+**详细实测过程与脚本**：见 `mentor-feedback-report.md` §「反馈1」，
+以及 `experiments/ubuntu-base/Dockerfile`、`experiments/verify_ubuntu_base.py`。
 
-→ 建议向导师**主动报备**这一条（这是平台硬约束，非实现取舍）。
+→ 此条已不需要向导师报备为偏差，反而是本次导师反馈验证的成果之一。
 
 ### 3.2 `agent-sandbox` SDK vs `e2b-code-interpreter`
 
@@ -315,7 +306,10 @@ TCR_PASSWORD=<访问凭证密码>
 （只需改 `.env` 三个变量 + 沙箱工具的 `ImageRegistryType`，代码无需改动 —— 因此
 `clients/tcr.py` 必须把 registry 类型做成配置项，不能硬编码）。
 
-### 5.3 `ubuntu:22.04` 是否硬性要求（建议向导师报备 §3.1 方案）
+### 5.3 `ubuntu:22.04` 是否硬性要求 —— ✅ 已解决，见 §3.1
+
+不再是需要报备的偏差：已实测基于 `ubuntu:22.04` 构建自定义镜像并在真实沙箱中启动成功，
+字面满足课题要求。详见 §3.1 与 `mentor-feedback-report.md`。
 
 ---
 
