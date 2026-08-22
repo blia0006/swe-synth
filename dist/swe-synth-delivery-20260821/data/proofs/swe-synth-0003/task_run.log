@@ -1,0 +1,80 @@
+rol_parser.py:28: NotImplementedError
+_______________________________ test_merge_empty _______________________________
+
+    def test_merge_empty():
+>       merged = merge_cache_control()
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_cache_control_parser_synth.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+directives = ()
+
+    def merge_cache_control(*directives: CacheControlDirectives) -> CacheControlDirectives:
+        """Merge multiple CacheControlDirectives objects into a new one.
+    
+        Later objects override earlier ones for identical directive names.
+        Returns an empty CacheControlDirectives when no arguments are given.
+        """
+>       raise NotImplementedError("merge_cache_control is not implemented")
+E       NotImplementedError: merge_cache_control is not implemented
+
+cachecontrol/cache_control_parser.py:37: NotImplementedError
+_______________________ test_str_sorting_and_formatting ________________________
+
+    def test_str_sorting_and_formatting():
+>       d = parse_cache_control("private, max-age=3600, no-cache")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_cache_control_parser_synth.py:61: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = 'private, max-age=3600, no-cache'
+
+    def parse_cache_control(value: str) -> CacheControlDirectives:
+        """Parse a Cache-Control header value into a CacheControlDirectives object.
+    
+        Supports multiple directives separated by commas. Directives can have
+        no parameter, an integer parameter, or a quoted string parameter.
+        Keys are lowercased. Later occurrences of a directive override earlier
+        ones. Raises ValueError for malformed input.
+        """
+>       raise NotImplementedError("parse_cache_control is not implemented")
+E       NotImplementedError: parse_cache_control is not implemented
+
+cachecontrol/cache_control_parser.py:28: NotImplementedError
+_______________________________ test_str_quoting _______________________________
+
+    def test_str_quoting():
+>       d = parse_cache_control('no-cache="abc"')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_cache_control_parser_synth.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = 'no-cache="abc"'
+
+    def parse_cache_control(value: str) -> CacheControlDirectives:
+        """Parse a Cache-Control header value into a CacheControlDirectives object.
+    
+        Supports multiple directives separated by commas. Directives can have
+        no parameter, an integer parameter, or a quoted string parameter.
+        Keys are lowercased. Later occurrences of a directive override earlier
+        ones. Raises ValueError for malformed input.
+        """
+>       raise NotImplementedError("parse_cache_control is not implemented")
+E       NotImplementedError: parse_cache_control is not implemented
+
+cachecontrol/cache_control_parser.py:28: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_cache_control_parser_synth.py::test_parse_basic_directives
+FAILED tests/test_cache_control_parser_synth.py::test_parse_quoted_string_with_comma
+FAILED tests/test_cache_control_parser_synth.py::test_parse_case_insensitive_and_spaces
+FAILED tests/test_cache_control_parser_synth.py::test_parse_empty_string - No...
+FAILED tests/test_cache_control_parser_synth.py::test_parse_unclosed_quote_raises
+FAILED tests/test_cache_control_parser_synth.py::test_parse_empty_name_raises
+FAILED tests/test_cache_control_parser_synth.py::test_merge_overrides - NotIm...
+FAILED tests/test_cache_control_parser_synth.py::test_merge_empty - NotImplem...
+FAILED tests/test_cache_control_parser_synth.py::test_str_sorting_and_formatting
+FAILED tests/test_cache_control_parser_synth.py::test_str_quoting - NotImplem...
+======================== 10 failed, 35 passed in 0.76s =========================

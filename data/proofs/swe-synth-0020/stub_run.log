@@ -1,0 +1,78 @@
+st_file_object_sink[2] PASSED                 [ 81%]
+tests/test_add_sinks.py::test_standard_handler_sink[0] PASSED            [ 82%]
+tests/test_add_sinks.py::test_standard_handler_sink[1] PASSED            [ 83%]
+tests/test_add_sinks.py::test_standard_handler_sink[2] PASSED            [ 84%]
+tests/test_add_sinks.py::test_flush[0] PASSED                            [ 85%]
+tests/test_add_sinks.py::test_flush[1] PASSED                            [ 85%]
+tests/test_add_sinks.py::test_flush[2] PASSED                            [ 86%]
+tests/test_add_sinks.py::test_file_sink_ascii_encoding PASSED            [ 87%]
+tests/test_add_sinks.py::test_file_sink_utf8_encoding PASSED             [ 88%]
+tests/test_add_sinks.py::test_file_sink_default_encoding PASSED          [ 89%]
+tests/test_add_sinks.py::test_disabled_logger_in_sink PASSED             [ 90%]
+tests/test_add_sinks.py::test_custom_sink_invalid_flush[123] PASSED      [ 90%]
+tests/test_add_sinks.py::test_custom_sink_invalid_flush[None] PASSED     [ 91%]
+tests/test_add_sinks.py::test_custom_sink_invalid_stop[123] PASSED       [ 92%]
+tests/test_add_sinks.py::test_custom_sink_invalid_stop[None] PASSED      [ 93%]
+tests/test_add_sinks.py::test_custom_sink_invalid_complete[123] PASSED   [ 94%]
+tests/test_add_sinks.py::test_custom_sink_invalid_complete[None] PASSED  [ 95%]
+tests/test_add_sinks.py::test_custom_sink_invalid_complete[<lambda>] PASSED [ 95%]
+tests/test_add_sinks.py::test_invalid_sink[123] PASSED                   [ 96%]
+tests/test_add_sinks.py::test_invalid_sink[sys] PASSED                   [ 97%]
+tests/test_add_sinks.py::test_invalid_sink[sink2] PASSED                 [ 98%]
+tests/test_add_sinks.py::test_invalid_sink[int] PASSED                   [ 99%]
+tests/test_add_sinks.py::test_deprecated_start_and_stop FAILED           [100%]
+
+=================================== FAILURES ===================================
+________________________ test_deprecated_start_and_stop ________________________
+
+writer = <function writer.<locals>.w at 0x1091fcc20>
+
+    def test_deprecated_start_and_stop(writer):
+        with pytest.warns(DeprecationWarning, match=r"The 'start\(\)' method is deprecated"):
+>           i = logger.start(writer, format="{message}")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+writer     = <function writer.<locals>.w at 0x1091fcc20>
+
+tests/test_add_sinks.py:245: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <loguru.logger handlers=[]>
+args = (<function writer.<locals>.w at 0x1091fcc20>,)
+kwargs = {'format': '{message}'}
+
+    def start(self, *args, **kwargs):
+        """Add a handler sending log messages to a sink adequately configured.
+    
+        Deprecated function, use |add| instead.
+    
+        Warnings
+        --------
+        .. deprecated:: 0.2.2
+          ``start()`` will be removed in Loguru 1.0.0, it is replaced by ``add()`` which is a less
+          confusing name.
+        """
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+args       = (<function writer.<locals>.w at 0x1091fcc20>,)
+kwargs     = {'format': '{message}'}
+self       = <loguru.logger handlers=[]>
+
+loguru/_logger.py:2251: NotImplementedError
+
+During handling of the above exception, another exception occurred:
+
+writer = <function writer.<locals>.w at 0x1091fcc20>
+
+    def test_deprecated_start_and_stop(writer):
+>       with pytest.warns(DeprecationWarning, match=r"The 'start\(\)' method is deprecated"):
+E       Failed: DID NOT WARN. No warnings of type (<class 'DeprecationWarning'>,) were emitted.
+E        Emitted warnings: [].
+
+writer     = <function writer.<locals>.w at 0x1091fcc20>
+
+tests/test_add_sinks.py:244: Failed
+=========================== short test summary info ============================
+FAILED tests/test_add_sinks.py::test_deprecated_start_and_stop - Failed: DID ...
+======================== 1 failed, 119 passed in 22.61s ========================

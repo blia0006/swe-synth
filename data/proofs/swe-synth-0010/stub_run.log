@@ -1,62 +1,14 @@
-eforeAfterAttempts::test_before_attempts PASSED [ 78%]
-tests/test_tenacity.py::TestBeforeAfterAttempts::test_before_sleep PASSED [ 78%]
-tests/test_tenacity.py::TestBeforeAfterAttempts::test_before_sleep_log_raises PASSED [ 79%]
-tests/test_tenacity.py::TestBeforeAfterAttempts::test_before_sleep_log_raises_with_exc_info PASSED [ 80%]
-tests/test_tenacity.py::TestBeforeAfterAttempts::test_before_sleep_log_returns PASSED [ 80%]
-tests/test_tenacity.py::TestBeforeAfterAttempts::test_before_sleep_log_returns_with_exc_info PASSED [ 81%]
-tests/test_tenacity.py::TestReraiseExceptions::test_reraise_by_default PASSED [ 82%]
-tests/test_tenacity.py::TestReraiseExceptions::test_reraise_from_retry_error PASSED [ 82%]
-tests/test_tenacity.py::TestReraiseExceptions::test_reraise_no_exception PASSED [ 83%]
-tests/test_tenacity.py::TestReraiseExceptions::test_reraise_timeout_from_retry_error PASSED [ 84%]
-tests/test_tenacity.py::TestStatistics::test_retry_object_statistics_during_execution PASSED [ 85%]
-tests/test_tenacity.py::TestStatistics::test_retry_object_statistics_synced PASSED [ 85%]
-tests/test_tenacity.py::TestStatistics::test_stats PASSED                [ 86%]
-tests/test_tenacity.py::TestStatistics::test_stats_failing PASSED        [ 87%]
-tests/test_tenacity.py::TestRetryErrorCallback::test_retry_error_callback PASSED [ 87%]
-tests/test_tenacity.py::TestContextManager::test_context_manager_on_error PASSED [ 88%]
-tests/test_tenacity.py::TestContextManager::test_context_manager_reraise PASSED [ 89%]
-tests/test_tenacity.py::TestContextManager::test_context_manager_retry_error PASSED [ 90%]
-tests/test_tenacity.py::TestContextManager::test_context_manager_retry_one PASSED [ 90%]
-tests/test_tenacity.py::TestInvokeAsCallable::test_retry_one PASSED      [ 91%]
-tests/test_tenacity.py::TestInvokeAsCallable::test_on_error PASSED       [ 92%]
-tests/test_tenacity.py::TestInvokeAsCallable::test_retry_error PASSED    [ 92%]
-tests/test_tenacity.py::TestInvokeAsCallable::test_reraise PASSED        [ 93%]
-tests/test_tenacity.py::TestRetryException::test_retry_error_is_pickleable PASSED [ 94%]
-tests/test_tenacity.py::TestRetryTyping::test_retry_decorated_method_keeps_bound_signature PASSED [ 95%]
-tests/test_tenacity.py::TestRetryTyping::test_retry_type_annotations PASSED [ 95%]
-tests/test_tenacity.py::TestMockingSleep::test_decorated PASSED          [ 96%]
-tests/test_tenacity.py::TestMockingSleep::test_decorated_retry_with PASSED [ 97%]
-tests/test_tenacity.py::TestPickle::test_retry_strategies_picklable PASSED [ 97%]
-tests/test_tenacity.py::TestPickle::test_retrying_picklable PASSED       [ 98%]
-tests/test_tenacity.py::TestPickle::test_retrying_picklable_after_run PASSED [ 99%]
-tests/test_tenacity.py::TestPickle::test_retrying_pickle_round_trip_works PASSED [100%]
+============================= test session starts ==============================
+collecting ... collected 9 items
 
-=================================== FAILURES ===================================
-___________________ TestRetryingName.test_logging_uses_name ____________________
+tests/test_misc.py::TestMiscellaneous::test_deepcopy PASSED              [ 11%]
+tests/test_misc.py::TestMiscellaneous::test_incorrect_load PASSED        [ 22%]
+tests/test_misc.py::TestMiscellaneous::test_inline_array_recursion_limit PASSED [ 33%]
+tests/test_misc.py::TestMiscellaneous::test_inline_table_recursion_limit PASSED [ 44%]
+tests/test_misc.py::TestMiscellaneous::test_key_recursion_limit PASSED   [ 55%]
+tests/test_misc.py::TestMiscellaneous::test_lazy_import SKIPPED (nee...) [ 66%]
+tests/test_misc.py::TestMiscellaneous::test_load PASSED                  [ 77%]
+tests/test_misc.py::TestMiscellaneous::test_parse_float PASSED           [ 88%]
+tests/test_misc.py::TestMiscellaneous::test_types_import PASSED          [100%]
 
-self = <tests.test_tenacity.TestRetryingName testMethod=test_logging_uses_name>
-
-    def test_logging_uses_name(self) -> None:
-        """before_log uses the name parameter in context manager mode."""
-        import unittest.mock
-    
-        log = unittest.mock.MagicMock()
-        logger = unittest.mock.MagicMock(log=log)
-    
-        with contextlib.suppress(Exception):
-            for attempt in Retrying(
-                name="my_block",
-                before=tenacity.before_log(logger, logging.INFO),
-                stop=tenacity.stop_after_attempt(1),
-            ):
-                with attempt:
-                    raise ValueError
-    
->       args = log.call_args[0]
-               ^^^^^^^^^^^^^^^^
-E       TypeError: 'NoneType' object is not subscriptable
-
-tests/test_tenacity.py:177: TypeError
-=========================== short test summary info ============================
-FAILED tests/test_tenacity.py::TestRetryingName::test_logging_uses_name - Typ...
-============== 1 failed, 140 passed, 15 subtests passed in 1.85s ===============
+========================= 8 passed, 1 skipped in 0.03s =========================

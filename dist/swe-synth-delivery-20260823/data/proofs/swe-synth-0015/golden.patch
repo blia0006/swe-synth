@@ -1,0 +1,105 @@
+--- a/tenacity/backoff_calculator.py
++++ b/tenacity/backoff_calculator.py
+@@ -16,25 +16,33 @@
+ import typing
+ 
+ 
++def _validate_inputs(
++    attempt: typing.Optional[int],
++    initial_delay: float,
++    multiplier: float,
++    max_delay: typing.Optional[float],
++) -> None:
++    if attempt is not None and attempt < 1:
++        raise ValueError('attempt must be >= 1')
++    if initial_delay <= 0:
++        raise ValueError('initial_delay must be > 0')
++    if multiplier < 1:
++        raise ValueError('multiplier must be >= 1')
++    if max_delay is not None and max_delay <= 0:
++        raise ValueError('max_delay must be > 0 if provided')
++
++
+ def exponential_delay(
+     attempt: int,
+     initial_delay: float,
+     multiplier: float = 1.0,
+     max_delay: typing.Optional[float] = None,
+ ) -> float:
+-    '''Calculate the delay for a given attempt using exponential backoff.
+-
+-    The delay is computed as ``initial_delay * (multiplier ** (attempt - 1))``,
+-    capped at ``max_delay`` if provided.
+-
+-    :param attempt: The attempt number (starting from 1).
+-    :param initial_delay: The delay for the first attempt.
+-    :param multiplier: The backoff multiplier (must be >= 1).
+-    :param max_delay: Optional cap on the delay (must be > 0 if provided).
+-    :return: The computed delay in seconds.
+-    :raises ValueError: If any argument is invalid.
+-    '''
+-    raise NotImplementedError('Implement exponential_delay')
++    _validate_inputs(attempt, initial_delay, multiplier, max_delay)
++    delay = initial_delay * (multiplier ** (attempt - 1))
++    if max_delay is not None:
++        delay = min(delay, max_delay)
++    return delay
+ 
+ 
+ def total_delay_until_attempt(
+@@ -43,18 +51,11 @@
+     multiplier: float = 1.0,
+     max_delay: typing.Optional[float] = None,
+ ) -> float:
+-    '''Calculate total delay before a given attempt.
+-
+-    This is the sum of delays for attempts 1 through ``attempt - 1``.
+-
+-    :param attempt: The attempt number (starting from 1).
+-    :param initial_delay: The delay for the first attempt.
+-    :param multiplier: The backoff multiplier (must be >= 1).
+-    :param max_delay: Optional cap on the delay (must be > 0 if provided).
+-    :return: The total delay in seconds.
+-    :raises ValueError: If any argument is invalid.
+-    '''
+-    raise NotImplementedError('Implement total_delay_until_attempt')
++    _validate_inputs(attempt, initial_delay, multiplier, max_delay)
++    total = 0.0
++    for i in range(1, attempt):
++        total += exponential_delay(i, initial_delay, multiplier, max_delay)
++    return total
+ 
+ 
+ def attempts_possible_within_budget(
+@@ -63,17 +64,17 @@
+     multiplier: float = 1.0,
+     max_delay: typing.Optional[float] = None,
+ ) -> int:
+-    '''Calculate the maximum number of retries possible within a time budget.
+-
+-    The initial call is not counted as a retry. The function returns the
+-    largest non-negative integer N such that ``total_delay_until_attempt(N+1)``
+-    is less than or equal to ``budget``.
+-
+-    :param budget: Total time budget in seconds (must be >= 0).
+-    :param initial_delay: The delay for the first attempt.
+-    :param multiplier: The backoff multiplier (must be >= 1).
+-    :param max_delay: Optional cap on the delay (must be > 0 if provided).
+-    :return: The maximum number of retries.
+-    :raises ValueError: If any argument is invalid.
+-    '''
+-    raise NotImplementedError('Implement attempts_possible_within_budget')
++    if budget < 0:
++        raise ValueError('budget must be >= 0')
++    _validate_inputs(None, initial_delay, multiplier, max_delay)
++    total = 0.0
++    n = 0
++    while True:
++        next_attempt = n + 1
++        delay = exponential_delay(next_attempt, initial_delay, multiplier, max_delay)
++        if total + delay <= budget:
++            total += delay
++            n += 1
++        else:
++            break
++    return n

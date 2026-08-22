@@ -1,0 +1,58 @@
+--- a/src/humanize/filesize.py
++++ b/src/humanize/filesize.py
+@@ -81,6 +81,21 @@
+     Returns:
+         str: Human readable representation of a filesize.
+     """
++    suffix, base = _get_suffix_and_base(gnu, binary)
++    bytes_ = float(value)
++    abs_bytes = abs(bytes_)
++
++    small = _format_small_bytes(bytes_, abs_bytes, gnu, base)
++    if small is not None:
++        return small
++
++    exp = _get_exponent(abs_bytes, base, suffix, format)
++    space = "" if gnu else " "
++    ret: str = format % (bytes_ / (base**exp)) + space + _(suffix[exp - 1])
++    return ret
++
++
++def _get_suffix_and_base(gnu: bool, binary: bool) -> tuple[list[str], int]:
+     if gnu:
+         suffix = suffixes["gnu"]
+     elif binary:
+@@ -89,15 +104,22 @@
+         suffix = suffixes["decimal"]
+ 
+     base = 1024 if (gnu or binary) else 1000
+-    bytes_ = float(value)
+-    abs_bytes = abs(bytes_)
++    return suffix, base
+ 
++
++def _format_small_bytes(
++    bytes_: float, abs_bytes: float, gnu: bool, base: int
++) -> str | None:
+     if abs_bytes == 1 and not gnu:
+         return _("%d Byte") % int(bytes_)
+-
+     if abs_bytes < base:
+         return f"{int(bytes_)}B" if gnu else _("%d Bytes") % int(bytes_)
++    return None
+ 
++
++def _get_exponent(
++    abs_bytes: float, base: int, suffix: list[str], format: str
++) -> int:
+     exp = int(min(log(abs_bytes, base), len(suffix)))
+     # The suffix is chosen from the unrounded byte count, but `format` rounds the
+     # mantissa afterward; rounding can push it up to `base` (e.g. 999999 is
+@@ -105,6 +127,4 @@
+     # suffix is available, step up one suffix so the result reads "1.0 MB".
+     if exp < len(suffix) and abs(float(format % (abs_bytes / (base**exp)))) >= base:
+         exp += 1
+-    space = "" if gnu else " "
+-    ret: str = format % (bytes_ / (base**exp)) + space + _(suffix[exp - 1])
+-    return ret
++    return exp

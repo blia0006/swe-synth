@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "reason": "双向 sanity 通过：题目态必红、golden 态必绿、原有用例未被破坏",
+  "fail_to_pass": [
+    "tests/test_refactor_guard_swe_synth_0019.py::test_target_function_complexity_reduced",
+    "tests/test_refactor_guard_swe_synth_0019.py::test_target_function_is_simplified"
+  ],
+  "pass_to_pass": [
+    "tests/test_refactor_guard_swe_synth_0019.py::test_no_new_monolithic_function",
+    "tests/test_refactor_guard_swe_synth_0019.py::test_signature_unchanged"
+  ],
+  "deterministic": true,
+  "duration_sec": 37.48,
+  "stub_summary": {
+    "returncode": 1,
+    "n_passed": 2,
+    "n_failed": 2
+  },
+  "golden_summary": {
+    "returncode": 0,
+    "n_passed": 4,
+    "n_failed": 0
+  }
+}

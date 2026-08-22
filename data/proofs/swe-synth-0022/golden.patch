@@ -1,0 +1,99 @@
+--- a/tldextract/cli.py
++++ b/tldextract/cli.py
+@@ -16,6 +16,23 @@
+     """Tldextract CLI main command."""
+     logging.basicConfig()
+ 
++    parser = _build_argument_parser()
++    args = parser.parse_args()
++
++    obj_kwargs = _build_extract_kwargs(args)
++
++    tld_extract = TLDExtract(**obj_kwargs)
++
++    if args.update:
++        tld_extract.update(True)
++    elif not args.input:
++        parser.print_usage()
++        sys.exit(1)
++
++    _print_results(tld_extract, args.input, args.json)
++
++
++def _build_argument_parser() -> argparse.ArgumentParser:
+     parser = argparse.ArgumentParser(
+         prog="tldextract", description="Parse hostname from a url or fqdn"
+     )
+@@ -66,8 +83,10 @@
+         help="Don't fall back to the package's snapshot of the suffix list",
+     )
+ 
+-    args = parser.parse_args()
++    return parser
+ 
++
++def _build_extract_kwargs(args):
+     obj_kwargs = {
+         "include_psl_private_domains": args.include_psl_private_domains,
+         "fallback_to_snapshot": args.fallback_to_snapshot,
+@@ -87,33 +106,33 @@
+ 
+         obj_kwargs["suffix_list_urls"] = suffix_list_urls
+ 
+-    tld_extract = TLDExtract(**obj_kwargs)
++    return obj_kwargs
+ 
+-    if args.update:
+-        tld_extract.update(True)
+-    elif not args.input:
+-        parser.print_usage()
+-        sys.exit(1)
+ 
+-    for i in args.input:
++def _print_extraction(ext, as_json):
++    if as_json:
++        properties = (
++            "fqdn",
++            "ipv4",
++            "ipv6",
++            "registered_domain",
++            "reverse_domain_name",
++            "top_domain_under_public_suffix",
++            "top_domain_under_registry_suffix",
++        )
++        print(
++            json.dumps(
++                {
++                    **dataclasses.asdict(ext),
++                    **{prop: getattr(ext, prop) for prop in properties},
++                }
++            )
++        )
++    else:
++        print(f"{ext.subdomain} {ext.domain} {ext.suffix}")
++
++
++def _print_results(tld_extract, inputs, as_json):
++    for i in inputs:
+         ext = tld_extract(i)
+-        if args.json:
+-            properties = (
+-                "fqdn",
+-                "ipv4",
+-                "ipv6",
+-                "registered_domain",
+-                "reverse_domain_name",
+-                "top_domain_under_public_suffix",
+-                "top_domain_under_registry_suffix",
+-            )
+-            print(
+-                json.dumps(
+-                    {
+-                        **dataclasses.asdict(ext),
+-                        **{prop: getattr(ext, prop) for prop in properties},
+-                    }
+-                )
+-            )
+-        else:
+-            print(f"{ext.subdomain} {ext.domain} {ext.suffix}")
++        _print_extraction(ext, as_json)

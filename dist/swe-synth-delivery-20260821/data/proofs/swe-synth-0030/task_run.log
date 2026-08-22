@@ -1,0 +1,69 @@
+one_day PASSED [ 45%]
+tests/test_expires_heuristics.py::TestExpiresAfter::test_expires_after_one_day PASSED [ 50%]
+tests/test_expires_heuristics.py::TestLastModified::test_last_modified PASSED [ 55%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_no_expiry_is_inferred_when_no_last_modified_is_present PASSED [ 60%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expires_is_not_replaced_when_present PASSED [ 65%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used PASSED [ 70%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_cache_control_present PASSED [ 75%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_status_is_unknown PASSED [ 80%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used_when_cache_control_public PASSED [ 85%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_not_added_when_response_more_recent_than_24_hours PASSED [ 90%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_is_not_added_when_heuristic_was_not_used PASSED [ 95%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expiry_is_no_more_that_twenty_four_hours PASSED [100%]
+
+=================================== FAILURES ===================================
+______________________ test_target_function_is_simplified ______________________
+
+    def test_target_function_is_simplified():
+        """目标函数的有效代码行数必须降下来（把职责拆分到更小的单元中）。"""
+        lines, _, node = _target()
+        n = _effective_body_lines(node, lines)
+>       assert n <= MAX_TARGET_BODY_LINES, (
+            "%s 的函数体仍有 %d 行有效代码（重构前 %d 行），要求不超过 %d 行。"
+            "请将独立职责提取为单独的函数/方法，而不是原地压缩代码。"
+            % (SYMBOL, n, BEFORE["body_lines"], MAX_TARGET_BODY_LINES)
+        )
+E       AssertionError: LastModified.update_headers 的函数体仍有 23 行有效代码（重构前 23 行），要求不超过 14 行。请将独立职责提取为单独的函数/方法，而不是原地压缩代码。
+E       assert 23 <= 14
+
+tests/test_refactor_guard_swe_synth_0030.py:136: AssertionError
+___________________ test_target_function_complexity_reduced ____________________
+
+    def test_target_function_complexity_reduced():
+        """目标函数的圈复杂度必须降下来（分支/循环/短路判断更少）。"""
+        _, _, node = _target()
+        cx = _cyclomatic(node)
+>       assert cx <= MAX_TARGET_COMPLEXITY, (
+            "%s 的圈复杂度仍为 %d（重构前 %d），要求不超过 %d。"
+            "请减少嵌套分支，把条件判断收敛到辅助函数中。"
+            % (SYMBOL, cx, BEFORE["cyclomatic"], MAX_TARGET_COMPLEXITY)
+        )
+E       AssertionError: LastModified.update_headers 的圈复杂度仍为 10（重构前 10），要求不超过 5。请减少嵌套分支，把条件判断收敛到辅助函数中。
+E       assert 10 <= 5
+
+tests/test_refactor_guard_swe_synth_0030.py:147: AssertionError
+_______________________ test_no_new_monolithic_function ________________________
+
+    def test_no_new_monolithic_function():
+        """防伪重构：不允许把复杂度整体搬运到另一个巨型函数里。"""
+        lines, tree = _load()
+        offenders = [
+            (path, _effective_body_lines(node, lines))
+            for path, node in _iter_defs(tree)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and _effective_body_lines(node, lines) > MAX_ANY_FUNC_BODY_LINES
+        ]
+>       assert not offenders, (
+            "以下函数体量超过 %d 行：%r。"
+            "把代码整体搬到另一个大函数不算重构，请真正拆分职责。"
+            % (MAX_ANY_FUNC_BODY_LINES, offenders)
+        )
+E       AssertionError: 以下函数体量超过 13 行：[('LastModified.update_headers', 23)]。把代码整体搬到另一个大函数不算重构，请真正拆分职责。
+E       assert not [('LastModified.update_headers', 23)]
+
+tests/test_refactor_guard_swe_synth_0030.py:163: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_refactor_guard_swe_synth_0030.py::test_target_function_is_simplified
+FAILED tests/test_refactor_guard_swe_synth_0030.py::test_target_function_complexity_reduced
+FAILED tests/test_refactor_guard_swe_synth_0030.py::test_no_new_monolithic_function
+========================= 3 failed, 17 passed in 0.78s =========================

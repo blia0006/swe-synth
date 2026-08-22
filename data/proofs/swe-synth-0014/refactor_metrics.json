@@ -1,0 +1,31 @@
+{
+  "max_target_body_lines": 12,
+  "max_target_complexity": 5,
+  "max_any_func_body_lines": 12,
+  "expected_args": [
+    "value",
+    "binary",
+    "gnu",
+    "format"
+  ],
+  "before": {
+    "body_lines": 19,
+    "cyclomatic": 12,
+    "args": [
+      "value",
+      "binary",
+      "gnu",
+      "format"
+    ]
+  },
+  "after": {
+    "body_lines": 10,
+    "cyclomatic": 3,
+    "args": [
+      "value",
+      "binary",
+      "gnu",
+      "format"
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "solvable": true,
+  "reason": "题干准确：LLM 第 2 次尝试即依据题干完成任务并通过全部判据",
+  "first_pass_attempt": 2,
+  "difficulty_signal": "moderate",
+  "n_attempts": 2,
+  "attempts": [
+    {
+      "attempt": 1,
+      "passed": false,
+      "f2p": "9/10",
+      "p2p": "35/35",
+      "error": null
+    },
+    {
+      "attempt": 2,
+      "passed": true,
+      "f2p": "10/10",
+      "p2p": "35/35",
+      "error": null
+    }
+  ]
+}

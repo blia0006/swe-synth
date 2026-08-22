@@ -1,0 +1,22 @@
+{
+  "max_target_body_lines": 10,
+  "max_target_complexity": 5,
+  "max_any_func_body_lines": 22,
+  "expected_args": [
+    "obj"
+  ],
+  "before": {
+    "body_lines": 28,
+    "cyclomatic": 13,
+    "args": [
+      "obj"
+    ]
+  },
+  "after": {
+    "body_lines": 4,
+    "cyclomatic": 3,
+    "args": [
+      "obj"
+    ]
+  }
+}

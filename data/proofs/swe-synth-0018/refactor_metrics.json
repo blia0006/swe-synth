@@ -1,0 +1,22 @@
+{
+  "max_target_body_lines": 22,
+  "max_target_complexity": 13,
+  "max_any_func_body_lines": 20,
+  "expected_args": [
+    "stream"
+  ],
+  "before": {
+    "body_lines": 37,
+    "cyclomatic": 22,
+    "args": [
+      "stream"
+    ]
+  },
+  "after": {
+    "body_lines": 17,
+    "cyclomatic": 10,
+    "args": [
+      "stream"
+    ]
+  }
+}

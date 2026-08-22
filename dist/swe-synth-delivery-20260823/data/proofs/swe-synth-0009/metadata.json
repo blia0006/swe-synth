@@ -1,0 +1,27 @@
+{
+  "task_id": "swe-synth-0009",
+  "repo": "john-kurkowski/tldextract",
+  "base_commit": "72d37955ae5ba86267fd68c97b56866bd04c3ce9",
+  "language": "python",
+  "task_type": "module_addition",
+  "symbol": "tldextract/domain_utils.py",
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_domain_utils_synth.py::test_is_valid_domain_idna",
+    "tests/test_domain_utils_synth.py::test_is_valid_domain_invalid",
+    "tests/test_domain_utils_synth.py::test_is_valid_domain_valid",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_empty_and_dots",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_idna",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_invalid_unicode",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_lowercase_no_trailing_dot"
+  ],
+  "PASS_TO_PASS": [],
+  "modified_files": [
+    "tldextract/domain_utils.py"
+  ],
+  "do_not_modify": [
+    "tests/test_domain_utils_synth.py"
+  ],
+  "workspace": "/workspace/repo",
+  "python": "/opt/venv311/bin/python"
+}

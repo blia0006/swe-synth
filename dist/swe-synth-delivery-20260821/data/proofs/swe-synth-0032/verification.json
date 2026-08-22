@@ -1,0 +1,48 @@
+{
+  "task_id": "swe-synth-0032",
+  "passed": true,
+  "reason": "双向验证通过：空解失败（题目有内容）、参考解通过（题目可解）",
+  "empty_sandbox_id": "ooy7ira6k3gavqojgcyihzrwkpicofwwqqc64hbb",
+  "golden_sandbox_id": "fi7rkpn4xyz7k65dcjijtbybbb5xhgxgvxw72du5",
+  "empty_run": {
+    "task_id": "swe-synth-0032",
+    "passed": false,
+    "fail_to_pass": {
+      "total": 3,
+      "passed": 0,
+      "failing": [
+        "tests/test_storage_redis.py::TestRedisCache::test_set_expiration_datetime",
+        "tests/test_storage_redis.py::TestRedisCache::test_set_expiration_datetime_aware",
+        "tests/test_storage_redis.py::TestRedisCache::test_set_expiration_int"
+      ]
+    },
+    "pass_to_pass": {
+      "total": 30,
+      "passed": 30,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 1,
+    "n_collected": 33,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "golden_run": {
+    "task_id": "swe-synth-0032",
+    "passed": true,
+    "fail_to_pass": {
+      "total": 3,
+      "passed": 3,
+      "failing": []
+    },
+    "pass_to_pass": {
+      "total": 30,
+      "passed": 30,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 0,
+    "n_collected": 33,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "duration_sec": 225.6
+}

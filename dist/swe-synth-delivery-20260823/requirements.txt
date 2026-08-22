@@ -1,0 +1,44 @@
+# === 课题三：数据合成 - 依赖清单 ===
+# Python 3.11（课题指定版本）
+# 安装：pip install -r requirements.txt
+
+# --- LLM 调用（TokenHub 为 OpenAI 兼容协议）---
+openai>=1.40.0
+
+# --- 腾讯云 Agent Sandbox ---
+# 两个 SDK 互补，都要装：
+#   e2b-code-interpreter → 创建/连接沙箱实例（官方文档明确支持的兼容路径）
+#   agent-sandbox        → 课题要求"推荐使用"，连接已有实例后操作其内部能力
+#                          （bash / code / file / jupyter / shell / skills）
+#
+# 已切换到 2.x（已实测走通）：2.x 默认强制校验 API Key 必须是 "e2b_" + hex
+# 前缀，而腾讯云 AGS 的 Key 是 "ark_xxx"——但 2.x 本身留了官方开关
+# `E2B_VALIDATE_API_KEY=false`（见 `e2b/connection_config.py`），设置后跳过
+# 格式校验、其余协议（Sandbox.connect / commands.run / files.*）与 AGS 后端
+# 完全兼容。生产代码（sandbox_runner.py）已在导入前设置该环境变量，不需要
+# 手动 export。1.x 兼容分支仍保留在 `_connect_sandbox()` 里作为兜底。
+e2b-code-interpreter>=2.9.0,<3.0.0
+agent-sandbox>=0.0.30
+
+# --- 腾讯云 OpenAPI（创建沙箱工具 / 查询 TCR 等）---
+tencentcloud-sdk-python>=3.0.1200
+tccli>=3.0.1200
+
+# --- GitHub 检索与仓库操作 ---
+PyGithub>=2.3.0
+GitPython>=3.1.43
+requests>=2.32.0
+
+# --- 数据建模与模板渲染 ---
+pydantic>=2.8.0
+jsonschema>=4.23.0
+Jinja2>=3.1.4
+PyYAML>=6.0.1
+
+# --- 工程辅助 ---
+python-dotenv>=1.0.1
+rich>=13.7.0          # 自检脚本的表格输出
+tenacity>=8.5.0       # LLM / GitHub API 重试退避
+
+# --- 去重比对（BM25 粗筛）---
+rank-bm25>=0.2.2

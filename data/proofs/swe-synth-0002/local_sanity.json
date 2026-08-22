@@ -1,0 +1,41 @@
+{
+  "ok": true,
+  "reason": "双向 sanity 通过：题目态必红、golden 态必绿、原有用例未被破坏",
+  "fail_to_pass": [
+    "tests/test_itsdangerous/test_refactor_guard_swe_synth_0002.py::test_target_function_complexity_reduced",
+    "tests/test_itsdangerous/test_refactor_guard_swe_synth_0002.py::test_target_function_is_simplified"
+  ],
+  "pass_to_pass": [
+    "tests/test_itsdangerous/test_refactor_guard_swe_synth_0002.py::test_no_new_monolithic_function",
+    "tests/test_itsdangerous/test_refactor_guard_swe_synth_0002.py::test_signature_unchanged",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[None]",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[algorithm1]",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[algorithm2]",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[algorithm3]",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_broken_signature",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_changed_value",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_digest_method",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_invalid_key_derivation",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_invalid_separator",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[concat]",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[django-concat]",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[hmac]",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[none]",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_no_separator",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_secret_keys",
+    "tests/test_itsdangerous/test_signer.py::TestSigner::test_signer",
+    "tests/test_itsdangerous/test_signer.py::test_abstract_algorithm"
+  ],
+  "deterministic": true,
+  "duration_sec": 1.01,
+  "stub_summary": {
+    "returncode": 1,
+    "n_passed": 19,
+    "n_failed": 2
+  },
+  "golden_summary": {
+    "returncode": 0,
+    "n_passed": 21,
+    "n_failed": 0
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "reason": "双向 sanity 通过：题目态必红、golden 态必绿、原有用例未被破坏",
+  "fail_to_pass": [
+    "tests/test_domain_utils_synth.py::test_is_valid_domain_idna",
+    "tests/test_domain_utils_synth.py::test_is_valid_domain_invalid",
+    "tests/test_domain_utils_synth.py::test_is_valid_domain_valid",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_empty_and_dots",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_idna",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_invalid_unicode",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_lowercase_no_trailing_dot"
+  ],
+  "pass_to_pass": [],
+  "deterministic": true,
+  "duration_sec": 12.32,
+  "stub_summary": {
+    "returncode": 1,
+    "n_passed": 0,
+    "n_failed": 8
+  },
+  "golden_summary": {
+    "returncode": 1,
+    "n_passed": 7,
+    "n_failed": 1
+  }
+}

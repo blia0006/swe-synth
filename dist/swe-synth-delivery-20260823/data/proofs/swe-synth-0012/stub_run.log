@@ -1,0 +1,69 @@
+============================= test session starts ==============================
+collecting ... collected 9 items
+
+tests/test_misc.py::TestMiscellaneous::test_deepcopy PASSED              [ 11%]
+tests/test_misc.py::TestMiscellaneous::test_incorrect_load FAILED        [ 22%]
+tests/test_misc.py::TestMiscellaneous::test_inline_array_recursion_limit PASSED [ 33%]
+tests/test_misc.py::TestMiscellaneous::test_inline_table_recursion_limit PASSED [ 44%]
+tests/test_misc.py::TestMiscellaneous::test_key_recursion_limit PASSED   [ 55%]
+tests/test_misc.py::TestMiscellaneous::test_lazy_import SKIPPED (nee...) [ 66%]
+tests/test_misc.py::TestMiscellaneous::test_load FAILED                  [ 77%]
+tests/test_misc.py::TestMiscellaneous::test_parse_float PASSED           [ 88%]
+tests/test_misc.py::TestMiscellaneous::test_types_import PASSED          [100%]
+
+=================================== FAILURES ===================================
+____________________ TestMiscellaneous.test_incorrect_load _____________________
+
+self = <tests.test_misc.TestMiscellaneous testMethod=test_incorrect_load>
+
+    def test_incorrect_load(self):
+        content = "one=1"
+        with tempfile.TemporaryDirectory() as tmp_dir_path:
+            file_path = Path(tmp_dir_path) / "test.toml"
+            file_path.write_text(content)
+    
+            with open(file_path, "r") as txt_f:
+                with self.assertRaises(TypeError) as exc_info:
+>                   tomllib.load(txt_f)  # type: ignore[arg-type]
+                    ^^^^^^^^^^^^^^^^^^^
+
+tests/test_misc.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def load(__fp: IO[bytes], *, parse_float: ParseFloat = float) -> dict[str, Any]:
+        """Parse TOML from a binary file object."""
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+src/tomli/_parser.py:152: NotImplementedError
+_________________________ TestMiscellaneous.test_load __________________________
+
+self = <tests.test_misc.TestMiscellaneous testMethod=test_load>
+
+    def test_load(self):
+        content = "one=1 \n two='two' \n arr=[]"
+        expected = {"one": 1, "two": "two", "arr": []}
+        with tempfile.TemporaryDirectory() as tmp_dir_path:
+            file_path = Path(tmp_dir_path) / "test.toml"
+            file_path.write_text(content)
+    
+            with open(file_path, "rb") as bin_f:
+>               actual = tomllib.load(bin_f)
+                         ^^^^^^^^^^^^^^^^^^^
+
+tests/test_misc.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+__fp = <_io.BufferedReader name='/var/folders/rx/wxh4f2gx1mvdgc6spgk22bmw0000gn/T/tmpguvwjtgm/test.toml'>
+parse_float = <class 'float'>
+
+    def load(__fp: IO[bytes], *, parse_float: ParseFloat = float) -> dict[str, Any]:
+        """Parse TOML from a binary file object."""
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+src/tomli/_parser.py:152: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_misc.py::TestMiscellaneous::test_incorrect_load - NotImplem...
+FAILED tests/test_misc.py::TestMiscellaneous::test_load - NotImplementedError...
+==================== 2 failed, 6 passed, 1 skipped in 0.05s ====================

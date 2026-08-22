@@ -1,0 +1,15 @@
+============================= test session starts ==============================
+collecting ... collected 10 items
+
+tests/test_serialization.py::TestSerializer::test_load_by_version_v0 PASSED [ 10%]
+tests/test_serialization.py::TestSerializer::test_load_by_version_v1 PASSED [ 20%]
+tests/test_serialization.py::TestSerializer::test_load_by_version_v2 PASSED [ 30%]
+tests/test_serialization.py::TestSerializer::test_load_by_version_v3 PASSED [ 40%]
+tests/test_serialization.py::TestSerializer::test_no_body_creates_response_file_handle_on_dumps PASSED [ 50%]
+tests/test_serialization.py::TestSerializer::test_no_incomplete_read_on_dumps PASSED [ 60%]
+tests/test_serialization.py::TestSerializer::test_no_vary_header PASSED  [ 70%]
+tests/test_serialization.py::TestSerializer::test_read_latest_version PASSED [ 80%]
+tests/test_serialization.py::TestSerializer::test_read_latest_version_streamable PASSED [ 90%]
+tests/test_serialization.py::TestSerializer::test_read_version_v4 PASSED [100%]
+
+============================== 10 passed in 0.72s ==============================

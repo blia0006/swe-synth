@@ -1,0 +1,115 @@
+diff --git a/cachecontrol/cache_control_directives.py b/cachecontrol/cache_control_directives.py
+new file mode 100644
+--- /dev/null
++++ b/cachecontrol/cache_control_directives.py
+@@ -0,0 +1,42 @@
++# SPDX-FileCopyrightText: 2025 CacheControl contributors
++#
++# SPDX-License-Identifier: Apache-2.0
++from __future__ import annotations
++
++from typing import Mapping
++
++
++def parse_cache_control(value: str) -> dict[str, str | None]:
++    '''Parse a Cache-Control header value into a dict.
++
++    Directives are comma separated. Directive names are normalized to lowercase.
++    Values are strings, with surrounding double quotes removed. Directives without
++    a value map to ``None``.
++    '''
++    raise NotImplementedError('Not implemented')
++
++
++def cache_control_from_headers(headers: Mapping[str, str]) -> dict[str, str | None]:
++    '''Return directives parsed from the Cache-Control header in *headers*.
++
++    Header lookup is case-insensitive. If multiple Cache-Control keys are present,
++    the last one encountered wins. Missing or empty values produce an empty dict.
++    '''
++    raise NotImplementedError('Not implemented')
++
++
++def get_max_age(headers: Mapping[str, str]) -> int | None:
++    '''Return the integer value of the max-age directive if present and valid.
++
++    Returns ``None`` if the directive is missing, has no value, or its value cannot
++    be parsed as a Python ``int``.
++    '''
++    raise NotImplementedError('Not implemented')
++
++
++def has_directive(headers: Mapping[str, str], directive: str) -> bool:
++    '''Return True if *directive* is present in the Cache-Control header.
++
++    Directive matching is case-insensitive.
++    '''
++    raise NotImplementedError('Not implemented')
+diff --git a/tests/test_cache_control_directives_synth.py b/tests/test_cache_control_directives_synth.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_cache_control_directives_synth.py
+@@ -0,0 +1,63 @@
++# SPDX-FileCopyrightText: 2025 CacheControl contributors
++#
++# SPDX-License-Identifier: Apache-2.0
++
++from cachecontrol.cache_control_directives import (
++    cache_control_from_headers,
++    get_max_age,
++    has_directive,
++    parse_cache_control,
++)
++
++
++def test_parse_simple_directives():
++    result = parse_cache_control('public, max-age=3600, no-cache')
++    assert result == {'public': None, 'max-age': '3600', 'no-cache': None}
++
++
++def test_parse_quoted_value_preserves_comma():
++    result = parse_cache_control('no-cache="Set-Cookie, Set-Cookie2", max-age=0')
++    assert result == {'no-cache': 'Set-Cookie, Set-Cookie2', 'max-age': '0'}
++
++
++def test_parse_duplicate_directive_last_wins():
++    result = parse_cache_control('max-age=10, max-age=20')
++    assert result == {'max-age': '20'}
++
++
++def test_parse_normalizes_directive_names():
++    result = parse_cache_control('MAX-AGE=60, No-Store')
++    assert result == {'max-age': '60', 'no-store': None}
++
++
++def test_parse_ignores_empty_and_invalid_fragments():
++    result = parse_cache_control(' , =nonsense, no-cache=')
++    assert result == {'no-cache': ''}
++
++
++def test_cache_control_from_headers_missing_header():
++    result = cache_control_from_headers({'Accept': 'text/html'})
++    assert result == {}
++
++
++def test_cache_control_from_headers_case_insensitive():
++    result = cache_control_from_headers({'Cache-Control': 'max-age=3600'})
++    assert result == {'max-age': '3600'}
++
++
++def test_get_max_age_valid():
++    assert get_max_age({'Cache-Control': 'max-age=3600'}) == 3600
++
++
++def test_get_max_age_invalid_or_missing_returns_none():
++    assert get_max_age({'Cache-Control': 'max-age=abc'}) is None
++    assert get_max_age({'Cache-Control': 'no-cache'}) is None
++    assert get_max_age({'Accept': 'text/html'}) is None
++
++
++def test_has_directive():
++    headers = {'Cache-Control': 'no-store, max-age=0'}
++    assert has_directive(headers, 'no-store') is True
++    assert has_directive(headers, 'NO-STORE') is True
++    assert has_directive(headers, 'no-cache') is False
++    assert has_directive({}, 'no-store') is False

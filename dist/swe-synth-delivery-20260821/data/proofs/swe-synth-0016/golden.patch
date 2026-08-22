@@ -1,0 +1,56 @@
+--- a/tenacity/jitter.py
++++ b/tenacity/jitter.py
+@@ -22,7 +22,8 @@
+     :param value: value produced by a random callable
+     :raises ValueError: if *value* is outside [0, 1)
+     """
+-    raise NotImplementedError("_validate_random_value")
++    if value < 0.0 or value >= 1.0:
++        raise ValueError("random_func must return a float in the range [0, 1)")
+ 
+ 
+ def full_jitter(base_delay: float, random_func: typing.Callable[[], float]) -> float:
+@@ -36,7 +37,11 @@
+     :raises ValueError: if *base_delay* is negative or *random_func* returns
+         a value outside [0, 1)
+     """
+-    raise NotImplementedError("full_jitter")
++    if base_delay < 0.0:
++        raise ValueError("base_delay must be non-negative")
++    value = random_func()
++    _validate_random_value(value)
++    return base_delay * value
+ 
+ 
+ def equal_jitter(base_delay: float, random_func: typing.Callable[[], float]) -> float:
+@@ -50,7 +55,12 @@
+     :raises ValueError: if *base_delay* is negative or *random_func* returns
+         a value outside [0, 1)
+     """
+-    raise NotImplementedError("equal_jitter")
++    if base_delay < 0.0:
++        raise ValueError("base_delay must be non-negative")
++    value = random_func()
++    _validate_random_value(value)
++    half = base_delay / 2.0
++    return half + half * value
+ 
+ 
+ def decorrelated_jitter(
+@@ -73,4 +83,15 @@
+     :raises ValueError: if any numeric argument is invalid or *random_func*
+         returns a value outside [0, 1)
+     """
+-    raise NotImplementedError("decorrelated_jitter")
++    if base_delay < 0.0:
++        raise ValueError("base_delay must be non-negative")
++    if previous_delay < 0.0:
++        raise ValueError("previous_delay must be non-negative")
++    if cap < base_delay:
++        raise ValueError("cap must be greater than or equal to base_delay")
++    value = random_func()
++    _validate_random_value(value)
++    upper = min(cap, previous_delay * 3.0)
++    if upper <= base_delay:
++        return base_delay
++    return base_delay + (upper - base_delay) * value

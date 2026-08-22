@@ -1,0 +1,16 @@
+============================= test session starts ==============================
+collecting ... collected 11 items
+
+tests/test_backoff_calculator_synth.py::test_exponential_delay_basic PASSED [  9%]
+tests/test_backoff_calculator_synth.py::test_exponential_delay_with_max_delay PASSED [ 18%]
+tests/test_backoff_calculator_synth.py::test_total_delay_until_attempt PASSED [ 27%]
+tests/test_backoff_calculator_synth.py::test_total_delay_with_cap PASSED [ 36%]
+tests/test_backoff_calculator_synth.py::test_attempts_possible_within_budget PASSED [ 45%]
+tests/test_backoff_calculator_synth.py::test_attempts_possible_within_budget_zero PASSED [ 54%]
+tests/test_backoff_calculator_synth.py::test_invalid_attempt PASSED      [ 63%]
+tests/test_backoff_calculator_synth.py::test_invalid_initial_delay PASSED [ 72%]
+tests/test_backoff_calculator_synth.py::test_invalid_multiplier PASSED   [ 81%]
+tests/test_backoff_calculator_synth.py::test_invalid_budget PASSED       [ 90%]
+tests/test_backoff_calculator_synth.py::test_invalid_max_delay PASSED    [100%]
+
+============================== 11 passed in 0.02s ==============================

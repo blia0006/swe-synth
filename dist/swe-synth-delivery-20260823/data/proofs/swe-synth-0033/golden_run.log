@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+collecting ... collected 16 items
+
+tests/test_expires_heuristics.py::TestExpiresAfter::test_expires_after_one_day PASSED [  6%]
+tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_301 PASSED [ 12%]
+tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_304 PASSED [ 18%]
+tests/test_expires_heuristics.py::TestHeuristicWithoutWarning::test_no_header_change_means_no_warning_header PASSED [ 25%]
+tests/test_expires_heuristics.py::TestLastModified::test_last_modified PASSED [ 31%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expires_is_not_replaced_when_present PASSED [ 37%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expiry_is_no_more_that_twenty_four_hours PASSED [ 43%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_cache_control_present PASSED [ 50%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_status_is_unknown PASSED [ 56%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used PASSED [ 62%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used_when_cache_control_public PASSED [ 68%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_no_expiry_is_inferred_when_no_last_modified_is_present PASSED [ 75%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_is_not_added_when_heuristic_was_not_used PASSED [ 81%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_not_added_when_response_more_recent_than_24_hours PASSED [ 87%]
+tests/test_expires_heuristics.py::TestOneDayCache::test_cache_for_one_day PASSED [ 93%]
+tests/test_expires_heuristics.py::TestUseExpiresHeuristic::test_expires_heuristic_arg PASSED [100%]
+
+============================== 16 passed in 0.77s ==============================

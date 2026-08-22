@@ -1,0 +1,130 @@
+diff --git a/tenacity/backoff_schedule.py b/tenacity/backoff_schedule.py
+new file mode 100644
+--- /dev/null
++++ b/tenacity/backoff_schedule.py
+@@ -0,0 +1,64 @@
++from typing import List
++
++
++def exponential_backoff_delay(
++    attempt: int,
++    base_delay: float,
++    multiplier: float,
++    max_delay: float,
++) -> float:
++    '''Compute the backoff delay for a single attempt.
++
++    Given an attempt number (starting at 1 for the first retry), a base
++    delay, a multiplier, and a maximum delay, compute the delay before
++    that attempt. The delay is calculated as base_delay multiplied by
++    multiplier raised to the power of (attempt - 1). If the result
++    exceeds max_delay, max_delay is returned instead.
++
++    Args:
++        attempt: The 1-based attempt number. Must be a positive integer.
++        base_delay: The delay for the first attempt (in seconds). Must be
++            non-negative.
++        multiplier: The multiplicative factor applied for each
++            subsequent attempt. Must be non-negative.
++        max_delay: The maximum allowed delay (in seconds). Must be
++            non-negative.
++
++    Returns:
++        The computed delay in seconds (float). May be capped at max_delay.
++
++    Raises:
++        ValueError: If attempt is not positive, or if base_delay,
++            multiplier, or max_delay is negative.
++    '''
++    raise NotImplementedError('backoff_schedule.exponential_backoff_delay')
++
++
++def build_exponential_backoff_schedule(
++    total_attempts: int,
++    base_delay: float,
++    multiplier: float,
++    max_delay: float,
++) -> List[float]:
++    '''Build a list of backoff delays for the given total number of attempts.
++
++    Args:
++        total_attempts: The number of delays to generate. Must be
++            non-negative. If zero, an empty list is returned.
++        base_delay: The delay for the first attempt (in seconds). Must be
++            non-negative.
++        multiplier: The multiplicative factor applied for each subsequent
++            attempt. Must be non-negative.
++        max_delay: The maximum allowed delay (in seconds). Must be
++            non-negative.
++
++    Returns:
++        A list of floats representing the delay before each attempt,
++        starting with attempt 1. The length of the list equals
++        total_attempts.
++
++    Raises:
++        ValueError: If total_attempts is negative, or if base_delay,
++            multiplier, or max_delay is negative.
++    '''
++    raise NotImplementedError('backoff_schedule.build_exponential_backoff_schedule')
+diff --git a/tests/test_backoff_schedule_synth.py b/tests/test_backoff_schedule_synth.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_backoff_schedule_synth.py
+@@ -0,0 +1,56 @@
++import pytest
++
++from tenacity.backoff_schedule import (
++    build_exponential_backoff_schedule,
++    exponential_backoff_delay,
++)
++
++
++def test_exponential_backoff_delay_first_attempt_returns_base_delay():
++    assert exponential_backoff_delay(1, 1.0, 2.0, 100.0) == pytest.approx(1.0)
++
++
++def test_exponential_backoff_delay_second_attempt_returns_multiplied():
++    assert exponential_backoff_delay(2, 1.0, 2.0, 100.0) == pytest.approx(2.0)
++
++
++def test_exponential_backoff_delay_respects_max_delay():
++    assert exponential_backoff_delay(3, 5.0, 3.0, 20.0) == pytest.approx(20.0)
++
++
++def test_exponential_backoff_delay_zero_multiplier_yields_zero_after_first():
++    assert exponential_backoff_delay(2, 5.0, 0.0, 100.0) == pytest.approx(0.0)
++
++
++def test_exponential_backoff_delay_invalid_attempt_raises():
++    with pytest.raises(ValueError):
++        exponential_backoff_delay(0, 1.0, 2.0, 100.0)
++    with pytest.raises(ValueError):
++        exponential_backoff_delay(-1, 1.0, 2.0, 100.0)
++
++
++def test_exponential_backoff_delay_negative_params_raise():
++    with pytest.raises(ValueError):
++        exponential_backoff_delay(1, -1.0, 2.0, 100.0)
++    with pytest.raises(ValueError):
++        exponential_backoff_delay(1, 1.0, -2.0, 100.0)
++    with pytest.raises(ValueError):
++        exponential_backoff_delay(1, 1.0, 2.0, -100.0)
++
++
++def test_build_exponential_backoff_schedule_returns_correct_length_and_values():
++    result = build_exponential_backoff_schedule(3, 1.0, 2.0, 100.0)
++    assert len(result) == 3
++    assert result[0] == pytest.approx(1.0)
++    assert result[1] == pytest.approx(2.0)
++    assert result[2] == pytest.approx(4.0)
++
++
++def test_build_exponential_backoff_schedule_zero_attempts_returns_empty():
++    result = build_exponential_backoff_schedule(0, 1.0, 2.0, 100.0)
++    assert result == []
++
++
++def test_build_exponential_backoff_schedule_negative_attempts_raises():
++    with pytest.raises(ValueError):
++        build_exponential_backoff_schedule(-1, 1.0, 2.0, 100.0)

@@ -1,0 +1,87 @@
+--- a/cachecontrol/cache_control_directives.py
++++ b/cachecontrol/cache_control_directives.py
+@@ -13,7 +13,45 @@
+     Values are strings, with surrounding double quotes removed. Directives without
+     a value map to ``None``.
+     '''
+-    raise NotImplementedError('Not implemented')
++    if not value:
++        return {}
++
++    parts: list[str] = []
++    current: list[str] = []
++    in_quote = False
++    for char in value:
++        if char == '"':
++            in_quote = not in_quote
++            current.append(char)
++        elif char == ',' and not in_quote:
++            parts.append(''.join(current))
++            current = []
++        else:
++            current.append(char)
++    if current:
++        parts.append(''.join(current))
++
++    directives: dict[str, str | None] = {}
++    for part in parts:
++        part = part.strip()
++        if not part:
++            continue
++
++        if '=' not in part:
++            directives[part.lower()] = None
++            continue
++
++        name, _, val = part.partition('=')
++        name = name.strip().lower()
++        if not name:
++            continue
++
++        val = val.strip()
++        if len(val) >= 2 and val.startswith('"') and val.endswith('"'):
++            val = val[1:-1]
++        directives[name] = val
++
++    return directives
+ 
+ 
+ def cache_control_from_headers(headers: Mapping[str, str]) -> dict[str, str | None]:
+@@ -22,7 +60,13 @@
+     Header lookup is case-insensitive. If multiple Cache-Control keys are present,
+     the last one encountered wins. Missing or empty values produce an empty dict.
+     '''
+-    raise NotImplementedError('Not implemented')
++    value: str | None = None
++    for name, val in headers.items():
++        if name.lower() == 'cache-control':
++            value = val
++    if value is None:
++        return {}
++    return parse_cache_control(value)
+ 
+ 
+ def get_max_age(headers: Mapping[str, str]) -> int | None:
+@@ -31,7 +75,14 @@
+     Returns ``None`` if the directive is missing, has no value, or its value cannot
+     be parsed as a Python ``int``.
+     '''
+-    raise NotImplementedError('Not implemented')
++    directives = cache_control_from_headers(headers)
++    value = directives.get('max-age')
++    if value is None:
++        return None
++    try:
++        return int(value)
++    except (TypeError, ValueError):
++        return None
+ 
+ 
+ def has_directive(headers: Mapping[str, str], directive: str) -> bool:
+@@ -39,4 +90,5 @@
+ 
+     Directive matching is case-insensitive.
+     '''
+-    raise NotImplementedError('Not implemented')
++    directives = cache_control_from_headers(headers)
++    return directive.lower() in directives

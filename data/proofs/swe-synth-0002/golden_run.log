@@ -1,0 +1,26 @@
+============================= test session starts ==============================
+collecting ... collected 21 items
+
+tests/test_itsdangerous/test_refactor_guard_swe_synth_0002.py::test_signature_unchanged PASSED [  4%]
+tests/test_itsdangerous/test_refactor_guard_swe_synth_0002.py::test_target_function_is_simplified PASSED [  9%]
+tests/test_itsdangerous/test_refactor_guard_swe_synth_0002.py::test_target_function_complexity_reduced PASSED [ 14%]
+tests/test_itsdangerous/test_refactor_guard_swe_synth_0002.py::test_no_new_monolithic_function PASSED [ 19%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_signer PASSED   [ 23%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_no_separator PASSED [ 28%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_broken_signature PASSED [ 33%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_changed_value PASSED [ 38%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_invalid_separator PASSED [ 42%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[concat] PASSED [ 47%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[django-concat] PASSED [ 52%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[hmac] PASSED [ 57%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[none] PASSED [ 61%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_invalid_key_derivation PASSED [ 66%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_digest_method PASSED [ 71%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[None] PASSED [ 76%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[algorithm1] PASSED [ 80%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[algorithm2] PASSED [ 85%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[algorithm3] PASSED [ 90%]
+tests/test_itsdangerous/test_signer.py::TestSigner::test_secret_keys PASSED [ 95%]
+tests/test_itsdangerous/test_signer.py::test_abstract_algorithm PASSED   [100%]
+
+============================== 21 passed in 0.03s ==============================

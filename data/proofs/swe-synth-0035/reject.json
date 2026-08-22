@@ -1,0 +1,5 @@
+{
+  "candidate": "cachecontrol/serialize.py::Serializer._loads_v4",
+  "stage": "SOLVE_BACK",
+  "reason": "题干可能不准确或过于含糊：2 次尝试均未通过（最好一次 FAIL_TO_PASS 0/5）。常见原因是题干描述的行为与真实实现不一致。"
+}

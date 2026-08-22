@@ -1,0 +1,166 @@
+diff --git a/tenacity/retry_stats.py b/tenacity/retry_stats.py
+new file mode 100644
+--- /dev/null
++++ b/tenacity/retry_stats.py
+@@ -0,0 +1,61 @@
++import typing
++from collections import Counter
++
++
++class RetryStatsTracker:
++    '''Track retry attempt outcomes and compute aggregate statistics.
++
++    This class records each retry attempt as either a success or a failure,
++    along with its duration and (for failures) the error type. It can then
++    produce a summary of the collected attempts.
++
++    All methods are pure and do not perform I/O, use the current time, or
++    introduce any side effects beyond updating internal state.
++    '''
++
++    def __init__(self) -> None:
++        '''Initialize an empty tracker.'''
++        raise NotImplementedError
++
++    def record_attempt(
++        self,
++        outcome: str,
++        error_type: str | None = None,
++        duration: float = 0.0,
++    ) -> None:
++        '''Record a single retry attempt.
++
++        Args:
++            outcome: Must be ``'success'`` or ``'failure'``.
++            error_type: Required when outcome is ``'failure'``; must be a
++                non-empty string. Must be ``None`` when outcome is
++                ``'success'``.
++            duration: Non-negative number of seconds the attempt took.
++
++        Raises:
++            ValueError: If any argument is invalid.
++        '''
++        raise NotImplementedError
++
++    def record_success(self, duration: float = 0.0) -> None:
++        '''Record a successful attempt with the given duration.'''
++        raise NotImplementedError
++
++    def record_failure(self, error_type: str, duration: float = 0.0) -> None:
++        '''Record a failed attempt with the given error type and duration.'''
++        raise NotImplementedError
++
++    def summary(self) -> dict[str, typing.Any]:
++        '''Return aggregate statistics about recorded attempts.
++
++        Returns:
++            A dictionary with the following keys:
++                total_attempts: total number of recorded attempts.
++                success_count: number of successful attempts.
++                failure_count: number of failed attempts.
++                total_duration: sum of all attempt durations.
++                average_duration: average duration (0.0 if no attempts).
++                success_rate: fraction of successful attempts (0.0 if no attempts).
++                error_type_counts: mapping of error type string to its count.
++        '''
++        raise NotImplementedError
+diff --git a/tests/test_retry_stats_synth.py b/tests/test_retry_stats_synth.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_retry_stats_synth.py
+@@ -0,0 +1,95 @@
++import pytest
++
++from tenacity.retry_stats import RetryStatsTracker
++
++
++def test_initial_summary_is_empty():
++    tracker = RetryStatsTracker()
++    summary = tracker.summary()
++    assert summary == {
++        'total_attempts': 0,
++        'success_count': 0,
++        'failure_count': 0,
++        'total_duration': 0.0,
++        'average_duration': 0.0,
++        'success_rate': 0.0,
++        'error_type_counts': {},
++    }
++
++
++def test_record_success_updates_counts():
++    tracker = RetryStatsTracker()
++    tracker.record_success(1.5)
++    tracker.record_success(2.5)
++    summary = tracker.summary()
++    assert summary['total_attempts'] == 2
++    assert summary['success_count'] == 2
++    assert summary['failure_count'] == 0
++    assert summary['total_duration'] == 4.0
++    assert summary['average_duration'] == 2.0
++    assert summary['success_rate'] == 1.0
++    assert summary['error_type_counts'] == {}
++
++
++def test_record_failure_updates_counts_and_errors():
++    tracker = RetryStatsTracker()
++    tracker.record_failure('ValueError', 0.5)
++    tracker.record_failure('TimeoutError', 1.5)
++    tracker.record_failure('ValueError', 0.5)
++    summary = tracker.summary()
++    assert summary['total_attempts'] == 3
++    assert summary['success_count'] == 0
++    assert summary['failure_count'] == 3
++    assert summary['total_duration'] == 2.5
++    assert summary['average_duration'] == pytest.approx(2.5 / 3)
++    assert summary['success_rate'] == 0.0
++    assert summary['error_type_counts'] == {'ValueError': 2, 'TimeoutError': 1}
++
++
++def test_mixed_attempts():
++    tracker = RetryStatsTracker()
++    tracker.record_success(1.0)
++    tracker.record_failure('ValueError', 2.0)
++    tracker.record_success(0.5)
++    tracker.record_failure('TimeoutError', 3.0)
++    summary = tracker.summary()
++    assert summary['total_attempts'] == 4
++    assert summary['success_count'] == 2
++    assert summary['failure_count'] == 2
++    assert summary['total_duration'] == 6.5
++    assert summary['average_duration'] == 6.5 / 4
++    assert summary['success_rate'] == 0.5
++    assert summary['error_type_counts'] == {'ValueError': 1, 'TimeoutError': 1}
++
++
++def test_record_attempt_invalid_outcome():
++    tracker = RetryStatsTracker()
++    with pytest.raises(ValueError):
++        tracker.record_attempt('invalid', None, 1.0)
++
++
++def test_record_attempt_invalid_duration():
++    tracker = RetryStatsTracker()
++    with pytest.raises(ValueError):
++        tracker.record_attempt('success', None, -1.0)
++
++
++def test_record_attempt_invalid_error_type_for_success():
++    tracker = RetryStatsTracker()
++    with pytest.raises(ValueError):
++        tracker.record_attempt('success', 'ValueError', 1.0)
++
++
++def test_record_attempt_invalid_error_type_for_failure():
++    tracker = RetryStatsTracker()
++    with pytest.raises(ValueError):
++        tracker.record_attempt('failure', None, 1.0)
++    with pytest.raises(ValueError):
++        tracker.record_attempt('failure', '', 1.0)
++
++
++def test_record_success_and_failure_wrappers():
++    tracker = RetryStatsTracker()
++    tracker.record_success()
++    tracker.record_failure('Exception')
++    assert tracker.summary()['total_attempts'] == 2

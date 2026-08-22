@@ -1,0 +1,54 @@
+{
+  "task_id": "swe-synth-0010",
+  "passed": true,
+  "reason": "双向验证通过：空解失败（题目有内容）、参考解通过（题目可解）",
+  "empty_sandbox_id": "xog2w7pcr3dkayaqkeijjoe53volrsy3urzynkyz",
+  "golden_sandbox_id": "dgt6ux6epfw7lpeqsvyod5qyj3ehy2s353tlxl4x",
+  "empty_run": {
+    "task_id": "swe-synth-0010",
+    "passed": false,
+    "fail_to_pass": {
+      "total": 9,
+      "passed": 0,
+      "failing": [
+        "tests/test_backoff_schedule_synth.py::test_build_exponential_backoff_schedule_negative_attempts_raises",
+        "tests/test_backoff_schedule_synth.py::test_build_exponential_backoff_schedule_returns_correct_length_and_values",
+        "tests/test_backoff_schedule_synth.py::test_build_exponential_backoff_schedule_zero_attempts_returns_empty",
+        "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_first_attempt_returns_base_delay",
+        "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_invalid_attempt_raises",
+        "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_negative_params_raise",
+        "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_respects_max_delay",
+        "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_second_attempt_returns_multiplied",
+        "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_zero_multiplier_yields_zero_after_first"
+      ]
+    },
+    "pass_to_pass": {
+      "total": 0,
+      "passed": 0,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 1,
+    "n_collected": 9,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "golden_run": {
+    "task_id": "swe-synth-0010",
+    "passed": true,
+    "fail_to_pass": {
+      "total": 9,
+      "passed": 9,
+      "failing": []
+    },
+    "pass_to_pass": {
+      "total": 0,
+      "passed": 0,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 0,
+    "n_collected": 9,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "duration_sec": 238.1
+}

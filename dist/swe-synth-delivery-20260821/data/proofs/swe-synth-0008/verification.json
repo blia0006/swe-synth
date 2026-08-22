@@ -1,0 +1,56 @@
+{
+  "task_id": "swe-synth-0008",
+  "passed": true,
+  "reason": "双向验证通过：空解失败（题目有内容）、参考解通过（题目可解）",
+  "empty_sandbox_id": "xjwig6ydwpcqunkved5f7yt4mt5iiuqtljxmolfe",
+  "golden_sandbox_id": "jqa6ubhnm2tplhofxlye77op34pftjzgcmsaiaol",
+  "empty_run": {
+    "task_id": "swe-synth-0008",
+    "passed": false,
+    "fail_to_pass": {
+      "total": 11,
+      "passed": 0,
+      "failing": [
+        "tests/test_rfc7234_freshness_synth.py::TestCurrentAge::test_no_age_no_date",
+        "tests/test_rfc7234_freshness_synth.py::TestCurrentAge::test_with_age_header",
+        "tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_expires_future",
+        "tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_expires_past",
+        "tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_max_age",
+        "tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_no_cache",
+        "tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_no_store",
+        "tests/test_rfc7234_freshness_synth.py::TestFreshnessLifetime::test_unknown",
+        "tests/test_rfc7234_freshness_synth.py::TestIsFresh::test_fresh_false_expired",
+        "tests/test_rfc7234_freshness_synth.py::TestIsFresh::test_fresh_true",
+        "tests/test_rfc7234_freshness_synth.py::TestIsFresh::test_fresh_unknown"
+      ]
+    },
+    "pass_to_pass": {
+      "total": 35,
+      "passed": 35,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 1,
+    "n_collected": 47,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "golden_run": {
+    "task_id": "swe-synth-0008",
+    "passed": true,
+    "fail_to_pass": {
+      "total": 11,
+      "passed": 11,
+      "failing": []
+    },
+    "pass_to_pass": {
+      "total": 35,
+      "passed": 35,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 1,
+    "n_collected": 47,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "duration_sec": 281.0
+}

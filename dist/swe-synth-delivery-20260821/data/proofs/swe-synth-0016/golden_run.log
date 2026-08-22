@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+collecting ... collected 12 items
+
+tests/test_jitter_synth.py::test_full_jitter_basic PASSED                [  8%]
+tests/test_jitter_synth.py::test_full_jitter_zero_random_value PASSED    [ 16%]
+tests/test_jitter_synth.py::test_full_jitter_negative_base_raises PASSED [ 25%]
+tests/test_jitter_synth.py::test_full_jitter_invalid_random_value_raises PASSED [ 33%]
+tests/test_jitter_synth.py::test_equal_jitter_basic PASSED               [ 41%]
+tests/test_jitter_synth.py::test_equal_jitter_extremes PASSED            [ 50%]
+tests/test_jitter_synth.py::test_equal_jitter_negative_base_raises PASSED [ 58%]
+tests/test_jitter_synth.py::test_decorrelated_jitter_basic PASSED        [ 66%]
+tests/test_jitter_synth.py::test_decorrelated_jitter_previous_zero_returns_base PASSED [ 75%]
+tests/test_jitter_synth.py::test_decorrelated_jitter_cap_bounds PASSED   [ 83%]
+tests/test_jitter_synth.py::test_decorrelated_jitter_invalid_cap_raises PASSED [ 91%]
+tests/test_jitter_synth.py::test_decorrelated_jitter_negative_previous_raises PASSED [100%]
+
+============================== 12 passed in 0.02s ==============================

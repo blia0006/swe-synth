@@ -1,0 +1,101 @@
+  '''Initialize an empty tracker.'''
+>       raise NotImplementedError
+E       NotImplementedError
+
+tenacity/retry_stats.py:18: NotImplementedError
+_____________________ test_record_attempt_invalid_outcome ______________________
+
+    def test_record_attempt_invalid_outcome():
+>       tracker = RetryStatsTracker()
+                  ^^^^^^^^^^^^^^^^^^^
+
+tests/test_retry_stats_synth.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tenacity.retry_stats.RetryStatsTracker object at 0x106e71a50>
+
+    def __init__(self) -> None:
+        '''Initialize an empty tracker.'''
+>       raise NotImplementedError
+E       NotImplementedError
+
+tenacity/retry_stats.py:18: NotImplementedError
+_____________________ test_record_attempt_invalid_duration _____________________
+
+    def test_record_attempt_invalid_duration():
+>       tracker = RetryStatsTracker()
+                  ^^^^^^^^^^^^^^^^^^^
+
+tests/test_retry_stats_synth.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tenacity.retry_stats.RetryStatsTracker object at 0x107189550>
+
+    def __init__(self) -> None:
+        '''Initialize an empty tracker.'''
+>       raise NotImplementedError
+E       NotImplementedError
+
+tenacity/retry_stats.py:18: NotImplementedError
+______________ test_record_attempt_invalid_error_type_for_success ______________
+
+    def test_record_attempt_invalid_error_type_for_success():
+>       tracker = RetryStatsTracker()
+                  ^^^^^^^^^^^^^^^^^^^
+
+tests/test_retry_stats_synth.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tenacity.retry_stats.RetryStatsTracker object at 0x10717c8d0>
+
+    def __init__(self) -> None:
+        '''Initialize an empty tracker.'''
+>       raise NotImplementedError
+E       NotImplementedError
+
+tenacity/retry_stats.py:18: NotImplementedError
+______________ test_record_attempt_invalid_error_type_for_failure ______________
+
+    def test_record_attempt_invalid_error_type_for_failure():
+>       tracker = RetryStatsTracker()
+                  ^^^^^^^^^^^^^^^^^^^
+
+tests/test_retry_stats_synth.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tenacity.retry_stats.RetryStatsTracker object at 0x107189050>
+
+    def __init__(self) -> None:
+        '''Initialize an empty tracker.'''
+>       raise NotImplementedError
+E       NotImplementedError
+
+tenacity/retry_stats.py:18: NotImplementedError
+___________________ test_record_success_and_failure_wrappers ___________________
+
+    def test_record_success_and_failure_wrappers():
+>       tracker = RetryStatsTracker()
+                  ^^^^^^^^^^^^^^^^^^^
+
+tests/test_retry_stats_synth.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tenacity.retry_stats.RetryStatsTracker object at 0x107191d10>
+
+    def __init__(self) -> None:
+        '''Initialize an empty tracker.'''
+>       raise NotImplementedError
+E       NotImplementedError
+
+tenacity/retry_stats.py:18: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_retry_stats_synth.py::test_initial_summary_is_empty - NotIm...
+FAILED tests/test_retry_stats_synth.py::test_record_success_updates_counts - ...
+FAILED tests/test_retry_stats_synth.py::test_record_failure_updates_counts_and_errors
+FAILED tests/test_retry_stats_synth.py::test_mixed_attempts - NotImplementedE...
+FAILED tests/test_retry_stats_synth.py::test_record_attempt_invalid_outcome
+FAILED tests/test_retry_stats_synth.py::test_record_attempt_invalid_duration
+FAILED tests/test_retry_stats_synth.py::test_record_attempt_invalid_error_type_for_success
+FAILED tests/test_retry_stats_synth.py::test_record_attempt_invalid_error_type_for_failure
+FAILED tests/test_retry_stats_synth.py::test_record_success_and_failure_wrappers
+============================== 9 failed in 0.04s ===============================

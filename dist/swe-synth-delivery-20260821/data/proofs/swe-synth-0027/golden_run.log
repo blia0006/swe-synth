@@ -1,0 +1,13 @@
+============================= test session starts ==============================
+collecting ... collected 8 items
+
+tests/test_itsdangerous/test_encoding.py::test_base64[\u7121\u9650] PASSED [ 12%]
+tests/test_itsdangerous/test_encoding.py::test_base64[infinite] PASSED   [ 25%]
+tests/test_itsdangerous/test_encoding.py::test_base64_bad PASSED         [ 37%]
+tests/test_itsdangerous/test_encoding.py::test_int_bytes[0-] PASSED      [ 50%]
+tests/test_itsdangerous/test_encoding.py::test_int_bytes[18446744073709551615-\xff\xff\xff\xff\xff\xff\xff\xff] PASSED [ 62%]
+tests/test_itsdangerous/test_encoding.py::test_int_bytes[192-\xc0] PASSED [ 75%]
+tests/test_itsdangerous/test_encoding.py::test_want_bytes[ma\xf1ana] PASSED [ 87%]
+tests/test_itsdangerous/test_encoding.py::test_want_bytes[tomorrow] PASSED [100%]
+
+============================== 8 passed in 0.01s ===============================

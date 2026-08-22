@@ -1,0 +1,23 @@
+{
+  "solvable": false,
+  "reason": "题干可能不准确或过于含糊：2 次尝试均未通过（最好一次 FAIL_TO_PASS 0/5）。常见原因是题干描述的行为与真实实现不一致。",
+  "first_pass_attempt": null,
+  "difficulty_signal": "too_hard_or_ambiguous",
+  "n_attempts": 2,
+  "attempts": [
+    {
+      "attempt": 1,
+      "passed": false,
+      "f2p": "0/0",
+      "p2p": "0/0",
+      "error": "生成的代码语法错误：第 143 行 unindent does not match any outer indentation level"
+    },
+    {
+      "attempt": 2,
+      "passed": false,
+      "f2p": "0/0",
+      "p2p": "0/0",
+      "error": "生成的代码语法错误：第 143 行 unindent does not match any outer indentation level"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+diff --git a/tldextract/domain_utils.py b/tldextract/domain_utils.py
+new file mode 100644
+--- /dev/null
++++ b/tldextract/domain_utils.py
+@@ -0,0 +1,48 @@
++"""Domain name parsing and validation utilities."""
++
++import idna
++
++
++def normalize_domain(domain: str) -> str:
++    """Normalize a domain name to lowercase ASCII without trailing dots.
++
++    Args:
++        domain: A domain name as a string, possibly containing Unicode
++            characters or trailing dots.
++
++    Returns:
++        The normalized domain name as lowercase ASCII, with trailing dots
++        removed. If the input is an empty string or consists only of dots,
++        an empty string is returned.
++
++    Raises:
++        ValueError: If the domain contains invalid Unicode characters that
++            cannot be encoded to ASCII via IDNA.
++    """
++    raise NotImplementedError("normalize_domain not implemented")
++
++
++def split_domain(domain: str) -> list[str]:
++    """Split a domain name into labels.
++
++    Args:
++        domain: A domain name as a string.
++
++    Returns:
++        A list of label strings. The list may contain empty strings if the
++        domain contains consecutive dots or starts with a dot. If the
++        normalized domain is empty, an empty list is returned.
++    """
++    raise NotImplementedError("split_domain not implemented")
++
++
++def is_valid_domain(domain: str) -> bool:
++    """Check whether a domain name is valid under typical DNS hostname rules.
++
++    Args:
++        domain: A domain name as a string.
++
++    Returns:
++        True if the domain is valid, False otherwise.
++    """
++    raise NotImplementedError("is_valid_domain not implemented")
+diff --git a/tests/test_domain_utils_synth.py b/tests/test_domain_utils_synth.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_domain_utils_synth.py
+@@ -0,0 +1,50 @@
++"""Tests for tldextract.domain_utils."""
++
++import pytest
++
++from tldextract.domain_utils import is_valid_domain, normalize_domain, split_domain
++
++
++def test_normalize_domain_lowercase_no_trailing_dot():
++    assert normalize_domain("WWW.Example.COM.") == "www.example.com"
++
++
++def test_normalize_domain_empty_and_dots():
++    assert normalize_domain("") == ""
++    assert normalize_domain("...") == ""
++
++
++def test_normalize_domain_idna():
++    assert normalize_domain("bücher.example") == "xn--bcher-kva.example"
++
++
++def test_normalize_domain_invalid_unicode():
++    with pytest.raises(ValueError):
++        normalize_domain("exa\u0000mple.com")
++
++
++def test_split_domain():
++    assert split_domain("www.example.com") == ["www", "example", "com"]
++    assert split_domain("example.com.") == ["example", "com"]
++    assert split_domain("") == []
++    assert split_domain(".example.com") == ["", "example", "com"]
++    assert split_domain("example..com") == ["example", "", "com"]
++
++
++def test_is_valid_domain_valid():
++    assert is_valid_domain("example.com") is True
++    assert is_valid_domain("localhost") is True
++    assert is_valid_domain("foo-bar.example.com") is True
++
++
++def test_is_valid_domain_invalid():
++    assert is_valid_domain("") is False
++    assert is_valid_domain(".") is False
++    assert is_valid_domain("-example.com") is False
++    assert is_valid_domain("example.com-") is False
++    assert is_valid_domain("example..com") is False
++    assert is_valid_domain("exa_mple.com") is False
++
++
++def test_is_valid_domain_idna():
++    assert is_valid_domain("bücher.example") is True

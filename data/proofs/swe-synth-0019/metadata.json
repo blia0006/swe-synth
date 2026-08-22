@@ -1,0 +1,25 @@
+{
+  "task_id": "swe-synth-0019",
+  "repo": "Delgan/loguru",
+  "base_commit": "2a17be730e111cf874d0bf967c4c5da15b7e4670",
+  "language": "python",
+  "task_type": "refactoring",
+  "symbol": "AnsiParser.feed",
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_refactor_guard_swe_synth_0019.py::test_target_function_complexity_reduced",
+    "tests/test_refactor_guard_swe_synth_0019.py::test_target_function_is_simplified"
+  ],
+  "PASS_TO_PASS": [
+    "tests/test_refactor_guard_swe_synth_0019.py::test_no_new_monolithic_function",
+    "tests/test_refactor_guard_swe_synth_0019.py::test_signature_unchanged"
+  ],
+  "modified_files": [
+    "loguru/_colorizer.py"
+  ],
+  "do_not_modify": [
+    "tests/test_refactor_guard_swe_synth_0019.py"
+  ],
+  "workspace": "/workspace/repo",
+  "python": "/opt/venv311/bin/python"
+}

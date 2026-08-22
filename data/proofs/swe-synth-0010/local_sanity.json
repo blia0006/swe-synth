@@ -1,28 +1,18 @@
 {
-  "ok": true,
-  "reason": "双向 sanity 通过：题目态必红、golden 态必绿、原有用例未被破坏",
-  "fail_to_pass": [
-    "tests/test_backoff_schedule_synth.py::test_build_exponential_backoff_schedule_negative_attempts_raises",
-    "tests/test_backoff_schedule_synth.py::test_build_exponential_backoff_schedule_returns_correct_length_and_values",
-    "tests/test_backoff_schedule_synth.py::test_build_exponential_backoff_schedule_zero_attempts_returns_empty",
-    "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_first_attempt_returns_base_delay",
-    "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_invalid_attempt_raises",
-    "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_negative_params_raise",
-    "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_respects_max_delay",
-    "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_second_attempt_returns_multiplied",
-    "tests/test_backoff_schedule_synth.py::test_exponential_backoff_delay_zero_multiplier_yields_zero_after_first"
-  ],
+  "ok": false,
+  "reason": "挖空后没有任何测试变红 —— 该函数无有效测试覆盖，无法自动判分",
+  "fail_to_pass": [],
   "pass_to_pass": [],
-  "deterministic": true,
-  "duration_sec": 2.73,
+  "deterministic": null,
+  "duration_sec": 0.0,
   "stub_summary": {
-    "returncode": 1,
-    "n_passed": 0,
-    "n_failed": 9
+    "returncode": 0,
+    "n_passed": 8,
+    "n_failed": 0
   },
   "golden_summary": {
     "returncode": 0,
-    "n_passed": 9,
+    "n_passed": 8,
     "n_failed": 0
   }
 }

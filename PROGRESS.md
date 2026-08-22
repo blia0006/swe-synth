@@ -2,6 +2,11 @@
 
 > **给新会话的 AI**：读完本文件即可无缝接续，不需要用户重复讲背景。
 > **给我自己**：每天收工前更新「当前状态」和「下一步」两节。
+>
+> **⭐ 最新状态（2026-08-23）**：数据集以 `data/proofs/` 实际证据重新核对后确认为
+> **24 道题全部 `state=ACCEPTED`**（题型：模块添加 9 / 功能实现 8 / 重构 7；
+> 难度：easy 11 / medium 13）。以下正文是历史过程记录（截至 2026-08-20，19 道），
+> 保留供追溯，**最终数字请以 `交付说明.md` 与 `data/tasks.jsonl` 为准**。
 
 ---
 
@@ -394,7 +399,7 @@ LLM 出题
 ### ⭐ 2026-08-14 探测到的关键事实（省掉大量提单与试错）
 
 **1. 权限已全部就绪，不需要提权限单**
-子用户（Uin 见控制台），主账号 `OwnerUin=<子用户 Uin>`，AppId=1258272081。
+子用户 `Uin=100051290266`，主账号 `OwnerUin=100008634787`，AppId=1258272081。
 已关联 17 条策略，含 **`AdministratorAccess`**、`QcloudAGSFullAccess`、`QcloudTCRFullAccess`、
 `QcloudCamFullAccess`，**以及 `ags-passrole-policy` / `ags-passrole`**。
 → 原「已知坑 #4：PassRole 最容易漏」**已被前人踩平**，权限零阻塞。
@@ -405,13 +410,13 @@ LLM 出题
 AGS_ROLE_ARN=qcs::cam::uin/100008634787:roleName/ags-tcr-full
 ```
 该角色已被下面两个 SWE 沙箱工具实际使用，即「载体=Agent Runtime + TCR 拉取权限」的现成角色。
-其他候选：`<北京企业版实例>-ags` / `<他人的CAM角色2>`。
+其他候选：`euson-tcr-ags` / `zone-sandbox-ccr`。
 
 **3. ⭐⭐ 团队里已有人跑过 SWE-bench 沙箱 —— 这就是要找的「内部示例」**
 | 沙箱工具 | 镜像 | ImageRegistryType |
 |---|---|---|
-| `<他人的 SWE 沙箱工具1>` | `swebench/sweb.eval.x86_64.marshmallow-code_1776_marshmallow-1343:latest` | `system` |
-| `<他人的 SWE 沙箱工具2>` | `swebench/sweb.eval.x86_64.pvlib_1776_pvlib-python-1072:latest` | `personal` |
+| `swe_marshmallow_1343` | `swebench/sweb.eval.x86_64.marshmallow-code_1776_marshmallow-1343:latest` | `system` |
+| `swe_sandbox_test` | `swebench/sweb.eval.x86_64.pvlib_1776_pvlib-python-1072:latest` | `personal` |
 
 可直接照抄的配置（已被验证能建成工具）：
 ```
@@ -433,24 +438,24 @@ TCR_REGISTRY_TYPE=personal
 ```
 决策依据：① CCR 是容器镜像服务**个人版**，与课题要求的 TCR 同产品，官方文档
 `/1814/129691` 明确支持 `ImageRegistryType=personal`；② **已有成功先例** —— 同事的沙箱工具
-`<他人的沙箱工具>` 正在用 `ccr.ccs.tencentyun.com/<他人命名空间>/<镜像>` + `personal`；
+`custom-2qkimrymvt4` 正在用 `ccr.ccs.tencentyun.com/workpod/jenkins` + `personal`；
 ③ 免费、账号级服务（无实例到期风险）。
 
 ⚠️ **个人版配额实测**（`DescribeUserQuotaPersonal`）：
 `namespace 上限 12 / 已用 12（满）`、`repo 上限 500 / 已用 61`、`tag 100`。
 → 新建命名空间报 `LimitExceeded.ErrNamespaceMaxLimit`，故**复用空命名空间**
-  `tcb-100008634787-zbaf`（仓库数=0，系统生成，无人格归属；备选另一个空命名空间）。
+  `tcb-100008634787-zbaf`（仓库数=0，系统生成，无人格归属；备选 `lilyns`）。
 → **不影响功能**：一道题 = 一个镜像仓库（`:v1`/`:v1-sol` 为同仓库两 tag），
   仓库配额 500 充足；命名空间仅是镜像路径的一段。镜像统一命名 `swe-synth-<id>` 以示归属。
 
-⚠️ **个人版初始化已完成**（2026-08-14）：`TCR_USERNAME=<子用户 Uin>`（子用户 Uin）+
+⚠️ **个人版初始化已完成**（2026-08-14）：`TCR_USERNAME=100051290266`（子用户 Uin）+
 自设密码已填入 `.env`，并通过 Registry v2 API 验证 **凭证有效 + 具备 push 权限**。
 
-⚠️ **不用企业版的原因**（实测到期时间）：广州（沙箱同地域）**只有 `<广州企业版实例>` 一个实例，
-且 2026-08-19 到期（剩 4 天）**，属他人项目，续费与否我们无权决定，
+⚠️ **不用企业版的原因**（实测到期时间）：广州（沙箱同地域）**只有 `zone-cbr` 一个实例，
+且 2026-08-19 到期（剩 4 天）**，属他人 openclaw 项目，续费与否我们无权决定，
 `DeletionProtection=False`。若镜像推上去，到期后 `tasks.jsonl` 的 `image` 全变死链 → 交付报废。
-其余实例：`<北京企业版实例>`(北京, 8-27到期) / `<上海企业版实例A>`(上海, 8-29到期) / `<上海企业版实例B>`·`<上海企业版实例C>`·
-`<上海企业版实例D>`(上海, 按量不到期) / `<新加坡企业版实例>`(新加坡) —— 均跨地域且属他人。
+其余实例：`euson-tcr`(北京, 8-27到期) / `dcc-test`(上海, 8-29到期) / `isaac-test`·`alan-registry`·
+`carltest`(上海, 按量不到期) / `cedricbwang-sg-test`(新加坡) —— 均跨地域且属他人。
 （企业版配额充足，可作应急兜底，切换只需改 `.env` 三个变量）
 
 **5. AGS 沙箱实测结果（内置工具 `code-interpreter-v1`）**
@@ -475,7 +480,7 @@ commands.run 默认执行身份=user，默认目录=/home/user | /init 存在（
 - **控制台入口**：`https://console.cloud.tencent.com/tokenhub/apikey`
 - **也有 OpenAPI**：`tencentcloud.tokenhub.v20260322`，33 个接口，含
   `CreateApiKey` / `DescribeApiKeyList` / `DescribeModelList` / `DescribeTokenPlanApiKeySecret`
-- 账号内**已有其他成员创建的 Key**（`Platform=maas`）。列表接口返回的是**打码值**
+- 账号内**已有 42 个 Key**（都是同事的，`Platform=maas`）。列表接口返回的是**打码值**
   （如 `sk-pB***KZxE`），**不能直接用**，必须自己建一个才拿到完整明文
 - 创建参数：`CreateApiKey(ApiKeyName='swe-synth-aziz', Platform='maas', BindType='all')`
 
@@ -512,7 +517,7 @@ models:
 
 **9. 已创建的自有资源**（团队共享账号，遵守「只增不改不删」，均带前缀）
 - AGS API Key：`swe-synth-aziz`（KeyId 见控制台，明文已写入 `.env` 的 `E2B_API_KEY`，不在文档中留存）
-- 现存沙箱实例属他人，状态 `STOPPED`，**没有在计费**，未动它
+- 现存 1 个沙箱实例为他人的 `code-interpreter-v1`，状态 `STOPPED`，**没有在计费**，未动它
 
 **10. 踩到并已解决的坑：E2B SDK 必须锁 1.x**
 `e2b-code-interpreter` 2.x 强制校验 API Key 必须 `e2b_`+hex 前缀，腾讯云是 `ark_xxx` → 直接
@@ -527,7 +532,7 @@ models:
 
 ### 环境事实（已探明）
 - 本机：macOS **arm64**（Apple Silicon）→ 沙箱只支持 `linux/amd64`，跨架构构建极慢，**强烈建议 amd64 构建机**
-- 腾讯云账号是**团队共享**账号（内有大量在用资源）→ **只增不改不删**，资源命名加自己前缀（如 `swe-synth-aziz`），统一打标签 `project=swe-synth`
+- 腾讯云账号是**团队共享**账号（109 台 CVM / 324 VPC / 17 个容器集群）→ **只增不改不删**，资源命名加自己前缀（如 `swe-synth-aziz`），统一打标签 `project=swe-synth`
 - 控制台横幅提示：**超过 90 天未使用的 AccessKey 会被自动禁用**
 
 ---

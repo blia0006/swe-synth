@@ -1,0 +1,70 @@
+g_io[env16-a=${b}${b}-True-expected16] PASSED [ 93%]
+tests/test_main.py::test_dotenv_values_string_io[env17-b=d\na=${b}-True-expected17] PASSED [ 93%]
+tests/test_main.py::test_dotenv_values_string_io[env18-a=b\na=c\nd=${a}-True-expected18] PASSED [ 94%]
+tests/test_main.py::test_dotenv_values_string_io[env19-a=b\nc=${a}\nd=e\nc=${d}-True-expected19] PASSED [ 94%]
+tests/test_main.py::test_dotenv_values_file_stream PASSED                [ 95%]
+tests/test_main.py::test_dotenv_values_empty_value_with_inline_comment[KEY= # comment-expected0] PASSED [ 96%]
+tests/test_main.py::test_dotenv_values_empty_value_with_inline_comment[KEY=  # comment-expected1] PASSED [ 96%]
+tests/test_main.py::test_dotenv_values_empty_value_with_inline_comment[KEY=val # comment-expected2] PASSED [ 97%]
+tests/test_main.py::test_dotenv_values_empty_value_with_inline_comment[KEY=a#b-expected3] PASSED [ 97%]
+tests/test_main.py::test_dotenv_values_empty_value_with_inline_comment[KEY=#novalue-expected4] PASSED [ 98%]
+tests/test_main.py::test_dotenv_values_empty_value_with_inline_comment[KEY=# # comment-expected5] PASSED [ 98%]
+tests/test_main.py::test_dotenv_values_empty_value_with_inline_comment[KEY=\t# comment-expected6] PASSED [ 99%]
+tests/test_main.py::test_dotenv_values_empty_value_with_inline_comment[KEY= # comment\nOTHER=val-expected7] PASSED [100%]
+
+=================================== FAILURES ===================================
+_________________________ test_run_with_command_flags __________________________
+
+dotenv_path = PosixPath('/private/var/folders/rx/wxh4f2gx1mvdgc6spgk22bmw0000gn/T/pytest-of-jacobliang/pytest-117/test_run_with_command_flags0/.env')
+tmp_path = PosixPath('/private/var/folders/rx/wxh4f2gx1mvdgc6spgk22bmw0000gn/T/pytest-of-jacobliang/pytest-117/test_run_with_command_flags0')
+
+    def test_run_with_command_flags(dotenv_path, tmp_path):
+        """
+        Check that command flags passed after `dotenv run` are not interpreted.
+    
+        Here, we want to run `printenv --version`, not `dotenv --version`.
+        """
+    
+        result = run_dotenv(
+            ["--file", str(dotenv_path), "run", "printenv", "--version"],
+            cwd=tmp_path,
+        )
+    
+>       check_process(result, exit_code=0)
+
+tests/test_cli.py:280: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+process = CompletedProcess(args=['dotenv', '--file', '/private/var/folders/rx/wxh4f2gx1mvdgc6spgk22bmw0000gn/T/pytest-of-jacobli...', 'printenv', '--version'], returncode=1, stdout='', stderr='printenv: illegal option -- -\nusage: printenv [name]\n')
+exit_code = 0, stdout = None
+
+    def check_process(
+        process: subprocess.CompletedProcess,
+        exit_code: int,
+        stdout: str | None = None,
+    ):
+        """
+        Check that the process completed with the expected exit code and output.
+    
+        This provides better error messages than directly checking the attributes.
+        """
+    
+>       assert process.returncode == exit_code, (
+            f"Unexpected exit code {process.returncode} (expected {exit_code})\n"
+            f"stdout:\n{process.stdout}\n"
+            f"stderr:\n{process.stderr}"
+        )
+E       AssertionError: Unexpected exit code 1 (expected 0)
+E         stdout:
+E         
+E         stderr:
+E         printenv: illegal option -- -
+E         usage: printenv [name]
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['dotenv', '--file', '/private/var/folders/rx/wxh4f2gx1mvdgc6spgk22bmw0000gn/T/pytest-of-jacobliang/pytest-117/test_run_with_command_flags0/.env', 'run', 'printenv', '--version'], returncode=1, stdout='', stderr='printenv: illegal option -- -\nusage: printenv [name]\n').returncode
+
+tests/test_lib.py:37: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_cli.py::test_run_with_command_flags - AssertionError: Unexp...
+======================== 1 failed, 175 passed in 1.24s =========================

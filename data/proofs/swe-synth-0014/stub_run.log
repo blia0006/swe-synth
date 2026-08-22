@@ -1,0 +1,31 @@
+6.63)  [0m[1m  1,041.9753 (7.46)   [0m[1m   82.9459 (83.82)  [0m    68;732[1m      948.4717 (0.13)   [0m   44693           1
+test_naturaltime    [1m  1,457.9855 (11.66)  [0m[1m  59,625.0175 (71.69)  [0m[1m  1,654.6707 (11.83)  [0m[1m    679.1540 (31.74)  [0m[1m  1,625.0415 (11.64)  [0m[1m   83.0041 (83.88)  [0m  132;1388[1m      604.3499 (0.08)   [0m   57831           1
+test_naturaldate    [1m  1,499.9532 (12.00)  [0m[31m[1m  87,624.9978 (105.35) [0m[1m  1,754.8647 (12.55)  [0m[1m  1,047.9583 (48.97)  [0m[1m  1,707.9874 (12.23)  [0m[1m   83.0041 (83.88)  [0m  213;4527[1m      569.8445 (0.08)   [0m   62826           1
+test_precisedelta   [31m[1m  4,749.9780 (38.00)  [0m[1m  54,250.0056 (65.23)  [0m[31m[1m  5,278.4356 (37.75)  [0m[31m[1m  1,494.5277 (69.84)  [0m[31m[1m  5,209.0036 (37.31)  [0m[31m[1m  207.9178 (210.12) [0m   219;626[31m[1m      189.4501 (0.03)   [0m   31704           1
+[33m-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------[0m
+
+Legend:
+  Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
+  OPS: Operations Per Second, computed as 1 / Mean
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/test_benchmarks.py::[1mtest_ordinal[0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_i18n.py::[1mtest_i18n[0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[1-1st][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[2-2nd][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[3-3rd][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[4-4th][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[11-11th][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[12-12th][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[13-13th][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[101-101st][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[102-102nd][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[103-103rd][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[111-111th][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[something else-something else][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[None-None][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[nan-NaN0][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[inf-+Inf][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[-inf--Inf0][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[nan-NaN1][0m - NotImplementedError: TODO: implement this function
+[31mFAILED[0m tests/test_number.py::[1mtest_ordinal[-inf--Inf1][0m - NotImplementedError: TODO: implement this function
+[31m================== [31m[1m20 failed[0m, [32m229 passed[0m, [33m73 skipped[0m[31m in 5.67s[0m[31m ==================[0m

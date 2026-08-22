@@ -1,12 +1,31 @@
+# 凭证（绝不提交）
 .env
 *.pem
 *.key
+
+# Python
 __pycache__/
 *.py[cod]
 .venv/
 venv/
+*.egg-info/
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# 运行产物
+.tmp_envcheck/
+data/state.db
+data/workdir/          # clone 下来的仓库副本
+logs/
+
+# 数据集与证明默认保留（属于交付物），如体积过大再单独处理
+# data/tasks.jsonl
+# data/proofs/
+
+# 系统
+.DS_Store
+
+# 流水线中间产物（可重建，不入库）
 .work/
 .build/
-data/state.db
-.DS_Store

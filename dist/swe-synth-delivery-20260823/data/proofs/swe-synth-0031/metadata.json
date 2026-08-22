@@ -1,0 +1,62 @@
+{
+  "task_id": "swe-synth-0031",
+  "repo": "psf/cachecontrol",
+  "base_commit": "91a26abbbebd4d08cbfca909f90cb3a186fe7739",
+  "language": "python",
+  "task_type": "refactoring",
+  "symbol": "Serializer.dumps",
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_refactor_guard_swe_synth_0031.py::test_no_new_monolithic_function",
+    "tests/test_refactor_guard_swe_synth_0031.py::test_target_function_complexity_reduced",
+    "tests/test_refactor_guard_swe_synth_0031.py::test_target_function_is_simplified"
+  ],
+  "PASS_TO_PASS": [
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_fresh_expires",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_fresh_max_age",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_max_age_0",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_no_cache",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_no_headers",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_no_store",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_not_in_cache",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_pragma_no_cache",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_unfresh_expires",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_unfresh_max_age",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cached_request_with_bad_max_age_headers_not_returned",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cached_request_with_malformed_date_not_returned",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_cache_response_cache_max_age",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_cache_response_cache_max_age_with_invalid_value_not_cached",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_cache_response_no_cache_control",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_cache_response_no_store",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_cache_response_no_store_with_etag",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_no_cache_non_20x_response",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_no_cache_with_malformed_date",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_no_cache_with_no_date",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_no_cache_with_vary_star",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_no_cache_with_wrong_sized_body",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_update_cached_response_no_local_cache",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_update_cached_response_with_valid_headers",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_update_cached_response_with_valid_headers_separate_body",
+    "tests/test_refactor_guard_swe_synth_0031.py::test_signature_unchanged",
+    "tests/test_serialization.py::TestSerializer::test_load_by_version_v0",
+    "tests/test_serialization.py::TestSerializer::test_load_by_version_v1",
+    "tests/test_serialization.py::TestSerializer::test_load_by_version_v2",
+    "tests/test_serialization.py::TestSerializer::test_load_by_version_v3",
+    "tests/test_serialization.py::TestSerializer::test_no_body_creates_response_file_handle_on_dumps",
+    "tests/test_serialization.py::TestSerializer::test_no_incomplete_read_on_dumps",
+    "tests/test_serialization.py::TestSerializer::test_no_vary_header",
+    "tests/test_serialization.py::TestSerializer::test_read_latest_version",
+    "tests/test_serialization.py::TestSerializer::test_read_latest_version_streamable",
+    "tests/test_serialization.py::TestSerializer::test_read_version_v4"
+  ],
+  "modified_files": [
+    "cachecontrol/serialize.py"
+  ],
+  "do_not_modify": [
+    "tests/test_cache_control.py",
+    "tests/test_refactor_guard_swe_synth_0031.py",
+    "tests/test_serialization.py"
+  ],
+  "workspace": "/workspace/repo",
+  "python": "/opt/venv311/bin/python"
+}

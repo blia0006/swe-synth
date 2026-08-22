@@ -1,0 +1,52 @@
+============================= test session starts ==============================
+collecting ... collected 4 items
+
+tests/test_refactor_guard_swe_synth_0019.py::test_signature_unchanged PASSED [ 25%]
+tests/test_refactor_guard_swe_synth_0019.py::test_target_function_is_simplified FAILED [ 50%]
+tests/test_refactor_guard_swe_synth_0019.py::test_target_function_complexity_reduced FAILED [ 75%]
+tests/test_refactor_guard_swe_synth_0019.py::test_no_new_monolithic_function PASSED [100%]
+
+=================================== FAILURES ===================================
+______________________ test_target_function_is_simplified ______________________
+
+    def test_target_function_is_simplified():
+        """目标函数的有效代码行数必须降下来（把职责拆分到更小的单元中）。"""
+        lines, _, node = _target()
+        n = _effective_body_lines(node, lines)
+>       assert n <= MAX_TARGET_BODY_LINES, (
+            "%s 的函数体仍有 %d 行有效代码（重构前 %d 行），要求不超过 %d 行。"
+            "请将独立职责提取为单独的函数/方法，而不是原地压缩代码。"
+            % (SYMBOL, n, BEFORE["body_lines"], MAX_TARGET_BODY_LINES)
+        )
+E       AssertionError: AnsiParser.feed 的函数体仍有 42 行有效代码（重构前 42 行），要求不超过 26 行。请将独立职责提取为单独的函数/方法，而不是原地压缩代码。
+E       assert 42 <= 26
+
+_          = <ast.Module object at 0x107b80670>
+lines      = ['import re', 'from contextlib import contextmanager', 'from string import Formatter', '', '', '@contextmanager', ...]
+n          = 42
+node       = <ast.FunctionDef object at 0x107b4dc00>
+
+tests/test_refactor_guard_swe_synth_0019.py:136: AssertionError
+___________________ test_target_function_complexity_reduced ____________________
+
+    def test_target_function_complexity_reduced():
+        """目标函数的圈复杂度必须降下来（分支/循环/短路判断更少）。"""
+        _, _, node = _target()
+        cx = _cyclomatic(node)
+>       assert cx <= MAX_TARGET_COMPLEXITY, (
+            "%s 的圈复杂度仍为 %d（重构前 %d），要求不超过 %d。"
+            "请减少嵌套分支，把条件判断收敛到辅助函数中。"
+            % (SYMBOL, cx, BEFORE["cyclomatic"], MAX_TARGET_COMPLEXITY)
+        )
+E       AssertionError: AnsiParser.feed 的圈复杂度仍为 13（重构前 13），要求不超过 7。请减少嵌套分支，把条件判断收敛到辅助函数中。
+E       assert 13 <= 7
+
+_          = <ast.Module object at 0x107c4cb80>
+cx         = 13
+node       = <ast.FunctionDef object at 0x107c153f0>
+
+tests/test_refactor_guard_swe_synth_0019.py:147: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_refactor_guard_swe_synth_0019.py::test_target_function_is_simplified
+FAILED tests/test_refactor_guard_swe_synth_0019.py::test_target_function_complexity_reduced
+========================= 2 failed, 2 passed in 0.03s ==========================

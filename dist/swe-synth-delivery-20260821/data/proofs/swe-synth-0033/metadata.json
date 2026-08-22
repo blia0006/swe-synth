@@ -1,0 +1,37 @@
+{
+  "task_id": "swe-synth-0033",
+  "repo": "psf/cachecontrol",
+  "base_commit": "91a26abbbebd4d08cbfca909f90cb3a186fe7739",
+  "language": "python",
+  "task_type": "feature_implementation",
+  "symbol": "OneDayCache.update_headers",
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_expires_heuristics.py::TestOneDayCache::test_cache_for_one_day"
+  ],
+  "PASS_TO_PASS": [
+    "tests/test_expires_heuristics.py::TestExpiresAfter::test_expires_after_one_day",
+    "tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_301",
+    "tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_304",
+    "tests/test_expires_heuristics.py::TestHeuristicWithoutWarning::test_no_header_change_means_no_warning_header",
+    "tests/test_expires_heuristics.py::TestLastModified::test_last_modified",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expires_is_not_replaced_when_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expiry_is_no_more_that_twenty_four_hours",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_cache_control_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_status_is_unknown",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used_when_cache_control_public",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_no_expiry_is_inferred_when_no_last_modified_is_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_is_not_added_when_heuristic_was_not_used",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_not_added_when_response_more_recent_than_24_hours",
+    "tests/test_expires_heuristics.py::TestUseExpiresHeuristic::test_expires_heuristic_arg"
+  ],
+  "modified_files": [
+    "cachecontrol/heuristics.py"
+  ],
+  "do_not_modify": [
+    "tests/test_expires_heuristics.py"
+  ],
+  "workspace": "/workspace/repo",
+  "python": "/opt/venv311/bin/python"
+}

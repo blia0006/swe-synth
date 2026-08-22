@@ -1,0 +1,9 @@
+============================= test session starts ==============================
+collecting ... collected 4 items
+
+tests/test_refactor_guard_swe_synth_0019.py::test_signature_unchanged PASSED [ 25%]
+tests/test_refactor_guard_swe_synth_0019.py::test_target_function_is_simplified PASSED [ 50%]
+tests/test_refactor_guard_swe_synth_0019.py::test_target_function_complexity_reduced PASSED [ 75%]
+tests/test_refactor_guard_swe_synth_0019.py::test_no_new_monolithic_function PASSED [100%]
+
+============================== 4 passed in 0.01s ===============================

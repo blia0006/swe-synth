@@ -1,0 +1,143 @@
+diff --git a/cachecontrol/cache_key_serializer.py b/cachecontrol/cache_key_serializer.py
+new file mode 100644
+--- /dev/null
++++ b/cachecontrol/cache_key_serializer.py
+@@ -0,0 +1,46 @@
++# SPDX-FileCopyrightText: 2024 Example
++#
++# SPDX-License-Identifier: Apache-2.0
++from __future__ import annotations
++
++from collections.abc import Mapping
++from urllib.parse import SplitResult, urlencode, urlsplit, urlunsplit
++
++
++class CacheKeySerializer:
++    """Serialize a request into a stable cache key string.
++
++    The serializer converts a method, URL, headers, and optional
++    request body into a deterministic string. All components are
++    normalized before hashing to ensure that semantically equivalent
++    requests produce the same key.
++    """
++
++    def serialize(
++        self,
++        method: str,
++        url: str,
++        headers: Mapping[str, str],
++        body: bytes | None = None,
++    ) -> str:
++        """Return a stable string key for the given request parts.
++
++        Args:
++            method: HTTP method, case-insensitive; upper-cased internally.
++            url: Full URL including scheme, host, path, and query.
++            headers: Mapping of header names to values. Header names are
++                normalized to lower-case for key generation.
++            body: Optional request body bytes. If ``None`` or empty, the
++                body component is omitted from the key.
++
++        Returns:
++            A SHA-256 hexadecimal digest representing the normalized
++            request.
++
++        Raises:
++            ValueError: If ``method`` is empty after stripping, or if
++                ``url`` cannot be parsed into scheme, netloc, and path.
++        """
++        raise NotImplementedError(
++            "CacheKeySerializer.serialize must be implemented"
++        )
+diff --git a/tests/test_cache_key_serializer_synth.py b/tests/test_cache_key_serializer_synth.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_cache_key_serializer_synth.py
+@@ -0,0 +1,87 @@
++# SPDX-FileCopyrightText: 2024 Example
++#
++# SPDX-License-Identifier: Apache-2.0
++
++import pytest
++
++from cachecontrol.cache_key_serializer import CacheKeySerializer
++
++
++@pytest.fixture
++def serializer():
++    return CacheKeySerializer()
++
++
++def test_basic_serialization(serializer):
++    key = serializer.serialize(
++        "GET",
++        "https://example.com/path?b=2&a=1",
++        {"Accept": "application/json"},
++    )
++    assert isinstance(key, str)
++    assert len(key) == 64
++    assert all(c in "0123456789abcdef" for c in key)
++
++
++def test_method_case_normalization(serializer):
++    key1 = serializer.serialize("get", "https://example.com/", {})
++    key2 = serializer.serialize("GET", "https://example.com/", {})
++    key3 = serializer.serialize(" Get ", "https://example.com/", {})
++    assert key1 == key2 == key3
++
++
++def test_header_name_normalization_and_order(serializer):
++    headers1 = {"Accept": "application/json", "Cache-Control": "no-cache"}
++    headers2 = {"CACHE-CONTROL": "no-cache", "accept": "application/json"}
++    key1 = serializer.serialize("GET", "https://example.com/", headers1)
++    key2 = serializer.serialize("GET", "https://example.com/", headers2)
++    assert key1 == key2
++
++
++def test_query_parameter_order_normalization(serializer):
++    url1 = "https://example.com/search?q=python&lang=en"
++    url2 = "https://example.com/search?lang=en&q=python"
++    key1 = serializer.serialize("GET", url1, {})
++    key2 = serializer.serialize("GET", url2, {})
++    assert key1 == key2
++
++
++def test_scheme_and_host_normalization(serializer):
++    key1 = serializer.serialize("GET", "HTTPS://EXAMPLE.COM/Path", {})
++    key2 = serializer.serialize("GET", "https://example.com/Path", {})
++    assert key1 == key2
++
++
++def test_body_inclusion_and_omission(serializer):
++    key_no_body = serializer.serialize("POST", "https://example.com/", {})
++    key_empty_body = serializer.serialize("POST", "https://example.com/", {}, b"")
++    key_none_body = serializer.serialize("POST", "https://example.com/", {}, None)
++    key_body = serializer.serialize("POST", "https://example.com/", {}, b"abc")
++
++    assert key_no_body == key_empty_body == key_none_body
++    assert key_body != key_no_body
++
++
++def test_different_requests_produce_different_keys(serializer):
++    key1 = serializer.serialize("GET", "https://example.com/", {})
++    key2 = serializer.serialize("GET", "https://example.com/path", {})
++    key3 = serializer.serialize("POST", "https://example.com/", {})
++    assert len({key1, key2, key3}) == 3
++
++
++def test_missing_path_defaults_to_slash(serializer):
++    key1 = serializer.serialize("GET", "https://example.com", {})
++    key2 = serializer.serialize("GET", "https://example.com/", {})
++    assert key1 == key2
++
++
++def test_invalid_method_raises_value_error(serializer):
++    with pytest.raises(ValueError):
++        serializer.serialize("   ", "https://example.com/", {})
++
++
++def test_invalid_url_raises_value_error(serializer):
++    with pytest.raises(ValueError):
++        serializer.serialize("GET", "not-a-url", {})
++    with pytest.raises(ValueError):
++        serializer.serialize("GET", "https:///path", {})

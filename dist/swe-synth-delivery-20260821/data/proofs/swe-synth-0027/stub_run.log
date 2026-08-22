@@ -1,0 +1,85 @@
+============================= test session starts ==============================
+collecting ... collected 8 items
+
+tests/test_itsdangerous/test_encoding.py::test_want_bytes[ma\xf1ana] PASSED [ 12%]
+tests/test_itsdangerous/test_encoding.py::test_want_bytes[tomorrow] PASSED [ 25%]
+tests/test_itsdangerous/test_encoding.py::test_base64[\u7121\u9650] FAILED [ 37%]
+tests/test_itsdangerous/test_encoding.py::test_base64[infinite] FAILED   [ 50%]
+tests/test_itsdangerous/test_encoding.py::test_base64_bad FAILED         [ 62%]
+tests/test_itsdangerous/test_encoding.py::test_int_bytes[0-] PASSED      [ 75%]
+tests/test_itsdangerous/test_encoding.py::test_int_bytes[192-\xc0] PASSED [ 87%]
+tests/test_itsdangerous/test_encoding.py::test_int_bytes[18446744073709551615-\xff\xff\xff\xff\xff\xff\xff\xff] PASSED [100%]
+
+=================================== FAILURES ===================================
+__________________________ test_base64[\u7121\u9650] ___________________________
+
+value = '無限'
+
+    @pytest.mark.parametrize("value", ("無限", b"infinite"))
+    def test_base64(value):
+        enc = base64_encode(value)
+        assert isinstance(enc, bytes)
+>       dec = base64_decode(enc)
+              ^^^^^^^^^^^^^^^^^^
+
+tests/test_itsdangerous/test_encoding.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+string = b'54Sh6ZmQ'
+
+    def base64_decode(string: str | bytes) -> bytes:
+        """Base64 decode a URL-safe string of bytes or text. The result is
+        bytes.
+        """
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+src/itsdangerous/encoding.py:32: NotImplementedError
+____________________________ test_base64[infinite] _____________________________
+
+value = b'infinite'
+
+    @pytest.mark.parametrize("value", ("無限", b"infinite"))
+    def test_base64(value):
+        enc = base64_encode(value)
+        assert isinstance(enc, bytes)
+>       dec = base64_decode(enc)
+              ^^^^^^^^^^^^^^^^^^
+
+tests/test_itsdangerous/test_encoding.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+string = b'aW5maW5pdGU'
+
+    def base64_decode(string: str | bytes) -> bytes:
+        """Base64 decode a URL-safe string of bytes or text. The result is
+        bytes.
+        """
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+src/itsdangerous/encoding.py:32: NotImplementedError
+_______________________________ test_base64_bad ________________________________
+
+    def test_base64_bad():
+        with pytest.raises(BadData):
+>           base64_decode("12345")
+
+tests/test_itsdangerous/test_encoding.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+string = '12345'
+
+    def base64_decode(string: str | bytes) -> bytes:
+        """Base64 decode a URL-safe string of bytes or text. The result is
+        bytes.
+        """
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+src/itsdangerous/encoding.py:32: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_itsdangerous/test_encoding.py::test_base64[\u7121\u9650] - ...
+FAILED tests/test_itsdangerous/test_encoding.py::test_base64[infinite] - NotI...
+FAILED tests/test_itsdangerous/test_encoding.py::test_base64_bad - NotImpleme...
+========================= 3 failed, 5 passed in 0.02s ==========================

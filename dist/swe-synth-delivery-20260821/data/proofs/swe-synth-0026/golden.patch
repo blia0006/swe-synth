@@ -1,0 +1,32 @@
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -196,7 +196,28 @@
+         raised. All arguments are forwarded to the signer's
+         :meth:`~TimestampSigner.unsign` method.
+         """
+-        raise NotImplementedError("TODO: implement this function")
++        s = want_bytes(s)
++        last_exception = None
++
++        for signer in self.iter_unsigners(salt):
++            try:
++                base64d, timestamp = signer.unsign(
++                    s, max_age=max_age, return_timestamp=True
++                )
++                payload = self.load_payload(base64d)
++
++                if return_timestamp:
++                    return payload, timestamp
++
++                return payload
++            except SignatureExpired:
++                # The signature was unsigned successfully but was
++                # expired. Do not try the next signer.
++                raise
++            except BadSignature as err:
++                last_exception = err
++
++        raise t.cast(BadSignature, last_exception)
+ 
+     def loads_unsafe(  # type: ignore[override]
+         self,

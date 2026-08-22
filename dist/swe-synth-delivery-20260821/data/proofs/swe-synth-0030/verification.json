@@ -1,0 +1,48 @@
+{
+  "task_id": "swe-synth-0030",
+  "passed": true,
+  "reason": "双向验证通过：空解失败（题目有内容）、参考解通过（题目可解）",
+  "empty_sandbox_id": "jydlu4adpjnkbwspbk5y7uwxftyijkz3fxyuknvh",
+  "golden_sandbox_id": "66febuaxg6kpkyl6z5ajm6uyvpeqnoyl2qqljd6e",
+  "empty_run": {
+    "task_id": "swe-synth-0030",
+    "passed": false,
+    "fail_to_pass": {
+      "total": 3,
+      "passed": 0,
+      "failing": [
+        "tests/test_refactor_guard_swe_synth_0030.py::test_no_new_monolithic_function",
+        "tests/test_refactor_guard_swe_synth_0030.py::test_target_function_complexity_reduced",
+        "tests/test_refactor_guard_swe_synth_0030.py::test_target_function_is_simplified"
+      ]
+    },
+    "pass_to_pass": {
+      "total": 17,
+      "passed": 17,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 1,
+    "n_collected": 20,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "golden_run": {
+    "task_id": "swe-synth-0030",
+    "passed": true,
+    "fail_to_pass": {
+      "total": 3,
+      "passed": 3,
+      "failing": []
+    },
+    "pass_to_pass": {
+      "total": 17,
+      "passed": 17,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 0,
+    "n_collected": 20,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "duration_sec": 201.5
+}

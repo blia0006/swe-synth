@@ -1,0 +1,14 @@
+============================= test session starts ==============================
+collecting ... collected 9 items
+
+tests/test_misc.py::TestMiscellaneous::test_deepcopy PASSED              [ 11%]
+tests/test_misc.py::TestMiscellaneous::test_incorrect_load PASSED        [ 22%]
+tests/test_misc.py::TestMiscellaneous::test_inline_array_recursion_limit PASSED [ 33%]
+tests/test_misc.py::TestMiscellaneous::test_inline_table_recursion_limit PASSED [ 44%]
+tests/test_misc.py::TestMiscellaneous::test_key_recursion_limit PASSED   [ 55%]
+tests/test_misc.py::TestMiscellaneous::test_lazy_import SKIPPED (nee...) [ 66%]
+tests/test_misc.py::TestMiscellaneous::test_load PASSED                  [ 77%]
+tests/test_misc.py::TestMiscellaneous::test_parse_float PASSED           [ 88%]
+tests/test_misc.py::TestMiscellaneous::test_types_import PASSED          [100%]
+
+========================= 8 passed, 1 skipped in 0.02s =========================

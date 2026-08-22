@@ -1,0 +1,29 @@
+{
+  "task_id": "swe-synth-0027",
+  "repo": "pallets/itsdangerous",
+  "base_commit": "672971d66a2ef9f85151e53283113f33d642dabd",
+  "language": "python",
+  "task_type": "feature_implementation",
+  "symbol": "base64_decode",
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_itsdangerous/test_encoding.py::test_base64[\\u7121\\u9650]",
+    "tests/test_itsdangerous/test_encoding.py::test_base64[infinite]",
+    "tests/test_itsdangerous/test_encoding.py::test_base64_bad"
+  ],
+  "PASS_TO_PASS": [
+    "tests/test_itsdangerous/test_encoding.py::test_int_bytes[0-]",
+    "tests/test_itsdangerous/test_encoding.py::test_int_bytes[18446744073709551615-\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff]",
+    "tests/test_itsdangerous/test_encoding.py::test_int_bytes[192-\\xc0]",
+    "tests/test_itsdangerous/test_encoding.py::test_want_bytes[ma\\xf1ana]",
+    "tests/test_itsdangerous/test_encoding.py::test_want_bytes[tomorrow]"
+  ],
+  "modified_files": [
+    "src/itsdangerous/encoding.py"
+  ],
+  "do_not_modify": [
+    "tests/test_itsdangerous/test_encoding.py"
+  ],
+  "workspace": "/workspace/repo",
+  "python": "/opt/venv311/bin/python"
+}

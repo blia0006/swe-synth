@@ -1,0 +1,14 @@
+============================= test session starts ==============================
+collecting ... collected 9 items
+
+tests/test_retry_stats_synth.py::test_initial_summary_is_empty PASSED    [ 11%]
+tests/test_retry_stats_synth.py::test_record_success_updates_counts PASSED [ 22%]
+tests/test_retry_stats_synth.py::test_record_failure_updates_counts_and_errors PASSED [ 33%]
+tests/test_retry_stats_synth.py::test_mixed_attempts PASSED              [ 44%]
+tests/test_retry_stats_synth.py::test_record_attempt_invalid_outcome PASSED [ 55%]
+tests/test_retry_stats_synth.py::test_record_attempt_invalid_duration PASSED [ 66%]
+tests/test_retry_stats_synth.py::test_record_attempt_invalid_error_type_for_success PASSED [ 77%]
+tests/test_retry_stats_synth.py::test_record_attempt_invalid_error_type_for_failure PASSED [ 88%]
+tests/test_retry_stats_synth.py::test_record_success_and_failure_wrappers PASSED [100%]
+
+============================== 9 passed in 0.04s ===============================

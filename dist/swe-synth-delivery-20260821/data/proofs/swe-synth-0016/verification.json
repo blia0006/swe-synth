@@ -1,0 +1,57 @@
+{
+  "task_id": "swe-synth-0016",
+  "passed": true,
+  "reason": "双向验证通过：空解失败（题目有内容）、参考解通过（题目可解）",
+  "empty_sandbox_id": "fewg3hmy3sfquwdmiwsjgm2fyujpo2wtnnxys5dk",
+  "golden_sandbox_id": "k2bxtrxft5av66bruorwmjlqs7zfrdedpm5d4kcp",
+  "empty_run": {
+    "task_id": "swe-synth-0016",
+    "passed": false,
+    "fail_to_pass": {
+      "total": 12,
+      "passed": 0,
+      "failing": [
+        "tests/test_jitter_synth.py::test_decorrelated_jitter_basic",
+        "tests/test_jitter_synth.py::test_decorrelated_jitter_cap_bounds",
+        "tests/test_jitter_synth.py::test_decorrelated_jitter_invalid_cap_raises",
+        "tests/test_jitter_synth.py::test_decorrelated_jitter_negative_previous_raises",
+        "tests/test_jitter_synth.py::test_decorrelated_jitter_previous_zero_returns_base",
+        "tests/test_jitter_synth.py::test_equal_jitter_basic",
+        "tests/test_jitter_synth.py::test_equal_jitter_extremes",
+        "tests/test_jitter_synth.py::test_equal_jitter_negative_base_raises",
+        "tests/test_jitter_synth.py::test_full_jitter_basic",
+        "tests/test_jitter_synth.py::test_full_jitter_invalid_random_value_raises",
+        "tests/test_jitter_synth.py::test_full_jitter_negative_base_raises",
+        "tests/test_jitter_synth.py::test_full_jitter_zero_random_value"
+      ]
+    },
+    "pass_to_pass": {
+      "total": 0,
+      "passed": 0,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 1,
+    "n_collected": 12,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "golden_run": {
+    "task_id": "swe-synth-0016",
+    "passed": true,
+    "fail_to_pass": {
+      "total": 12,
+      "passed": 12,
+      "failing": []
+    },
+    "pass_to_pass": {
+      "total": 0,
+      "passed": 0,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 0,
+    "n_collected": 12,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "duration_sec": 216.7
+}

@@ -1,0 +1,102 @@
+ynth.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+domain = 'www.example.com'
+
+    def split_domain(domain: str) -> list[str]:
+        """Split a domain name into labels.
+    
+        Args:
+            domain: A domain name as a string.
+    
+        Returns:
+            A list of label strings. The list may contain empty strings if the
+            domain contains consecutive dots or starts with a dot. If the
+            normalized domain is empty, an empty list is returned.
+        """
+>       raise NotImplementedError("split_domain not implemented")
+E       NotImplementedError: split_domain not implemented
+
+tldextract/domain_utils.py:36: NotImplementedError
+__________________________ test_is_valid_domain_valid __________________________
+
+    def test_is_valid_domain_valid():
+>       assert is_valid_domain("example.com") is True
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_domain_utils_synth.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+domain = 'example.com'
+
+    def is_valid_domain(domain: str) -> bool:
+        """Check whether a domain name is valid under typical DNS hostname rules.
+    
+        Args:
+            domain: A domain name as a string.
+    
+        Returns:
+            True if the domain is valid, False otherwise.
+        """
+>       raise NotImplementedError("is_valid_domain not implemented")
+E       NotImplementedError: is_valid_domain not implemented
+
+tldextract/domain_utils.py:48: NotImplementedError
+_________________________ test_is_valid_domain_invalid _________________________
+
+    def test_is_valid_domain_invalid():
+>       assert is_valid_domain("") is False
+               ^^^^^^^^^^^^^^^^^^^
+
+tests/test_domain_utils_synth.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+domain = ''
+
+    def is_valid_domain(domain: str) -> bool:
+        """Check whether a domain name is valid under typical DNS hostname rules.
+    
+        Args:
+            domain: A domain name as a string.
+    
+        Returns:
+            True if the domain is valid, False otherwise.
+        """
+>       raise NotImplementedError("is_valid_domain not implemented")
+E       NotImplementedError: is_valid_domain not implemented
+
+tldextract/domain_utils.py:48: NotImplementedError
+__________________________ test_is_valid_domain_idna ___________________________
+
+    def test_is_valid_domain_idna():
+>       assert is_valid_domain("bücher.example") is True
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_domain_utils_synth.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+domain = 'bücher.example'
+
+    def is_valid_domain(domain: str) -> bool:
+        """Check whether a domain name is valid under typical DNS hostname rules.
+    
+        Args:
+            domain: A domain name as a string.
+    
+        Returns:
+            True if the domain is valid, False otherwise.
+        """
+>       raise NotImplementedError("is_valid_domain not implemented")
+E       NotImplementedError: is_valid_domain not implemented
+
+tldextract/domain_utils.py:48: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_domain_utils_synth.py::test_normalize_domain_lowercase_no_trailing_dot
+FAILED tests/test_domain_utils_synth.py::test_normalize_domain_empty_and_dots
+FAILED tests/test_domain_utils_synth.py::test_normalize_domain_idna - NotImpl...
+FAILED tests/test_domain_utils_synth.py::test_normalize_domain_invalid_unicode
+FAILED tests/test_domain_utils_synth.py::test_split_domain - NotImplementedEr...
+FAILED tests/test_domain_utils_synth.py::test_is_valid_domain_valid - NotImpl...
+FAILED tests/test_domain_utils_synth.py::test_is_valid_domain_invalid - NotIm...
+FAILED tests/test_domain_utils_synth.py::test_is_valid_domain_idna - NotImple...
+============================== 8 failed in 0.03s ===============================

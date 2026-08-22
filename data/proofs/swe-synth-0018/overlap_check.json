@@ -1,0 +1,14 @@
+{
+  "passed": false,
+  "method": "github_search+bm25+embedding+llm_judge",
+  "queried": [
+    "should_colorize",
+    "_colorama",
+    "test_refactor_guard_swe_synth_0018",
+    "should_colorize"
+  ],
+  "top_candidates": [],
+  "target_file_last_modified": "2025-09-13T09:10:39Z",
+  "months_since_last_change": 11.2,
+  "verdict_reason": "目标文件 11.2 个月前刚改动（要求 ≥12 个月），存在与近期修复重叠的风险"
+}
