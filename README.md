@@ -132,51 +132,45 @@ cp .env.example .env
 
 ### 4.3 构建环境：`docker build` 到底在哪里执行
 
-> 这一节回答「题目镜像是在哪里 build 的」——**不在沙箱内，也通常不在开发机上**。
+> 这一节回答「题目镜像是在哪里 build 的、整条流水线在哪里跑」。
 
-流水线分三处执行，各有明确分工：
+**生产默认方案（当前，`scripts/run_in_sandbox.py`）：整条流水线收进同一个云端沙箱实例**
+
+出题（Agent1）→ 打包（buildah build+push）→ 验证（Agent2）→ 校验（validate）
+**全部在一个 AGS 沙箱实例内部执行**，本机只做编排（建实例、传源码、发远程命令、
+下载产出、回收实例），不参与任何实际计算：
 
 ```
-┌── 开发机（本地）───────────────────────────────────────────┐
-│  Agent1 出题：git clone → AST 挖空 → 调 LLM 写题干         │
-│               → 本地跑 pytest 做双向 sanity                │
-│  Agent2 验证：远程操控沙箱、收集结果、做判定                │
-│  ⚠️ 这两个 Agent 全程在本地运行，不进镜像                   │
-└────────────────┬──────────────────────────────────────────┘
-                 │ DOCKER_HOST=ssh://docker-builder
+┌── 本机（仅编排，不跑业务逻辑）──────────────────────────────┐
+│  创建沙箱实例 → 上传源码（tar.gz，凭证不打包）              │
+│  → 发起远程命令（nohup 后台跑，断网/合盖不影响）             │
+│  → 巡检状态 / 下载产出 / 回收实例                            │
+└────────────────┬────────────────────────────────────────────┘
+                 │ commands.run（凭证经 envs= 逐次注入，不落盘）
                  ▼
-┌── 构建机（腾讯云 CVM，linux/amd64）───────────────────────┐
-│  docker build  →  docker push 到 CCR                      │
-└────────────────┬──────────────────────────────────────────┘
-                 │ 镜像地址
-                 ▼
-┌── AGS 沙箱 ───────────────────────────────────────────────┐
-│  只运行 pytest（通过 /task/verify.sh 判分）                │
-│  ⚠️ 沙箱内无 docker CLI、无 DinD，不能在此 build           │
-└───────────────────────────────────────────────────────────┘
+┌── AGS 沙箱实例（全部计算在此完成）───────────────────────────┐
+│  Agent1 出题：git clone → AST 挖空/LLM 出题 → 本地 pytest 预检│
+│  pack：buildah build + push 到 CCR（沙箱无 docker.sock/DinD，│
+│         用免 daemon 的 buildah 代替 docker）                 │
+│  Agent2 验证：起临时沙箱做双向判分（空解必红/golden 必绿）    │
+│  validate：产出 data/tasks.jsonl 等结果文件                  │
+└───────────────────────────────────────────────────────────────┘
 ```
-
-**为什么 build 要放在远端构建机**
-
-| 原因 | 说明 |
-|---|---|
-| 架构必需 | 开发机若是 Apple Silicon（arm64），而 AGS 沙箱只接受 `linux/amd64`；跨架构构建走 QEMU 模拟，慢到不可用 |
-| 平台限制 | AGS 沙箱内没有 docker CLI，也未注入 `/var/run/docker.sock`（已实测），无法在沙箱内 build |
-| 与出题解耦 | 出题环节不需要 Docker，可在无 Docker 的机器上开发调试；只有打包环节需要 |
-
-**配置方式**（三种任选）
 
 ```bash
-# 方式一：远端构建机（推荐，需先配好 SSH 免密）
+python scripts/run_in_sandbox.py --n 10                      # 起环境 + 后台启动流水线，立即返回
+python scripts/run_in_sandbox.py --n 10 --stages agent1,pack,agent2,validate
+python scripts/sandbox_status.py --instance <instance_id>    # 查看进度 / 下载产出 / 回收实例
+```
+
+**本地调试方案（可选，仅用于开发阶段单步调试）**：也支持在本机直接跑
+`scripts/run_pipeline.py agent1/validate`，此时 `docker build` 可通过 `DOCKER_HOST`
+指向一台远端 amd64 构建机（因为开发机常是 Apple Silicon arm64，而镜像需要
+`linux/amd64`；AGS 沙箱内也没有 docker CLI，无法在沙箱内直接 `docker build`）：
+
+```bash
+# 留空则用本机 Docker；开发机是 arm64 时需指向远端 amd64 构建机
 DOCKER_HOST=ssh://root@<构建机IP>
-# 或在 ~/.ssh/config 里定义好 Host 别名后：
-DOCKER_HOST=ssh://docker-builder
-
-# 方式二：本机 Docker（x86_64 机器上直接可用）
-# 留空 DOCKER_HOST 即可
-
-# 方式三：本机为 arm64 但仍想本地构建（很慢，仅调试用）
-# 留空 DOCKER_HOST，Docker Desktop 会用 QEMU 模拟 amd64
 ```
 
 > 构建机参考规格：2 核 / 3.5GB 内存 / 50GB 磁盘即可跑通。
