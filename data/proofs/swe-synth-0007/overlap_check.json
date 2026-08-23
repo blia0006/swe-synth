@@ -3,9 +3,9 @@
   "method": "github_search+bm25+embedding+llm_judge",
   "queried": [
     "py",
-    "suffix_rule",
-    "is_exception",
-    "is_wildcard"
+    "hostname_utils",
+    "normalize_hostname",
+    "extract_hostname"
   ],
   "top_candidates": [],
   "target_file_last_modified": null,

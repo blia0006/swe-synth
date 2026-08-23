@@ -3,12 +3,12 @@
   "method": "github_search+bm25+embedding+llm_judge",
   "queried": [
     "py",
-    "timed",
-    "TimestampSigner",
-    "base64_encode"
+    "suffix_index",
+    "is_public_suffix",
+    "suffix_index"
   ],
   "top_candidates": [],
-  "target_file_last_modified": "2025-05-28T20:47:57Z",
-  "months_since_last_change": 14.8,
+  "target_file_last_modified": null,
+  "months_since_last_change": null,
   "verdict_reason": "未检索到与本题相关的 issue/PR"
 }
