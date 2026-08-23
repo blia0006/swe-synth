@@ -1,1 +1,87 @@
-{"task_id": "swe-synth-0027", "task_type": "feature_implementation", "difficulty": "easy", "state": "LOCAL_OK", "repo": "pallets/itsdangerous", "repo_stars": 2900, "base_commit": "672971d66a2ef9f85151e53283113f33d642dabd", "language": "python", "problem_statement": "## 背景与上下文\nitsdangerous 库用于处理不可信来源的数据签名与编码，`encoding` 模块提供字节与文本之间、多种编码格式之间的转换基础能力。其中的 `base64_decode` 负责将 URL-safe Base64 编码的字符串或字节串还原为原始字节，供上层解密或反序列化使用。\n\n## 需要实现的功能\n实现 `base64_decode` 函数。该函数接收一个 URL-safe Base64 数据（可以是 `str` 或 `bytes`），返回解码后的原始 `bytes`。当输入为字符串时，应先按 ASCII 编码转换为字节，并忽略无法编码的字符；若字节长度不能被 4 整除，需补齐缺失的 Base64 填充符后再进行 URL-safe Base64 解码。若输入不是合法的 URL-safe Base64 数据，抛出携带固定消息的 `BadData` 异常。\n\n## 输入\n- `string`: `str | bytes`，表示待解码的 URL-safe Base64 数据。\n  - 可以是文本（`str`）：处理时需要按 ASCII 编码转换，使用 `ignore` 错误处理，即忽略非 ASCII 字符。\n  - 可以是字节（`bytes`）：直接作为待解码数据使用。\n  - 可能省略了 Base64 填充字符 `=`，例如长度为 2、3、5 等。\n  - 可能包含非法字符或空数据。\n\n## 输出\n- 类型：`bytes`\n- 返回解码成功后的原始二进制数据。\n- 不会返回 `None` 或其他占位值；解码失败时抛出 `BadData` 异常。\n\n## 预期行为\n1. 当 `string` 为 `str` 时，使用 ASCII 编码将其转换为字节序列，错误处理策略必须为 `ignore`（忽略无法编码的字符）；当 `string` 为 `bytes` 时，直接使用该字节序列。\n2. 如果字节序列的长度不是 4 的倍数，需要补足足够的 `=` 填充字符，使其长度达到 4 的倍数，再进行 URL-safe Base64 解码（即使用 `-` 和 `_` 替代标准 Base64 中的 `+` 和 `/`，并接受 `=` 填充）。\n3. 成功解码后返回原始字节。\n4. 若解码过程中出现任何异常（例如包含 URL-safe Base64 不允许的字符、填充后仍不合法等），捕获该异常并抛出 `BadData` 异常，异常消息必须为 `Invalid base64-encoded data`。\n\n## 约束条件\n- 不得修改任何测试文件。\n- 保持函数签名 `def base64_decode(string: str | bytes) -> bytes:` 不变。\n- 不得修改模块中其它函数或导入。\n- 可以依赖标准库中已有的 Base64 解码能力，但不得引入新的第三方依赖。", "hints": null, "modified_files": ["src/itsdangerous/encoding.py"], "do_not_modify": ["tests/test_itsdangerous/test_encoding.py"], "test_cmd": "pytest tests/ -q", "FAIL_TO_PASS": ["tests/test_itsdangerous/test_encoding.py::test_base64[\\u7121\\u9650]", "tests/test_itsdangerous/test_encoding.py::test_base64[infinite]", "tests/test_itsdangerous/test_encoding.py::test_base64_bad"], "PASS_TO_PASS": ["tests/test_itsdangerous/test_encoding.py::test_int_bytes[0-]", "tests/test_itsdangerous/test_encoding.py::test_int_bytes[18446744073709551615-\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff]", "tests/test_itsdangerous/test_encoding.py::test_int_bytes[192-\\xc0]", "tests/test_itsdangerous/test_encoding.py::test_want_bytes[ma\\xf1ana]", "tests/test_itsdangerous/test_encoding.py::test_want_bytes[tomorrow]"], "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0027:v1", "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0027:v1-sol", "verify_script": "/task/verify.sh", "generated_by": {"model": "deepseek-v4-pro-202606", "agent": "agent1", "ts": "2026-08-20T13:14:47.227606+00:00", "prompt_version": "v1", "input_tokens": 6189, "output_tokens": 19094}, "validation": {"local_sanity_passed": true, "local_duration_sec": 0.4733870029449463, "sandbox_tool": null, "sandbox_instance_id": null, "empty_solution_result": null, "golden_solution_result": null, "deterministic": true, "duration_sec": null, "llm_attempt": {"solvable": true, "reason": "题干准确：LLM 第 1 次尝试即依据题干实现并通过全部判据", "first_pass_attempt": 1, "difficulty_signal": "easy_for_llm", "n_attempts": 1, "attempts": [{"attempt": 1, "passed": true, "f2p": "3/3", "p2p": "5/5", "error": null}]}, "proof_dir": "/Users/jacobliang/学习/课题三-数据合成/data/proofs/swe-synth-0027"}, "overlap_check": {"passed": false, "method": "github_search+bm25+embedding+llm_judge", "queried": [], "top_candidates": [], "target_file_last_modified": null, "months_since_last_change": null, "verdict_reason": null}, "reject_reason": null}
+{
+  "task_id": "swe-synth-0027",
+  "task_type": "feature_implementation",
+  "difficulty": "easy",
+  "state": "LOCAL_OK",
+  "repo": "psf/cachecontrol",
+  "repo_stars": 500,
+  "base_commit": "91a26abbbebd4d08cbfca909f90cb3a186fe7739",
+  "language": "python",
+  "problem_statement": "## 背景与上下文\n在 `cachecontrol` 项目中，`heuristics.py` 模块提供了一组缓存启发式策略，用于在没有明确缓存头时为 HTTP 响应补充缓存控制信息。`OneDayCache` 是其中一种策略：它通过为响应添加或调整 `expires` 头，让响应缓存一天。\n\n## 需要实现的功能\n实现 `OneDayCache.update_headers` 方法。当响应中已经存在 `expires` 头时，应保留该值；当响应中没有该头时，应基于响应中的 `date` 头计算一天后的时间并格式化为 `expires` 值。最终返回一个包含 `cache-control` 和 `expires` 两个键的头部字典，其中 `cache-control` 的值固定为 `public`。本模块已有的日期解析与格式化辅助函数可用于完成时间处理。\n\n## 输入\n- `response`：类型为 `HTTPResponse` 的对象。该对象含有 `headers` 属性，它是一个可索引的头部映射，可能包含 `date` 和/或 `expires` 这类 HTTP 头字段。\n- 当 `headers` 中不存在 `expires` 头时，假定 `date` 头存在且其格式能被 `parsedate` 正常解析。\n\n## 输出\n返回 `dict[str, str]`，包含以下键：\n- `cache-control`：值固定为 `public`。\n- `expires`：如果输入响应已有 `expires` 头，则为该头的原值；否则为根据 `date` 头计算出的、一天后的 HTTP 日期字符串。\n\n## 预期行为\n1. 若 `response.headers` 中已经存在 `expires` 头，直接使用该头部的原值作为返回字典中 `expires` 的值。\n2. 若不存在 `expires` 头，则使用 `parsedate` 解析 `response.headers` 中的 `date` 头部，并以 UTC 时区构造 `datetime` 对象，表示该响应日期。\n3. 在解析出的时间基础上加上一天（`timedelta(days=1)`），再将其转换为适合 HTTP `expires` 头的日期字符串格式。\n4. 不论上述哪种情况，返回字典的 `cache-control` 都必须是 `public`。\n\n## 约束条件\n- 保持函数签名不变：`def update_headers(self, response: HTTPResponse) -> dict[str, str]:`\n- 不得修改任何测试文件。\n- 不需要处理输入头部缺失或日期解析失败等异常路径；实现应假定在需要解析 `date` 时该字段存在且格式合法。",
+  "hints": null,
+  "modified_files": [
+    "cachecontrol/heuristics.py"
+  ],
+  "do_not_modify": [
+    "tests/test_expires_heuristics.py"
+  ],
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_expires_heuristics.py::TestOneDayCache::test_cache_for_one_day"
+  ],
+  "PASS_TO_PASS": [
+    "tests/test_expires_heuristics.py::TestExpiresAfter::test_expires_after_one_day",
+    "tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_301",
+    "tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_304",
+    "tests/test_expires_heuristics.py::TestHeuristicWithoutWarning::test_no_header_change_means_no_warning_header",
+    "tests/test_expires_heuristics.py::TestLastModified::test_last_modified",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expires_is_not_replaced_when_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expiry_is_no_more_that_twenty_four_hours",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_cache_control_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_status_is_unknown",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used_when_cache_control_public",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_no_expiry_is_inferred_when_no_last_modified_is_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_is_not_added_when_heuristic_was_not_used",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_not_added_when_response_more_recent_than_24_hours",
+    "tests/test_expires_heuristics.py::TestUseExpiresHeuristic::test_expires_heuristic_arg"
+  ],
+  "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0033:v1",
+  "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0033:v1-sol",
+  "verify_script": "/task/verify.sh",
+  "generated_by": {
+    "model": "deepseek-v4-pro-202606",
+    "agent": "agent1",
+    "ts": "2026-08-20T16:25:49.285818+00:00",
+    "prompt_version": "v1",
+    "input_tokens": 8581,
+    "output_tokens": 32277
+  },
+  "validation": {
+    "local_sanity_passed": true,
+    "local_duration_sec": 4.3963682651519775,
+    "sandbox_tool": null,
+    "sandbox_instance_id": null,
+    "empty_solution_result": null,
+    "golden_solution_result": null,
+    "deterministic": true,
+    "duration_sec": null,
+    "llm_attempt": {
+      "solvable": true,
+      "reason": "题干准确：LLM 第 1 次尝试即依据题干实现并通过全部判据",
+      "first_pass_attempt": 1,
+      "difficulty_signal": "easy_for_llm",
+      "n_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "passed": true,
+          "f2p": "1/1",
+          "p2p": "15/15",
+          "error": null
+        }
+      ]
+    },
+    "proof_dir": "/Users/jacobliang/学习/课题三-数据合成/data/proofs/swe-synth-0033"
+  },
+  "overlap_check": {
+    "passed": false,
+    "method": "github_search+bm25+embedding+llm_judge",
+    "queried": [],
+    "top_candidates": [],
+    "target_file_last_modified": null,
+    "months_since_last_change": null,
+    "verdict_reason": null
+  },
+  "reject_reason": null
+}

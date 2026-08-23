@@ -1,14 +1,14 @@
 {
-  "passed": false,
+  "passed": true,
   "method": "github_search+bm25+embedding+llm_judge",
   "queried": [
-    "metric",
-    "number",
-    "test_refactor_guard_swe_synth_0013",
-    "scientific"
+    "set",
+    "redis_cache",
+    "total_seconds",
+    "CacheControl"
   ],
   "top_candidates": [],
-  "target_file_last_modified": "2026-06-30T16:00:36Z",
-  "months_since_last_change": 1.6,
-  "verdict_reason": "目标文件 1.6 个月前刚改动（要求 ≥12 个月），存在与近期修复重叠的风险"
+  "target_file_last_modified": "2023-06-08T00:47:14Z",
+  "months_since_last_change": 38.5,
+  "verdict_reason": "未检索到与本题相关的 issue/PR"
 }

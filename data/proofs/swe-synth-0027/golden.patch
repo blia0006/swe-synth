@@ -1,17 +1,21 @@
---- a/src/itsdangerous/encoding.py
-+++ b/src/itsdangerous/encoding.py
-@@ -29,7 +29,13 @@
-     """Base64 decode a URL-safe string of bytes or text. The result is
-     bytes.
+--- a/cachecontrol/heuristics.py
++++ b/cachecontrol/heuristics.py
+@@ -64,7 +64,17 @@
      """
--    raise NotImplementedError("TODO: implement this function")
-+    string = want_bytes(string, encoding="ascii", errors="ignore")
-+    string += b"=" * (-len(string) % 4)
+ 
+     def update_headers(self, response: HTTPResponse) -> dict[str, str]:
+-        raise NotImplementedError("TODO: implement this function")
++        headers = {}
 +
-+    try:
-+        return base64.urlsafe_b64decode(string)
-+    except (TypeError, ValueError) as e:
-+        raise BadData("Invalid base64-encoded data") from e
++        if "expires" not in response.headers:
++            date = parsedate(response.headers["date"])
++            expires = expire_after(
++                timedelta(days=1),
++                date=datetime(*date[:6], tzinfo=timezone.utc),  # type: ignore[index,misc]
++            )
++            headers["expires"] = datetime_to_header(expires)
++            headers["cache-control"] = "public"
++        return headers
  
  
- # The alphabet used by base64.urlsafe_*
+ class ExpiresAfter(BaseHeuristic):

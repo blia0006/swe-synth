@@ -29,3 +29,6 @@ logs/
 # 流水线中间产物（可重建，不入库）
 .work/
 .build/
+
+# 本地打包的交付快照（用 make_delivery.py 随时可重新生成，不入库）
+dist/

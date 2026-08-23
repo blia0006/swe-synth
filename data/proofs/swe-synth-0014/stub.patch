@@ -18,13 +18,13 @@ new file mode 100644
 +from pathlib import Path
 +
 +# ---- 判据参数（由出题流水线依据 before/after 实测值反推）
-+TARGET_FILE = 'src/humanize/filesize.py'
-+SYMBOL = 'naturalsize'
-+MAX_TARGET_BODY_LINES = 12
-+MAX_TARGET_COMPLEXITY = 5
-+MAX_ANY_FUNC_BODY_LINES = 12
-+EXPECTED_ARGS = ['value', 'binary', 'gnu', 'format']
-+BEFORE = {'body_lines': 19, 'cyclomatic': 12, 'args': ['value', 'binary', 'gnu', 'format']}
++TARGET_FILE = 'cachecontrol/heuristics.py'
++SYMBOL = 'LastModified.update_headers'
++MAX_TARGET_BODY_LINES = 20
++MAX_TARGET_COMPLEXITY = 8
++MAX_ANY_FUNC_BODY_LINES = 22
++EXPECTED_ARGS = ['self', 'resp']
++BEFORE = {'body_lines': 23, 'cyclomatic': 10, 'args': ['self', 'resp']}
 +
 +
 +def _iter_defs(node, prefix: str = ""):

@@ -1,0 +1,84 @@
+        rules = SuffixRules(regular=["com", "org"], wildcard=["*.ck"], exception=["!www.ck"])
+>       result = format_suffix_rules(rules)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_suffix_rule_parser_synth.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rules = SuffixRules(regular=['com', 'org'], wildcard=['*.ck'], exception=['!www.ck'])
+
+    def format_suffix_rules(rules: SuffixRules) -> str:
+        """Format rules back into PSL text order: regular, wildcard, exception.
+    
+        Args:
+            rules: SuffixRules object containing the categorized rules.
+    
+        Returns:
+            A string with one rule per line, in the order regular, wildcard, exception.
+            Returns an empty string if all lists are empty.
+        """
+>       raise NotImplementedError("TODO: implement rule formatting")
+E       NotImplementedError: TODO: implement rule formatting
+
+tldextract/suffix_rule_parser.py:38: NotImplementedError
+_____________ test_format_suffix_rules_empty_returns_empty_string ______________
+
+    def test_format_suffix_rules_empty_returns_empty_string():
+        rules = SuffixRules(regular=[], wildcard=[], exception=[])
+>       assert format_suffix_rules(rules) == ""
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_suffix_rule_parser_synth.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rules = SuffixRules(regular=[], wildcard=[], exception=[])
+
+    def format_suffix_rules(rules: SuffixRules) -> str:
+        """Format rules back into PSL text order: regular, wildcard, exception.
+    
+        Args:
+            rules: SuffixRules object containing the categorized rules.
+    
+        Returns:
+            A string with one rule per line, in the order regular, wildcard, exception.
+            Returns an empty string if all lists are empty.
+        """
+>       raise NotImplementedError("TODO: implement rule formatting")
+E       NotImplementedError: TODO: implement rule formatting
+
+tldextract/suffix_rule_parser.py:38: NotImplementedError
+______________ test_format_suffix_rules_missing_lists_are_omitted ______________
+
+    def test_format_suffix_rules_missing_lists_are_omitted():
+        rules = SuffixRules(regular=["com"], wildcard=[], exception=["!city.kawasaki.jp"])
+>       result = format_suffix_rules(rules)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_suffix_rule_parser_synth.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rules = SuffixRules(regular=['com'], wildcard=[], exception=['!city.kawasaki.jp'])
+
+    def format_suffix_rules(rules: SuffixRules) -> str:
+        """Format rules back into PSL text order: regular, wildcard, exception.
+    
+        Args:
+            rules: SuffixRules object containing the categorized rules.
+    
+        Returns:
+            A string with one rule per line, in the order regular, wildcard, exception.
+            Returns an empty string if all lists are empty.
+        """
+>       raise NotImplementedError("TODO: implement rule formatting")
+E       NotImplementedError: TODO: implement rule formatting
+
+tldextract/suffix_rule_parser.py:38: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_suffix_rule_parser_synth.py::test_parse_basic_rules - NotIm...
+FAILED tests/test_suffix_rule_parser_synth.py::test_parse_mixed_rules_with_deduplication
+FAILED tests/test_suffix_rule_parser_synth.py::test_parse_skips_comments_and_blank_lines
+FAILED tests/test_suffix_rule_parser_synth.py::test_parse_empty_text_returns_empty_lists
+FAILED tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_basic_order
+FAILED tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_empty_returns_empty_string
+FAILED tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_missing_lists_are_omitted
+============================== 7 failed in 0.03s ===============================

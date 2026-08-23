@@ -1,8 +1,8 @@
-diff --git a/tenacity/jitter.py b/tenacity/jitter.py
+diff --git a/tenacity/backoff_sequence.py b/tenacity/backoff_sequence.py
 new file mode 100644
 --- /dev/null
-+++ b/tenacity/jitter.py
-@@ -0,0 +1,76 @@
++++ b/tenacity/backoff_sequence.py
+@@ -0,0 +1,75 @@
 +# Copyright 2016 Julien Danjou
 +# Copyright 2016 Joshua Harlow
 +# Copyright 2013-2014 Ray Holder
@@ -18,146 +18,141 @@ new file mode 100644
 +# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 +# See the License for the specific language governing permissions and
 +# limitations under the License.
++
++"""Utilities for calculating retry backoff delay sequences."""
++
++from __future__ import annotations
++
 +import typing
 +
 +
-+def _validate_random_value(value: float) -> None:
-+    """Validate that *value* lies in the half-open interval [0, 1).
-+
-+    :param value: value produced by a random callable
-+    :raises ValueError: if *value* is outside [0, 1)
-+    """
-+    raise NotImplementedError("_validate_random_value")
-+
-+
-+def full_jitter(base_delay: float, random_func: typing.Callable[[], float]) -> float:
-+    """Return a jittered delay using the full jitter strategy.
-+
-+    The result is uniformly distributed in [0, base_delay).
-+
-+    :param base_delay: non-negative base delay in seconds
-+    :param random_func: zero-argument callable returning a float in [0, 1)
-+    :returns: jittered delay
-+    :raises ValueError: if *base_delay* is negative or *random_func* returns
-+        a value outside [0, 1)
-+    """
-+    raise NotImplementedError("full_jitter")
-+
-+
-+def equal_jitter(base_delay: float, random_func: typing.Callable[[], float]) -> float:
-+    """Return a jittered delay using the equal jitter strategy.
-+
-+    The result is uniformly distributed in [base_delay/2, base_delay).
-+
-+    :param base_delay: non-negative base delay in seconds
-+    :param random_func: zero-argument callable returning a float in [0, 1)
-+    :returns: jittered delay
-+    :raises ValueError: if *base_delay* is negative or *random_func* returns
-+        a value outside [0, 1)
-+    """
-+    raise NotImplementedError("equal_jitter")
-+
-+
-+def decorrelated_jitter(
++def exponential_backoff_sequence(
 +    base_delay: float,
-+    previous_delay: float,
-+    cap: float,
-+    random_func: typing.Callable[[], float],
-+) -> float:
-+    """Return a jittered delay using the decorrelated jitter strategy.
++    multiplier: float,
++    max_delay: typing.Optional[float],
++    retries: int,
++) -> tuple[float, ...]:
++    """Return the per-retry delay sequence for exponential backoff.
 +
-+    The result is uniformly distributed in
-+    [base_delay, min(cap, previous_delay * 3)] when that interval is valid.
-+    If the upper bound is not greater than base_delay, base_delay is returned.
++    The i-th element (0-indexed) is the delay before the (i+1)-th retry,
++    computed as ``min(base_delay * multiplier ** i, max_delay)`` when
++    ``max_delay`` is not ``None``, otherwise ``base_delay * multiplier ** i``.
 +
-+    :param base_delay: non-negative base delay in seconds
-+    :param previous_delay: non-negative previous delay in seconds
-+    :param cap: maximum allowed delay; must be >= base_delay
-+    :param random_func: zero-argument callable returning a float in [0, 1)
-+    :returns: jittered delay
-+    :raises ValueError: if any numeric argument is invalid or *random_func*
-+        returns a value outside [0, 1)
++    :param base_delay: delay before the first retry, must be non-negative.
++    :param multiplier: exponential growth factor, must be greater than 1.
++    :param max_delay: optional upper bound for each delay; if provided,
++        must be greater than 0.
++    :param retries: number of retry delays to generate, must be non-negative.
++    :raises ValueError: if any parameter violates the stated constraints.
 +    """
-+    raise NotImplementedError("decorrelated_jitter")
-diff --git a/tests/test_jitter_synth.py b/tests/test_jitter_synth.py
++    raise NotImplementedError("This is a skeleton; implement this function.")
++
++
++def linear_backoff_sequence(
++    base_delay: float,
++    increment: float,
++    max_delay: typing.Optional[float],
++    retries: int,
++) -> tuple[float, ...]:
++    """Return the per-retry delay sequence for linear backoff.
++
++    The i-th element (0-indexed) is the delay before the (i+1)-th retry,
++    computed as ``min(base_delay + increment * i, max_delay)`` when
++    ``max_delay`` is not ``None``, otherwise ``base_delay + increment * i``.
++
++    :param base_delay: delay before the first retry, must be non-negative.
++    :param increment: fixed amount added after each retry, must be
++        non-negative.
++    :param max_delay: optional upper bound for each delay; if provided,
++        must be greater than 0.
++    :param retries: number of retry delays to generate, must be non-negative.
++    :raises ValueError: if any parameter violates the stated constraints.
++    """
++    raise NotImplementedError("This is a skeleton; implement this function.")
++
++
++def total_delay(sequence: typing.Iterable[float]) -> float:
++    """Return the sum of a sequence of non-negative delays.
++
++    :param sequence: an iterable of non-negative delay values.
++    :raises ValueError: if any value in ``sequence`` is negative.
++    """
++    raise NotImplementedError("This is a skeleton; implement this function.")
+diff --git a/tests/test_backoff_sequence_synth.py b/tests/test_backoff_sequence_synth.py
 new file mode 100644
 --- /dev/null
-+++ b/tests/test_jitter_synth.py
-@@ -0,0 +1,77 @@
-+import typing
++++ b/tests/test_backoff_sequence_synth.py
+@@ -0,0 +1,73 @@
++# Copyright 2016 Julien Danjou
++# Copyright 2016 Joshua Harlow
++# Copyright 2013-2014 Ray Holder
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++# http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++"""Tests for tenacity.backoff_sequence."""
 +
 +import pytest
 +
-+from tenacity.jitter import (
-+    decorrelated_jitter,
-+    equal_jitter,
-+    full_jitter,
++from tenacity.backoff_sequence import (
++    exponential_backoff_sequence,
++    linear_backoff_sequence,
++    total_delay,
 +)
 +
 +
-+def test_full_jitter_basic() -> None:
-+    """full_jitter returns base_delay * random_func value."""
-+    assert full_jitter(10.0, lambda: 0.25) == pytest.approx(2.5)
++def test_exponential_backoff_sequence_no_max() -> None:
++    seq = exponential_backoff_sequence(1.0, 2.0, None, 5)
++    assert seq == (1.0, 2.0, 4.0, 8.0, 16.0)
 +
 +
-+def test_full_jitter_zero_random_value() -> None:
-+    """full_jitter returns 0.0 when random_func returns 0.0."""
-+    assert full_jitter(10.0, lambda: 0.0) == pytest.approx(0.0)
++def test_exponential_backoff_sequence_with_max() -> None:
++    seq = exponential_backoff_sequence(1.0, 2.0, 3.0, 5)
++    assert seq == (1.0, 2.0, 3.0, 3.0, 3.0)
 +
 +
-+def test_full_jitter_negative_base_raises() -> None:
-+    """full_jitter rejects negative base_delay."""
++def test_exponential_backoff_sequence_zero_retries() -> None:
++    seq = exponential_backoff_sequence(1.0, 2.0, None, 0)
++    assert seq == ()
++
++
++def test_exponential_backoff_sequence_invalid_base_delay() -> None:
 +    with pytest.raises(ValueError):
-+        full_jitter(-1.0, lambda: 0.5)
++        exponential_backoff_sequence(-1.0, 2.0, None, 3)
 +
 +
-+def test_full_jitter_invalid_random_value_raises() -> None:
-+    """full_jitter rejects random_func values outside [0, 1)."""
++def test_linear_backoff_sequence_expected() -> None:
++    seq = linear_backoff_sequence(0.5, 0.5, None, 4)
++    assert seq == (0.5, 1.0, 1.5, 2.0)
++
++
++def test_linear_backoff_sequence_with_max() -> None:
++    seq = linear_backoff_sequence(0.5, 0.5, 1.2, 5)
++    assert seq == (0.5, 1.0, 1.2, 1.2, 1.2)
++
++
++def test_linear_backoff_sequence_invalid_increment() -> None:
 +    with pytest.raises(ValueError):
-+        full_jitter(10.0, lambda: -0.1)
++        linear_backoff_sequence(1.0, -0.1, None, 3)
++
++
++def test_total_delay_sums_sequence() -> None:
++    assert total_delay([1.5, 2.5, 3.0]) == 7.0
++
++
++def test_total_delay_empty_sequence() -> None:
++    assert total_delay(()) == 0.0
++
++
++def test_total_delay_negative_value_raises() -> None:
 +    with pytest.raises(ValueError):
-+        full_jitter(10.0, lambda: 1.0)
-+
-+
-+def test_equal_jitter_basic() -> None:
-+    """equal_jitter returns half base plus half base times random."""
-+    assert equal_jitter(10.0, lambda: 0.5) == pytest.approx(7.5)
-+
-+
-+def test_equal_jitter_extremes() -> None:
-+    """equal_jitter respects the [base/2, base) range."""
-+    assert equal_jitter(10.0, lambda: 0.0) == pytest.approx(5.0)
-+    assert equal_jitter(10.0, lambda: 0.999999) == pytest.approx(9.99999)
-+
-+
-+def test_equal_jitter_negative_base_raises() -> None:
-+    """equal_jitter rejects negative base_delay."""
-+    with pytest.raises(ValueError):
-+        equal_jitter(-1.0, lambda: 0.5)
-+
-+
-+def test_decorrelated_jitter_basic() -> None:
-+    """decorrelated_jitter uses previous_delay*3 as upper bound."""
-+    assert decorrelated_jitter(1.0, 1.0, 10.0, lambda: 0.5) == pytest.approx(2.0)
-+
-+
-+def test_decorrelated_jitter_previous_zero_returns_base() -> None:
-+    """When previous_delay=0, upper bound equals 0, so base is returned."""
-+    assert decorrelated_jitter(1.0, 0.0, 10.0, lambda: 0.5) == pytest.approx(1.0)
-+
-+
-+def test_decorrelated_jitter_cap_bounds() -> None:
-+    """decorrelated_jitter respects cap."""
-+    assert decorrelated_jitter(1.0, 5.0, 10.0, lambda: 0.999999) == pytest.approx(9.999991)
-+
-+
-+def test_decorrelated_jitter_invalid_cap_raises() -> None:
-+    """decorrelated_jitter rejects cap < base_delay."""
-+    with pytest.raises(ValueError):
-+        decorrelated_jitter(2.0, 1.0, 1.5, lambda: 0.5)
-+
-+
-+def test_decorrelated_jitter_negative_previous_raises() -> None:
-+    """decorrelated_jitter rejects negative previous_delay."""
-+    with pytest.raises(ValueError):
-+        decorrelated_jitter(1.0, -1.0, 10.0, lambda: 0.5)
++        total_delay([1.0, -2.0])

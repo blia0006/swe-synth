@@ -1,1 +1,83 @@
-{"task_id": "swe-synth-0006", "task_type": "refactoring", "difficulty": "medium", "state": "LOCAL_OK", "repo": "john-kurkowski/tldextract", "repo_stars": 2000, "base_commit": "72d37955ae5ba86267fd68c97b56866bd04c3ce9", "language": "python", "problem_statement": "## 背景与上下文\n`tldextract` 是一个从 URL 或 FQDN 中提取域名组成部分的命令行工具。本文件 `tldextract/cli.py` 中的 `main()` 是 CLI 入口，它负责解析命令行参数、根据参数构造 `TLDExtract` 实例、执行更新或批量解析，并把结果以文本或 JSON 格式打印到 stdout。随着功能增加，该函数已经膨胀到 90 多行，圈复杂度达到 10，出现参数解析、实例构造与输出格式化等多类职责耦合，不利于阅读和后续维护。因此需要在不改变任何对外行为的前提下对其进行结构化重构。\n\n## 需要实现的功能\n这是一道代码重构题，不是功能开发题。你的任务是重构 `main()` 的内部实现，使结构显著更清晰，同时保证所有可观察行为与重构前完全一致。你可以把独立职责提取到模块级私有辅助函数或常量中，以降低函数有效行数和圈复杂度；但不得改变 `main` 的函数签名或 CLI 对外接口。\n\n## 输入\n目标函数 `main` 没有任何形参，签名必须保持为 `def main() -> None:`。它的输入完全来自命令行参数解析（`argparse`），重构后仍必须支持与原来完全相同的参数：`input`（位置参数，可多个）、`-j/--json`、`-u/--update`、`--suffix_list_url`、`-c/--cache_dir`、`-p/--include_psl_private_domains/--private_domains`、`--no_fallback_to_snapshot`、`--version`。\n\n## 输出\n`main` 不返回任何值（`-> None`）。根据运行参数，它可能向 stdout 打印：\n- 普通模式：每个输入对应的 `\"{subdomain} {domain} {suffix}\"`；\n- JSON 模式：一个 JSON 对象，包含原始数据类字段与额外属性；\n- 无输入且未更新时：打印 usage 到 stdout 并通过 `sys.exit(1)` 退出；\n- `--update` 模式：触发 TLDExtract 更新（可能产生网络或文件读写副作用）。\n任何退出码、异常类型与触发条件均不得改变。\n\n## 预期行为\n① 必须保持以下行为完全不变：\n- 对任意命令行参数组合，stdout 文本输出、JSON 输出、退出码和异常都必须与重构前逐字节一致；\n- `TLDExtract` 的构造参数、更新调用时机及其副作用顺序必须与重构前一致；\n- `logging.basicConfig()` 仍然在最开始时执行；\n- `--version` 的行为由 argparse 保证，不得破坏；\n② 要求消除的具体坏味道：\n- `main` 函数过长、圈复杂度过高；\n- 参数解析、配置构造、结果输出等不同职责混合；\n- 后缀列表路径处理逻辑内联在 `main` 中；\n- JSON 输出属性元组等常量重复出现；\n③ 允许的结构性调整：\n- 提取模块级以下划线开头的私有辅助函数或常量；\n- 对参数构造、解析器创建、结果格式化进行职责拆分；\n- 在内部使用局部变量重用辅助函数结果，但不能改变任何可观察副作用顺序。\n\n## 约束条件\n- `main` 的函数签名必须逐字保持为 `def main() -> None:`，不得添加/删除形参、默认值或装饰器；\n- 不得修改任何测试文件；\n- 不得改变任何对外可见行为（stdout/stderr/退出码/异常/副作用）；\n- 只能使用标准库以及文件顶部已导入的依赖，不得引入新的第三方依赖；\n- 不得删除或重命名 `main`；\n- 辅助函数必须放在模块级（以下划线开头表示私有），不准把大段逻辑塞进另一个巨型函数。\n\n## 自动化质量门槛\n\n除了「所有既有测试必须保持通过」之外，本题还有一组**静态指标**判据\n（由 `tests/test_refactor_guard_swe_synth_0006.py` 自动检查，该文件属于判据、不可修改）：\n\n| 指标 | 重构前 | 要求 |\n|---|---|---|\n| `main` 的有效代码行数 | 92 | ≤ **31** |\n| `main` 的圈复杂度 | 10 | ≤ **5** |\n| 文件内任一函数的有效代码行数 | — | ≤ **56** |\n| `main` 的参数列表 | `` | 保持完全不变 |\n\n说明：\n- 「有效代码行数」不含 docstring、空行与纯注释行，所以删注释、压行都无助于达标\n- 最后一项限制的用意是防止「把逻辑整体搬到另一个大函数」这种伪重构\n- 达标的常规做法是：把目标函数中彼此独立的职责，提取为若干个小的私有辅助函数\n", "hints": null, "modified_files": ["tldextract/cli.py"], "do_not_modify": ["tests/cli_test.py", "tests/test_refactor_guard_swe_synth_0006.py", "tests/test_release.py"], "test_cmd": "pytest tests/ -q", "FAIL_TO_PASS": ["tests/test_refactor_guard_swe_synth_0006.py::test_no_new_monolithic_function", "tests/test_refactor_guard_swe_synth_0006.py::test_target_function_complexity_reduced", "tests/test_refactor_guard_swe_synth_0006.py::test_target_function_is_simplified"], "PASS_TO_PASS": ["tests/cli_test.py::test_cli_json_output", "tests/cli_test.py::test_cli_namedargs", "tests/cli_test.py::test_cli_no_input", "tests/cli_test.py::test_cli_parses_args", "tests/cli_test.py::test_cli_posargs", "tests/test_refactor_guard_swe_synth_0006.py::test_signature_unchanged", "tests/test_release.py::test_happy_path"], "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0006:v1", "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0006:v1-sol", "verify_script": "/task/verify.sh", "generated_by": {"model": "deepseek-v4-pro-202606", "agent": "agent1", "ts": "2026-08-21T20:41:20.409053+00:00", "prompt_version": "refactor-v1", "input_tokens": 435154, "output_tokens": 1880205}, "validation": {"local_sanity_passed": true, "local_duration_sec": 2.2439656257629395, "sandbox_tool": null, "sandbox_instance_id": null, "empty_solution_result": null, "golden_solution_result": null, "deterministic": true, "duration_sec": null, "llm_attempt": {"solvable": true, "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据", "first_pass_attempt": 1, "difficulty_signal": "easy_for_llm", "n_attempts": 1, "attempts": [{"attempt": 1, "passed": true, "f2p": "3/3", "p2p": "7/7", "error": null}]}, "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0006"}, "overlap_check": {"passed": false, "method": "github_search+bm25+embedding+llm_judge", "queried": [], "top_candidates": [], "target_file_last_modified": null, "months_since_last_change": null, "verdict_reason": null}, "reject_reason": null}
+{
+  "task_id": "swe-synth-0006",
+  "task_type": "refactoring",
+  "difficulty": "medium",
+  "state": "LOCAL_OK",
+  "repo": "john-kurkowski/tldextract",
+  "repo_stars": 2000,
+  "base_commit": "72d37955ae5ba86267fd68c97b56866bd04c3ce9",
+  "language": "python",
+  "problem_statement": "## 背景与上下文\n`tldextract` 是一个从 URL 或 FQDN 中提取域名组成部分的命令行工具。本文件 `tldextract/cli.py` 中的 `main()` 是 CLI 入口，它负责解析命令行参数、根据参数构造 `TLDExtract` 实例、执行更新或批量解析，并把结果以文本或 JSON 格式打印到 stdout。随着功能增加，该函数已经膨胀到 90 多行，圈复杂度达到 10，出现参数解析、实例构造与输出格式化等多类职责耦合，不利于阅读和后续维护。因此需要在不改变任何对外行为的前提下对其进行结构化重构。\n\n## 需要实现的功能\n这是一道代码重构题，不是功能开发题。你的任务是重构 `main()` 的内部实现，使结构显著更清晰，同时保证所有可观察行为与重构前完全一致。你可以把独立职责提取到模块级私有辅助函数或常量中，以降低函数有效行数和圈复杂度；但不得改变 `main` 的函数签名或 CLI 对外接口。\n\n## 输入\n目标函数 `main` 没有任何形参，签名必须保持为 `def main() -> None:`。它的输入完全来自命令行参数解析（`argparse`），重构后仍必须支持与原来完全相同的参数：`input`（位置参数，可多个）、`-j/--json`、`-u/--update`、`--suffix_list_url`、`-c/--cache_dir`、`-p/--include_psl_private_domains/--private_domains`、`--no_fallback_to_snapshot`、`--version`。\n\n## 输出\n`main` 不返回任何值（`-> None`）。根据运行参数，它可能向 stdout 打印：\n- 普通模式：每个输入对应的 `\"{subdomain} {domain} {suffix}\"`；\n- JSON 模式：一个 JSON 对象，包含原始数据类字段与额外属性；\n- 无输入且未更新时：打印 usage 到 stdout 并通过 `sys.exit(1)` 退出；\n- `--update` 模式：触发 TLDExtract 更新（可能产生网络或文件读写副作用）。\n任何退出码、异常类型与触发条件均不得改变。\n\n## 预期行为\n① 必须保持以下行为完全不变：\n- 对任意命令行参数组合，stdout 文本输出、JSON 输出、退出码和异常都必须与重构前逐字节一致；\n- `TLDExtract` 的构造参数、更新调用时机及其副作用顺序必须与重构前一致；\n- `logging.basicConfig()` 仍然在最开始时执行；\n- `--version` 的行为由 argparse 保证，不得破坏；\n② 要求消除的具体坏味道：\n- `main` 函数过长、圈复杂度过高；\n- 参数解析、配置构造、结果输出等不同职责混合；\n- 后缀列表路径处理逻辑内联在 `main` 中；\n- JSON 输出属性元组等常量重复出现；\n③ 允许的结构性调整：\n- 提取模块级以下划线开头的私有辅助函数或常量；\n- 对参数构造、解析器创建、结果格式化进行职责拆分；\n- 在内部使用局部变量重用辅助函数结果，但不能改变任何可观察副作用顺序。\n\n## 约束条件\n- `main` 的函数签名必须逐字保持为 `def main() -> None:`，不得添加/删除形参、默认值或装饰器；\n- 不得修改任何测试文件；\n- 不得改变任何对外可见行为（stdout/stderr/退出码/异常/副作用）；\n- 只能使用标准库以及文件顶部已导入的依赖，不得引入新的第三方依赖；\n- 不得删除或重命名 `main`；\n- 辅助函数必须放在模块级（以下划线开头表示私有），不准把大段逻辑塞进另一个巨型函数。\n\n## 自动化质量门槛\n\n除了「所有既有测试必须保持通过」之外，本题还有一组**静态指标**判据\n（由 `tests/test_refactor_guard_swe_synth_0006.py` 自动检查，该文件属于判据、不可修改）：\n\n| 指标 | 重构前 | 要求 |\n|---|---|---|\n| `main` 的有效代码行数 | 92 | ≤ **31** |\n| `main` 的圈复杂度 | 10 | ≤ **5** |\n| 文件内任一函数的有效代码行数 | — | ≤ **56** |\n| `main` 的参数列表 | `` | 保持完全不变 |\n\n说明：\n- 「有效代码行数」不含 docstring、空行与纯注释行，所以删注释、压行都无助于达标\n- 最后一项限制的用意是防止「把逻辑整体搬到另一个大函数」这种伪重构\n- 达标的常规做法是：把目标函数中彼此独立的职责，提取为若干个小的私有辅助函数\n",
+  "hints": null,
+  "modified_files": [
+    "tldextract/cli.py"
+  ],
+  "do_not_modify": [
+    "tests/cli_test.py",
+    "tests/test_refactor_guard_swe_synth_0006.py",
+    "tests/test_release.py"
+  ],
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_refactor_guard_swe_synth_0006.py::test_no_new_monolithic_function",
+    "tests/test_refactor_guard_swe_synth_0006.py::test_target_function_complexity_reduced",
+    "tests/test_refactor_guard_swe_synth_0006.py::test_target_function_is_simplified"
+  ],
+  "PASS_TO_PASS": [
+    "tests/cli_test.py::test_cli_json_output",
+    "tests/cli_test.py::test_cli_namedargs",
+    "tests/cli_test.py::test_cli_no_input",
+    "tests/cli_test.py::test_cli_parses_args",
+    "tests/cli_test.py::test_cli_posargs",
+    "tests/test_refactor_guard_swe_synth_0006.py::test_signature_unchanged",
+    "tests/test_release.py::test_happy_path"
+  ],
+  "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0006:v1",
+  "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0006:v1-sol",
+  "verify_script": "/task/verify.sh",
+  "generated_by": {
+    "model": "deepseek-v4-pro-202606",
+    "agent": "agent1",
+    "ts": "2026-08-21T20:41:20.409053+00:00",
+    "prompt_version": "refactor-v1",
+    "input_tokens": 435154,
+    "output_tokens": 1880205
+  },
+  "validation": {
+    "local_sanity_passed": true,
+    "local_duration_sec": 2.2439656257629395,
+    "sandbox_tool": null,
+    "sandbox_instance_id": null,
+    "empty_solution_result": null,
+    "golden_solution_result": null,
+    "deterministic": true,
+    "duration_sec": null,
+    "llm_attempt": {
+      "solvable": true,
+      "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据",
+      "first_pass_attempt": 1,
+      "difficulty_signal": "easy_for_llm",
+      "n_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "passed": true,
+          "f2p": "3/3",
+          "p2p": "7/7",
+          "error": null
+        }
+      ]
+    },
+    "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0006"
+  },
+  "overlap_check": {
+    "passed": false,
+    "method": "github_search+bm25+embedding+llm_judge",
+    "queried": [],
+    "top_candidates": [],
+    "target_file_last_modified": null,
+    "months_since_last_change": null,
+    "verdict_reason": null
+  },
+  "reject_reason": null
+}

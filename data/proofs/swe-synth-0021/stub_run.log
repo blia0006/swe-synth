@@ -1,14 +1,77 @@
-============================= test session starts ==============================
-collecting ... collected 9 items
+^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-tests/test_misc.py::TestMiscellaneous::test_deepcopy PASSED              [ 11%]
-tests/test_misc.py::TestMiscellaneous::test_incorrect_load PASSED        [ 22%]
-tests/test_misc.py::TestMiscellaneous::test_inline_array_recursion_limit PASSED [ 33%]
-tests/test_misc.py::TestMiscellaneous::test_inline_table_recursion_limit PASSED [ 44%]
-tests/test_misc.py::TestMiscellaneous::test_key_recursion_limit PASSED   [ 55%]
-tests/test_misc.py::TestMiscellaneous::test_lazy_import SKIPPED (nee...) [ 66%]
-tests/test_misc.py::TestMiscellaneous::test_load PASSED                  [ 77%]
-tests/test_misc.py::TestMiscellaneous::test_parse_float PASSED           [ 88%]
-tests/test_misc.py::TestMiscellaneous::test_types_import PASSED          [100%]
+self = <itsdangerous.signer.Signer object at 0x7f6d710823d0>, secret_key = None
 
-========================= 8 passed, 1 skipped in 0.02s =========================
+    def derive_key(self, secret_key: str | bytes | None = None) -> bytes:
+        """This method is called to derive the key. The default key
+        derivation choices can be overridden here. Key derivation is not
+        intended to be used as a security method to make a complex key
+        out of a short password. Instead you should use large random
+        secret keys.
+    
+        :param secret_key: A specific secret key to derive from.
+            Defaults to the last item in :attr:`secret_keys`.
+    
+        .. versionchanged:: 2.0
+            Added the ``secret_key`` parameter.
+        """
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+src/itsdangerous/signer.py:195: NotImplementedError
+_________________________ TestSigner.test_secret_keys __________________________
+
+self = <test_itsdangerous.test_signer.TestSigner object at 0x7f6d711074d0>
+
+    def test_secret_keys(self):
+        signer = Signer("a")
+>       signed = signer.sign("my string")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_itsdangerous/test_signer.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/itsdangerous/signer.py:207: in sign
+    return value + self.sep + self.get_signature(value)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/itsdangerous/signer.py:200: in get_signature
+    key = self.derive_key()
+          ^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <itsdangerous.signer.Signer object at 0x7f6d70f8b7d0>, secret_key = None
+
+    def derive_key(self, secret_key: str | bytes | None = None) -> bytes:
+        """This method is called to derive the key. The default key
+        derivation choices can be overridden here. Key derivation is not
+        intended to be used as a security method to make a complex key
+        out of a short password. Instead you should use large random
+        secret keys.
+    
+        :param secret_key: A specific secret key to derive from.
+            Defaults to the last item in :attr:`secret_keys`.
+    
+        .. versionchanged:: 2.0
+            Added the ``secret_key`` parameter.
+        """
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+src/itsdangerous/signer.py:195: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_signer - NotI...
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_no_separator
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_broken_signature
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_changed_value
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[concat]
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[django-concat]
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[hmac]
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_key_derivation[none]
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_invalid_key_derivation
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_digest_method
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[None]
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[algorithm1]
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[algorithm2]
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_algorithm[algorithm3]
+FAILED tests/test_itsdangerous/test_signer.py::TestSigner::test_secret_keys
+========================= 15 failed, 2 passed in 0.10s =========================

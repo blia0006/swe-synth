@@ -3,9 +3,9 @@
   "method": "github_search+bm25+embedding+llm_judge",
   "queried": [
     "py",
-    "jitter",
-    "decorrelated_jitter",
-    "previous_delay"
+    "backoff_sequence",
+    "exponential_backoff_sequence",
+    "linear_backoff_sequence"
   ],
   "top_candidates": [],
   "target_file_last_modified": null,

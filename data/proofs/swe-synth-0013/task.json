@@ -1,1 +1,106 @@
-{"task_id": "swe-synth-0013", "task_type": "refactoring", "difficulty": "medium", "state": "LOCAL_OK", "repo": "python-humanize/humanize", "repo_stars": 1900, "base_commit": "ce4147b6c8f8a132f772be0929d58305eb22c5d9", "language": "python", "problem_statement": "## 背景与上下文\n`humanize` 是一个将数字转换为人类可读字符串的 Python 库。`src/humanize/number.py` 中的 `metric` 函数负责将数值格式化为带 SI 单位前缀的字符串，例如 `1500 V` 变成 `1.50 kV`。当前实现约 26 行，圈复杂度 12，包含了指数计算、缩放、前缀选择、空格规则等多个职责，且存在 magic number 和重复代码，导致理解和维护成本较高。通过重构可以显著提高可读性，而不改变对外行为。\n\n## 需要实现的功能\n这是一道重构题，目标是改善函数结构而非改变功能。你需要在不修改 `metric` 函数签名和对外可见行为的前提下，将其拆分为若干模块级私有辅助函数，降低 `metric` 自身的圈复杂度和有效行数。拆分后的辅助函数应职责单一、命名清晰，并保持与原有逻辑完全等价。\n\n## 输入\n- `value`：输入数值，类型为 `float`（实际也可能传入 `int`），即需要格式化的数字。\n- `unit`：可选的基本单位字符串，默认为空字符串。\n- `precision`：输出应包含的总位数，默认值为 3。\n\n## 输出\n返回值类型始终为 `str`：\n- 当 `value` 不是有限数时，返回 `_format_not_finite(value)` 的结果；\n- 当指数过大或过小时，返回 `scientific(value, precision - 1) + unit`；\n- 否则返回由格式化后的数值、可选空格、SI 前缀和单位拼接而成的字符串；\n- 当没有单位和前缀，或单位为 `°`、`′`、`″` 时，数值与单位/前缀之间不加空格；其余情况加一个空格。\n\n## 预期行为\n1. 必须保持以下行为完全不变：\n   - 非有限数（如 `float('nan')`、`float('inf')`）的处理和返回；\n   - 对过大或过小指数（≥33 或 < -30）的 scientific 回退及精度取值为 `precision - 1`；\n   - SI 前缀的选择规则，包括正指数（kMGTPEZYRQ）和负指数（mμnpfazyrq）；\n   - 缩放后的数值、`digits` 计算和四舍五入规则；\n   - 单位与数值之间空格的条件，特别是单位为角度符号时的特殊处理；\n   - 参数默认值、返回字符串格式和函数签名。\n2. 要求消除的具体坏味道：\n   - 消除过长的函数体和过高的圈复杂度；\n   - 消除重复的 `digits` 计算和 magic number 散落；\n   - 将指数计算、缩放/舍入、前缀选择、空格决策等独立职责提取为私有函数；\n   - 保持主函数主流程清晰，只保留高层步骤。\n3. 允许的结构性调整：\n   - 新增模块级私有辅助函数（以下划线开头）；\n   - 保持 `metric` 内部 `import math` 不变，也可在辅助函数内部按需 `import math`；\n   - 在辅助函数之间传递必要的中间值（如 exponent、scaled value、digits）。\n\n## 约束条件\n- `metric` 函数签名不得改变，包括参数名、顺序、默认值；\n- 不得修改任何测试文件；\n- 不得改变对外可见行为，包括返回值、异常类型与触发条件、副作用顺序；\n- 不得删除或重命名 `metric`；\n- 不得引入新的第三方依赖，只能使用标准库和该文件已导入的依赖；\n- 提取的辅助函数必须放在模块级，并以 `_` 开头。\n\n## 自动化质量门槛\n\n除了「所有既有测试必须保持通过」之外，本题还有一组**静态指标**判据\n（由 `tests/test_refactor_guard_swe_synth_0013.py` 自动检查，该文件属于判据、不可修改）：\n\n| 指标 | 重构前 | 要求 |\n|---|---|---|\n| `metric` 的有效代码行数 | 26 | ≤ **14** |\n| `metric` 的圈复杂度 | 12 | ≤ **6** |\n| 文件内任一函数的有效代码行数 | — | ≤ **33** |\n| `metric` 的参数列表 | `value, unit, precision` | 保持完全不变 |\n\n说明：\n- 「有效代码行数」不含 docstring、空行与纯注释行，所以删注释、压行都无助于达标\n- 最后一项限制的用意是防止「把逻辑整体搬到另一个大函数」这种伪重构\n- 达标的常规做法是：把目标函数中彼此独立的职责，提取为若干个小的私有辅助函数\n", "hints": null, "modified_files": ["src/humanize/number.py"], "do_not_modify": ["tests/test_benchmarks.py", "tests/test_number.py", "tests/test_refactor_guard_swe_synth_0013.py"], "test_cmd": "pytest tests/ -q", "FAIL_TO_PASS": ["tests/test_refactor_guard_swe_synth_0013.py::test_target_function_complexity_reduced", "tests/test_refactor_guard_swe_synth_0013.py::test_target_function_is_simplified"], "PASS_TO_PASS": ["tests/test_benchmarks.py::test_apnumber", "tests/test_benchmarks.py::test_clamp", "tests/test_benchmarks.py::test_fractional", "tests/test_benchmarks.py::test_intcomma", "tests/test_benchmarks.py::test_intword", "tests/test_benchmarks.py::test_metric", "tests/test_benchmarks.py::test_natural_list", "tests/test_benchmarks.py::test_naturaldate", "tests/test_benchmarks.py::test_naturalday", "tests/test_benchmarks.py::test_naturaldelta", "tests/test_benchmarks.py::test_naturalsize", "tests/test_benchmarks.py::test_naturaltime", "tests/test_benchmarks.py::test_ordinal", "tests/test_benchmarks.py::test_precisedelta", "tests/test_benchmarks.py::test_scientific", "tests/test_number.py::test_apnumber[-inf--Inf0]", "tests/test_number.py::test_apnumber[-inf--Inf1]", "tests/test_number.py::test_apnumber[0-zero]", "tests/test_number.py::test_apnumber[1-one]", "tests/test_number.py::test_apnumber[10-10]", "tests/test_number.py::test_apnumber[2-two]", "tests/test_number.py::test_apnumber[4-four]", "tests/test_number.py::test_apnumber[5-five]", "tests/test_number.py::test_apnumber[7-seven]", "tests/test_number.py::test_apnumber[9-nine]", "tests/test_number.py::test_apnumber[None-None]", "tests/test_number.py::test_apnumber[inf-+Inf]", "tests/test_number.py::test_apnumber[nan-NaN0]", "tests/test_number.py::test_apnumber[nan-NaN1]", "tests/test_number.py::test_clamp[test_args0-1]", "tests/test_number.py::test_clamp[test_args1-None]", "tests/test_number.py::test_clamp[test_args10--Inf]", "tests/test_number.py::test_clamp[test_args2-0%]", "tests/test_number.py::test_clamp[test_args3-<1%]", "tests/test_number.py::test_clamp[test_args4->99%]", "tests/test_number.py::test_clamp[test_args8-NaN]", "tests/test_number.py::test_clamp[test_args9-+Inf]", "tests/test_number.py::test_fractional[-0.5--1/2]", "tests/test_number.py::test_fractional[-inf--Inf0]", "tests/test_number.py::test_fractional[-inf--Inf1]", "tests/test_number.py::test_fractional[0.3-3/10]", "tests/test_number.py::test_fractional[0.333-333/1000]", "tests/test_number.py::test_fractional[0.3333333333333333-1/3]", "tests/test_number.py::test_fractional[0.8333333333333334-5/6]", "tests/test_number.py::test_fractional[1-1]", "tests/test_number.py::test_fractional[2.0-2]", "tests/test_number.py::test_fractional[7-7]", "tests/test_number.py::test_fractional[None-None]", "tests/test_number.py::test_fractional[inf-+Inf]", "tests/test_number.py::test_fractional[nan-NaN0]", "tests/test_number.py::test_fractional[nan-NaN1]", "tests/test_number.py::test_fractional[ten-ten]", "tests/test_number.py::test_intcomma[test_args0-100]", "tests/test_number.py::test_intcomma[test_args1-1,000]", "tests/test_number.py::test_intcomma[test_args10-1,000,000]", "tests/test_number.py::test_intcomma[test_args11-1,234,567.1234567]", "tests/test_number.py::test_intcomma[test_args12-1,234,567]", "tests/test_number.py::test_intcomma[test_args13-1,234,567.1]", "tests/test_number.py::test_intcomma[test_args14-1,234,567.1234567000]", "tests/test_number.py::test_intcomma[test_args15-1,234,567.0]", "tests/test_number.py::test_intcomma[test_args16-None]", "tests/test_number.py::test_intcomma[test_args17-14,308.4]", "tests/test_number.py::test_intcomma[test_args18-14,308.4]", "tests/test_number.py::test_intcomma[test_args19-14,308.4]", "tests/test_number.py::test_intcomma[test_args2-10,123]", "tests/test_number.py::test_intcomma[test_args20-14,308.40]", "tests/test_number.py::test_intcomma[test_args21-14,308.400]", "tests/test_number.py::test_intcomma[test_args22-1,234.5454545]", "tests/test_number.py::test_intcomma[test_args23-1,234.5454545]", "tests/test_number.py::test_intcomma[test_args24-1,235]", "tests/test_number.py::test_intcomma[test_args25-1,234.5]", "tests/test_number.py::test_intcomma[test_args26-1,234.55]", "tests/test_number.py::test_intcomma[test_args27-1,234.545]", "tests/test_number.py::test_intcomma[test_args28-1,234.5454545000]", "tests/test_number.py::test_intcomma[test_args29-NaN]", "tests/test_number.py::test_intcomma[test_args3-10,311]", "tests/test_number.py::test_intcomma[test_args30-+Inf]", "tests/test_number.py::test_intcomma[test_args31--Inf]", "tests/test_number.py::test_intcomma[test_args32-NaN]", "tests/test_number.py::test_intcomma[test_args33--Inf]", "tests/test_number.py::test_intcomma[test_args4-1,000,000]", "tests/test_number.py::test_intcomma[test_args5-1,234,567.25]", "tests/test_number.py::test_intcomma[test_args6-100]", "tests/test_number.py::test_intcomma[test_args7-1,000]", "tests/test_number.py::test_intcomma[test_args8-10,123]", "tests/test_number.py::test_intcomma[test_args9-10,311]", "tests/test_number.py::test_intword[test_args0-0]", "tests/test_number.py::test_intword[test_args1-100]", "tests/test_number.py::test_intword[test_args2--100]", "tests/test_number.py::test_intword[test_args29-None]", "tests/test_number.py::test_intword[test_args33-NaN]", "tests/test_number.py::test_intword[test_args34-+Inf]", "tests/test_number.py::test_intword[test_args35--Inf]", "tests/test_number.py::test_intword[test_args36-NaN]", "tests/test_number.py::test_intword[test_args37--Inf]", "tests/test_number.py::test_intword_powers", "tests/test_number.py::test_metric[[-inf]--Inf]", "tests/test_number.py::test_metric[[0]-0.00]", "tests/test_number.py::test_metric[[1.23456]-1.23]", "tests/test_number.py::test_metric[[100]-100]", "tests/test_number.py::test_metric[[12.3456]-12.3]", "tests/test_number.py::test_metric[[123.456]-123]", "tests/test_number.py::test_metric[[inf]-+Inf]", "tests/test_number.py::test_metric[[nan]-NaN]", "tests/test_number.py::test_ordinal[-inf--Inf0]", "tests/test_number.py::test_ordinal[-inf--Inf1]", "tests/test_number.py::test_ordinal[1-1st]", "tests/test_number.py::test_ordinal[101-101st]", "tests/test_number.py::test_ordinal[102-102nd]", "tests/test_number.py::test_ordinal[103-103rd]", "tests/test_number.py::test_ordinal[11-11th]", "tests/test_number.py::test_ordinal[111-111th]", "tests/test_number.py::test_ordinal[12-12th]", "tests/test_number.py::test_ordinal[13-13th]", "tests/test_number.py::test_ordinal[2-2nd]", "tests/test_number.py::test_ordinal[3-3rd]", "tests/test_number.py::test_ordinal[4-4th]", "tests/test_number.py::test_ordinal[None-None]", "tests/test_number.py::test_ordinal[inf-+Inf]", "tests/test_number.py::test_ordinal[nan-NaN0]", "tests/test_number.py::test_ordinal[nan-NaN1]", "tests/test_number.py::test_scientific[test_args17-NaN]", "tests/test_number.py::test_scientific[test_args18-+Inf]", "tests/test_number.py::test_scientific[test_args19--Inf]", "tests/test_number.py::test_scientific[test_args20-NaN]", "tests/test_number.py::test_scientific[test_args21--Inf]", "tests/test_number.py::test_scientific[test_args7-foo]", "tests/test_number.py::test_scientific[test_args8-None]", "tests/test_refactor_guard_swe_synth_0013.py::test_no_new_monolithic_function", "tests/test_refactor_guard_swe_synth_0013.py::test_signature_unchanged"], "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0013:v1", "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0013:v1-sol", "verify_script": "/task/verify.sh", "generated_by": {"model": "deepseek-v4-pro-202606", "agent": "agent1", "ts": "2026-08-20T05:51:05.205234+00:00", "prompt_version": "refactor-v1", "input_tokens": 31524, "output_tokens": 119900}, "validation": {"local_sanity_passed": true, "local_duration_sec": 26.63147497177124, "sandbox_tool": null, "sandbox_instance_id": null, "empty_solution_result": null, "golden_solution_result": null, "deterministic": true, "duration_sec": null, "llm_attempt": {"solvable": true, "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据", "first_pass_attempt": 1, "difficulty_signal": "easy_for_llm", "n_attempts": 1, "attempts": [{"attempt": 1, "passed": true, "f2p": "2/2", "p2p": "130/130", "error": null}]}, "proof_dir": "/Users/jacobliang/学习/课题三-数据合成/data/proofs/swe-synth-0013"}, "overlap_check": {"passed": false, "method": "github_search+bm25+embedding+llm_judge", "queried": [], "top_candidates": [], "target_file_last_modified": null, "months_since_last_change": null, "verdict_reason": null}, "reject_reason": null}
+{
+  "task_id": "swe-synth-0013",
+  "task_type": "feature_implementation",
+  "difficulty": "medium",
+  "state": "LOCAL_OK",
+  "repo": "psf/cachecontrol",
+  "repo_stars": 500,
+  "base_commit": "91a26abbbebd4d08cbfca909f90cb3a186fe7739",
+  "language": "python",
+  "problem_statement": "## 背景与上下文\nCacheControl 是一个 HTTP 缓存库，RedisCache 是其基于 Redis 的缓存后端实现。该模块负责将缓存条目写入 Redis，并支持为键设置过期时间。RedisCache.set 是缓存写入路径的核心方法。\n\n## 需要实现的功能\n实现 RedisCache.set 方法，将给定的 key 和 value 写入 Redis；当提供了 expires 参数时，为键设置过期时间。expires 可能是整数秒数或 datetime 时间点，需要按不同类型分别处理。\n\n## 输入\n- key: str，缓存键。\n- value: bytes，缓存值，原始字节内容。\n- expires: int | datetime | None，过期时间。为 None 表示不设置过期；为 int 表示相对当前时间的秒数；为 datetime 表示绝对过期时间点，可能是 naive 或 aware。\n\n## 输出\n返回值类型为 None；方法不产生返回内容，仅产生 Redis 写入副作用。\n\n## 预期行为\n1. 若 expires 为 None，使用 conn.set 写入 key-value，不带任何过期时间。\n2. 若 expires 为 int 类型，将其视为过期秒数，使用 conn.setex 写入 key-value 并设置该秒数过期。\n3. 若 expires 为 datetime 类型：\n   - 若其 tzinfo 属性为 None（naive datetime），先将其替换为 UTC 时区（timezone.utc），得到 aware datetime。\n   - 计算该过期时间点与当前 UTC 时间 datetime.now(timezone.utc) 的差值。\n   - 对该差值调用 total_seconds 得到浮点秒数，再用 int 转换为整数秒数。\n   - 使用 conn.setex 以该整数秒数设置过期时间写入 key-value。\n4. 对于 aware datetime（tzinfo 不为 None），直接与当前 UTC 时间计算差值，不需要替换时区。\n5. 方法不应捕获或处理任何异常。\n\n## 约束条件\n- 保持函数签名不变。\n- 不得修改任何测试文件。\n- 严禁在实现中捕获或吞掉异常。\n- 必须使用 Redis 客户端的 set 和 setex 方法完成写入。",
+  "hints": null,
+  "modified_files": [
+    "cachecontrol/caches/redis_cache.py"
+  ],
+  "do_not_modify": [
+    "tests/test_cache_control.py",
+    "tests/test_etag.py",
+    "tests/test_storage_redis.py"
+  ],
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_storage_redis.py::TestRedisCache::test_set_expiration_datetime",
+    "tests/test_storage_redis.py::TestRedisCache::test_set_expiration_datetime_aware",
+    "tests/test_storage_redis.py::TestRedisCache::test_set_expiration_int"
+  ],
+  "PASS_TO_PASS": [
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_fresh_expires",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_fresh_max_age",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_max_age_0",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_no_cache",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_no_headers",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_no_store",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_not_in_cache",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_pragma_no_cache",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_unfresh_expires",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cache_request_unfresh_max_age",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cached_request_with_bad_max_age_headers_not_returned",
+    "tests/test_cache_control.py::TestCacheControlRequest::test_cached_request_with_malformed_date_not_returned",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_cache_response_cache_max_age",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_cache_response_cache_max_age_with_invalid_value_not_cached",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_cache_response_no_cache_control",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_cache_response_no_store",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_cache_response_no_store_with_etag",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_no_cache_non_20x_response",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_no_cache_with_malformed_date",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_no_cache_with_no_date",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_no_cache_with_vary_star",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_no_cache_with_wrong_sized_body",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_update_cached_response_no_local_cache",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_update_cached_response_with_valid_headers",
+    "tests/test_cache_control.py::TestCacheControllerResponse::test_update_cached_response_with_valid_headers_separate_body",
+    "tests/test_etag.py::TestDisabledETags::test_expired_etags_if_none_match_response",
+    "tests/test_etag.py::TestETag::test_etags_get_example",
+    "tests/test_etag.py::TestETag::test_etags_get_no_cache",
+    "tests/test_etag.py::TestETag::test_etags_get_with_range",
+    "tests/test_etag.py::TestReleaseConnection::test_not_modified_releases_connection"
+  ],
+  "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0013:v1",
+  "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0013:v1-sol",
+  "verify_script": "/task/verify.sh",
+  "generated_by": {
+    "model": "deepseek-v4-pro-202606",
+    "agent": "agent1",
+    "ts": "2026-08-22T10:16:35.927428+00:00",
+    "prompt_version": "v1",
+    "input_tokens": 1829,
+    "output_tokens": 3789
+  },
+  "validation": {
+    "local_sanity_passed": true,
+    "local_duration_sec": 5.8661816120147705,
+    "sandbox_tool": null,
+    "sandbox_instance_id": null,
+    "empty_solution_result": null,
+    "golden_solution_result": null,
+    "deterministic": true,
+    "duration_sec": null,
+    "llm_attempt": {
+      "solvable": true,
+      "reason": "题干准确：LLM 第 1 次尝试即依据题干实现并通过全部判据",
+      "first_pass_attempt": 1,
+      "difficulty_signal": "easy_for_llm",
+      "n_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "passed": true,
+          "f2p": "3/3",
+          "p2p": "30/30",
+          "error": null
+        }
+      ]
+    },
+    "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0013"
+  },
+  "overlap_check": {
+    "passed": false,
+    "method": "github_search+bm25+embedding+llm_judge",
+    "queried": [],
+    "top_candidates": [],
+    "target_file_last_modified": null,
+    "months_since_last_change": null,
+    "verdict_reason": null
+  },
+  "reject_reason": null
+}

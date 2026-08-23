@@ -1,4 +1,4 @@
-# 题目镜像：swe-synth-0027（pallets/itsdangerous @ 672971d66a2ef9f85151e53283113f33d642dabd）
+# 题目镜像：swe-synth-0033（psf/cachecontrol @ 91a26abbbebd4d08cbfca909f90cb3a186fe7739）
 #
 # ⚠️ 基础镜像不可更换：官方要求自定义沙箱必须继承 ags-image/sandbox-code，
 #    其中包含 S6-Overlay(/init)、envd(49983)、run-code(49999)。
@@ -53,7 +53,7 @@ COPY repo/ /workspace/repo/
 RUN set -eux; cd /workspace/repo; \
     export SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0+synth; \
     /opt/venv311/bin/python -m pip install --no-cache-dir -e .; \
-    /opt/venv311/bin/python -m pip install --no-cache-dir pytest freezegun;
+    /opt/venv311/bin/python -m pip install --no-cache-dir cherrypy filelock redis;
 
 # 判据执行器：不管仓库自己的 extras/dependency-groups 是否声明了 pytest
 # （常见做法是放进 [dependency-groups].dev，而 `pip install -e .` 装不到这些），

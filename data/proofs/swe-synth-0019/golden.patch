@@ -1,106 +1,32 @@
---- a/loguru/_colorizer.py
-+++ b/loguru/_colorizer.py
-@@ -248,43 +248,19 @@
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -196,7 +196,28 @@
+         raised. All arguments are forwarded to the signer's
+         :meth:`~TimestampSigner.unsign` method.
+         """
+-        raise NotImplementedError("TODO: implement this function")
++        s = want_bytes(s)
++        last_exception = None
++
++        for signer in self.iter_unsigners(salt):
++            try:
++                base64d, timestamp = signer.unsign(
++                    s, max_age=max_age, return_timestamp=True
++                )
++                payload = self.load_payload(base64d)
++
++                if return_timestamp:
++                    return payload, timestamp
++
++                return payload
++            except SignatureExpired:
++                # The signature was unsigned successfully but was
++                # expired. Do not try the next signer.
++                raise
++            except BadSignature as err:
++                last_exception = err
++
++        raise t.cast(BadSignature, last_exception)
  
-             position = match.end()
- 
--            escaping_count = len(escaping)
--            backslashes = "\\" * (escaping_count // 2)
--
--            if escaping_count % 2 == 1:
--                self._tokens.append((TokenType.TEXT, backslashes + markup))
-+            tokens, is_escaped = _parse_escape(escaping, markup)
-+            self._tokens.extend(tokens)
-+
-+            if is_escaped:
-                 continue
- 
--            if escaping_count > 0:
--                self._tokens.append((TokenType.TEXT, backslashes))
--
--            is_closing = markup[1] == "/"
--            tag = markup[2:-1] if is_closing else markup[1:-1]
-+            is_closing, tag = _parse_markup_tag(markup)
- 
-             if is_closing:
--                if self._tags and (tag == "" or tag == self._tags[-1]):
--                    self._tags.pop()
--                    self._color_tokens.pop()
--                    self._tokens.append((TokenType.CLOSING, "\033[0m"))
--                    self._tokens.extend(self._color_tokens)
--                    continue
--                if tag in self._tags:
--                    raise ValueError('Closing tag "%s" violates nesting rules' % markup)
--                raise ValueError('Closing tag "%s" has no corresponding opening tag' % markup)
--
--            if tag in {"lvl", "level"}:
--                token = (TokenType.LEVEL, None)
--            else:
--                ansi = self._get_ansicode(tag)
--
--                if ansi is None:
--                    raise ValueError(
--                        'Tag "%s" does not correspond to any known color directive, '
--                        "make sure you have not misspelled it (or prepend '\\' to escape it)"
--                        % markup
--                    )
--
--                token = (TokenType.ANSI, ansi)
-+                self._tokens.extend(_handle_closing_tag(self, tag, markup))
-+                continue
-+
-+            token = _get_tag_token(self, tag, markup)
- 
-             self._tags.append(tag)
-             self._color_tokens.append(token)
-@@ -510,3 +486,50 @@
-                 messages_color_tokens.extend(color_tokens)
- 
-         return parser.done(), messages_color_tokens
-+
-+
-+def _parse_escape(escaping, markup):
-+    count = len(escaping)
-+    backslashes = "\\" * (count // 2)
-+
-+    if count % 2 == 1:
-+        return [(TokenType.TEXT, backslashes + markup)], True
-+
-+    if count > 0:
-+        return [(TokenType.TEXT, backslashes)], False
-+
-+    return [], False
-+
-+
-+def _parse_markup_tag(markup):
-+    is_closing = markup[1] == "/"
-+    tag = markup[2:-1] if is_closing else markup[1:-1]
-+    return is_closing, tag
-+
-+
-+def _handle_closing_tag(parser, tag, markup):
-+    if parser._tags and (tag == "" or tag == parser._tags[-1]):
-+        parser._tags.pop()
-+        parser._color_tokens.pop()
-+        return [(TokenType.CLOSING, "\033[0m")] + list(parser._color_tokens)
-+
-+    if tag in parser._tags:
-+        raise ValueError('Closing tag "%s" violates nesting rules' % markup)
-+
-+    raise ValueError('Closing tag "%s" has no corresponding opening tag' % markup)
-+
-+
-+def _get_tag_token(parser, tag, markup):
-+    if tag in {"lvl", "level"}:
-+        return (TokenType.LEVEL, None)
-+
-+    ansi = parser._get_ansicode(tag)
-+
-+    if ansi is None:
-+        raise ValueError(
-+            'Tag "%s" does not correspond to any known color directive, '
-+            "make sure you have not misspelled it (or prepend '\\' to escape it)"
-+            % markup
-+        )
-+
-+    return (TokenType.ANSI, ansi)
+     def loads_unsafe(  # type: ignore[override]
+         self,

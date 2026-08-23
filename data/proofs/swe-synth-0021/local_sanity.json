@@ -1,18 +1,26 @@
 {
-  "ok": false,
-  "reason": "挖空后没有任何测试变红 —— 该函数无有效测试覆盖，无法自动判分",
-  "fail_to_pass": [],
+  "ok": true,
+  "reason": "双向 sanity 通过：题目态必红、golden 态必绿、原有用例未被破坏",
+  "fail_to_pass": [
+    "tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_basic_order",
+    "tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_empty_returns_empty_string",
+    "tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_missing_lists_are_omitted",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_basic_rules",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_empty_text_returns_empty_lists",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_mixed_rules_with_deduplication",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_skips_comments_and_blank_lines"
+  ],
   "pass_to_pass": [],
-  "deterministic": null,
-  "duration_sec": 0.0,
+  "deterministic": true,
+  "duration_sec": 16.01,
   "stub_summary": {
-    "returncode": 0,
-    "n_passed": 8,
-    "n_failed": 0
+    "returncode": 1,
+    "n_passed": 0,
+    "n_failed": 7
   },
   "golden_summary": {
     "returncode": 0,
-    "n_passed": 8,
+    "n_passed": 7,
     "n_failed": 0
   }
 }

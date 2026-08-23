@@ -1,78 +1,83 @@
-= 2.0, previous_delay = 1.0, cap = 1.5
-random_func = <function test_decorrelated_jitter_invalid_cap_raises.<locals>.<lambda> at 0x10958b380>
-
-    def decorrelated_jitter(
-        base_delay: float,
-        previous_delay: float,
-        cap: float,
-        random_func: typing.Callable[[], float],
-    ) -> float:
-        """Return a jittered delay using the decorrelated jitter strategy.
-    
-        The result is uniformly distributed in
-        [base_delay, min(cap, previous_delay * 3)] when that interval is valid.
-        If the upper bound is not greater than base_delay, base_delay is returned.
-    
-        :param base_delay: non-negative base delay in seconds
-        :param previous_delay: non-negative previous delay in seconds
-        :param cap: maximum allowed delay; must be >= base_delay
-        :param random_func: zero-argument callable returning a float in [0, 1)
-        :returns: jittered delay
-        :raises ValueError: if any numeric argument is invalid or *random_func*
-            returns a value outside [0, 1)
+          must be greater than 0.
+        :param retries: number of retry delays to generate, must be non-negative.
+        :raises ValueError: if any parameter violates the stated constraints.
         """
->       raise NotImplementedError("decorrelated_jitter")
-E       NotImplementedError: decorrelated_jitter
+>       raise NotImplementedError("This is a skeleton; implement this function.")
+E       NotImplementedError: This is a skeleton; implement this function.
 
-tenacity/jitter.py:76: NotImplementedError
-______________ test_decorrelated_jitter_negative_previous_raises _______________
+tenacity/backoff_sequence.py:66: NotImplementedError
+________________________ test_total_delay_sums_sequence ________________________
 
-    def test_decorrelated_jitter_negative_previous_raises() -> None:
-        """decorrelated_jitter rejects negative previous_delay."""
-        with pytest.raises(ValueError):
->           decorrelated_jitter(1.0, -1.0, 10.0, lambda: 0.5)
+    def test_total_delay_sums_sequence() -> None:
+>       assert total_delay([1.5, 2.5, 3.0]) == 7.0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-tests/test_jitter_synth.py:77: 
+tests/test_backoff_sequence_synth.py:64: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-base_delay = 1.0, previous_delay = -1.0, cap = 10.0
-random_func = <function test_decorrelated_jitter_negative_previous_raises.<locals>.<lambda> at 0x10958b4c0>
+sequence = [1.5, 2.5, 3.0]
 
-    def decorrelated_jitter(
-        base_delay: float,
-        previous_delay: float,
-        cap: float,
-        random_func: typing.Callable[[], float],
-    ) -> float:
-        """Return a jittered delay using the decorrelated jitter strategy.
+    def total_delay(sequence: typing.Iterable[float]) -> float:
+        """Return the sum of a sequence of non-negative delays.
     
-        The result is uniformly distributed in
-        [base_delay, min(cap, previous_delay * 3)] when that interval is valid.
-        If the upper bound is not greater than base_delay, base_delay is returned.
-    
-        :param base_delay: non-negative base delay in seconds
-        :param previous_delay: non-negative previous delay in seconds
-        :param cap: maximum allowed delay; must be >= base_delay
-        :param random_func: zero-argument callable returning a float in [0, 1)
-        :returns: jittered delay
-        :raises ValueError: if any numeric argument is invalid or *random_func*
-            returns a value outside [0, 1)
+        :param sequence: an iterable of non-negative delay values.
+        :raises ValueError: if any value in ``sequence`` is negative.
         """
->       raise NotImplementedError("decorrelated_jitter")
-E       NotImplementedError: decorrelated_jitter
+>       raise NotImplementedError("This is a skeleton; implement this function.")
+E       NotImplementedError: This is a skeleton; implement this function.
 
-tenacity/jitter.py:76: NotImplementedError
+tenacity/backoff_sequence.py:75: NotImplementedError
+_______________________ test_total_delay_empty_sequence ________________________
+
+    def test_total_delay_empty_sequence() -> None:
+>       assert total_delay(()) == 0.0
+               ^^^^^^^^^^^^^^^
+
+tests/test_backoff_sequence_synth.py:68: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+sequence = ()
+
+    def total_delay(sequence: typing.Iterable[float]) -> float:
+        """Return the sum of a sequence of non-negative delays.
+    
+        :param sequence: an iterable of non-negative delay values.
+        :raises ValueError: if any value in ``sequence`` is negative.
+        """
+>       raise NotImplementedError("This is a skeleton; implement this function.")
+E       NotImplementedError: This is a skeleton; implement this function.
+
+tenacity/backoff_sequence.py:75: NotImplementedError
+____________________ test_total_delay_negative_value_raises ____________________
+
+    def test_total_delay_negative_value_raises() -> None:
+        with pytest.raises(ValueError):
+>           total_delay([1.0, -2.0])
+
+tests/test_backoff_sequence_synth.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+sequence = [1.0, -2.0]
+
+    def total_delay(sequence: typing.Iterable[float]) -> float:
+        """Return the sum of a sequence of non-negative delays.
+    
+        :param sequence: an iterable of non-negative delay values.
+        :raises ValueError: if any value in ``sequence`` is negative.
+        """
+>       raise NotImplementedError("This is a skeleton; implement this function.")
+E       NotImplementedError: This is a skeleton; implement this function.
+
+tenacity/backoff_sequence.py:75: NotImplementedError
 =========================== short test summary info ============================
-FAILED tests/test_jitter_synth.py::test_full_jitter_basic - NotImplementedErr...
-FAILED tests/test_jitter_synth.py::test_full_jitter_zero_random_value - NotIm...
-FAILED tests/test_jitter_synth.py::test_full_jitter_negative_base_raises - No...
-FAILED tests/test_jitter_synth.py::test_full_jitter_invalid_random_value_raises
-FAILED tests/test_jitter_synth.py::test_equal_jitter_basic - NotImplementedEr...
-FAILED tests/test_jitter_synth.py::test_equal_jitter_extremes - NotImplemente...
-FAILED tests/test_jitter_synth.py::test_equal_jitter_negative_base_raises - N...
-FAILED tests/test_jitter_synth.py::test_decorrelated_jitter_basic - NotImplem...
-FAILED tests/test_jitter_synth.py::test_decorrelated_jitter_previous_zero_returns_base
-FAILED tests/test_jitter_synth.py::test_decorrelated_jitter_cap_bounds - NotI...
-FAILED tests/test_jitter_synth.py::test_decorrelated_jitter_invalid_cap_raises
-FAILED tests/test_jitter_synth.py::test_decorrelated_jitter_negative_previous_raises
-============================== 12 failed in 0.05s ==============================
+FAILED tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_no_max
+FAILED tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_with_max
+FAILED tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_zero_retries
+FAILED tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_invalid_base_delay
+FAILED tests/test_backoff_sequence_synth.py::test_linear_backoff_sequence_expected
+FAILED tests/test_backoff_sequence_synth.py::test_linear_backoff_sequence_with_max
+FAILED tests/test_backoff_sequence_synth.py::test_linear_backoff_sequence_invalid_increment
+FAILED tests/test_backoff_sequence_synth.py::test_total_delay_sums_sequence
+FAILED tests/test_backoff_sequence_synth.py::test_total_delay_empty_sequence
+FAILED tests/test_backoff_sequence_synth.py::test_total_delay_negative_value_raises
+============================== 10 failed in 0.06s ==============================

@@ -1,29 +1,25 @@
 ## 背景与上下文
-itsdangerous 库用于处理不可信来源的数据签名与编码，`encoding` 模块提供字节与文本之间、多种编码格式之间的转换基础能力。其中的 `base64_decode` 负责将 URL-safe Base64 编码的字符串或字节串还原为原始字节，供上层解密或反序列化使用。
+在 `cachecontrol` 项目中，`heuristics.py` 模块提供了一组缓存启发式策略，用于在没有明确缓存头时为 HTTP 响应补充缓存控制信息。`OneDayCache` 是其中一种策略：它通过为响应添加或调整 `expires` 头，让响应缓存一天。
 
 ## 需要实现的功能
-实现 `base64_decode` 函数。该函数接收一个 URL-safe Base64 数据（可以是 `str` 或 `bytes`），返回解码后的原始 `bytes`。当输入为字符串时，应先按 ASCII 编码转换为字节，并忽略无法编码的字符；若字节长度不能被 4 整除，需补齐缺失的 Base64 填充符后再进行 URL-safe Base64 解码。若输入不是合法的 URL-safe Base64 数据，抛出携带固定消息的 `BadData` 异常。
+实现 `OneDayCache.update_headers` 方法。当响应中已经存在 `expires` 头时，应保留该值；当响应中没有该头时，应基于响应中的 `date` 头计算一天后的时间并格式化为 `expires` 值。最终返回一个包含 `cache-control` 和 `expires` 两个键的头部字典，其中 `cache-control` 的值固定为 `public`。本模块已有的日期解析与格式化辅助函数可用于完成时间处理。
 
 ## 输入
-- `string`: `str | bytes`，表示待解码的 URL-safe Base64 数据。
-  - 可以是文本（`str`）：处理时需要按 ASCII 编码转换，使用 `ignore` 错误处理，即忽略非 ASCII 字符。
-  - 可以是字节（`bytes`）：直接作为待解码数据使用。
-  - 可能省略了 Base64 填充字符 `=`，例如长度为 2、3、5 等。
-  - 可能包含非法字符或空数据。
+- `response`：类型为 `HTTPResponse` 的对象。该对象含有 `headers` 属性，它是一个可索引的头部映射，可能包含 `date` 和/或 `expires` 这类 HTTP 头字段。
+- 当 `headers` 中不存在 `expires` 头时，假定 `date` 头存在且其格式能被 `parsedate` 正常解析。
 
 ## 输出
-- 类型：`bytes`
-- 返回解码成功后的原始二进制数据。
-- 不会返回 `None` 或其他占位值；解码失败时抛出 `BadData` 异常。
+返回 `dict[str, str]`，包含以下键：
+- `cache-control`：值固定为 `public`。
+- `expires`：如果输入响应已有 `expires` 头，则为该头的原值；否则为根据 `date` 头计算出的、一天后的 HTTP 日期字符串。
 
 ## 预期行为
-1. 当 `string` 为 `str` 时，使用 ASCII 编码将其转换为字节序列，错误处理策略必须为 `ignore`（忽略无法编码的字符）；当 `string` 为 `bytes` 时，直接使用该字节序列。
-2. 如果字节序列的长度不是 4 的倍数，需要补足足够的 `=` 填充字符，使其长度达到 4 的倍数，再进行 URL-safe Base64 解码（即使用 `-` 和 `_` 替代标准 Base64 中的 `+` 和 `/`，并接受 `=` 填充）。
-3. 成功解码后返回原始字节。
-4. 若解码过程中出现任何异常（例如包含 URL-safe Base64 不允许的字符、填充后仍不合法等），捕获该异常并抛出 `BadData` 异常，异常消息必须为 `Invalid base64-encoded data`。
+1. 若 `response.headers` 中已经存在 `expires` 头，直接使用该头部的原值作为返回字典中 `expires` 的值。
+2. 若不存在 `expires` 头，则使用 `parsedate` 解析 `response.headers` 中的 `date` 头部，并以 UTC 时区构造 `datetime` 对象，表示该响应日期。
+3. 在解析出的时间基础上加上一天（`timedelta(days=1)`），再将其转换为适合 HTTP `expires` 头的日期字符串格式。
+4. 不论上述哪种情况，返回字典的 `cache-control` 都必须是 `public`。
 
 ## 约束条件
+- 保持函数签名不变：`def update_headers(self, response: HTTPResponse) -> dict[str, str]:`
 - 不得修改任何测试文件。
-- 保持函数签名 `def base64_decode(string: str | bytes) -> bytes:` 不变。
-- 不得修改模块中其它函数或导入。
-- 可以依赖标准库中已有的 Base64 解码能力，但不得引入新的第三方依赖。
+- 不需要处理输入头部缺失或日期解析失败等异常路径；实现应假定在需要解析 `date` 时该字段存在且格式合法。

@@ -1,90 +1,40 @@
---- a/tenacity/retry_stats.py
-+++ b/tenacity/retry_stats.py
-@@ -14,8 +14,11 @@
-     '''
+--- a/tenacity/backoff_policies.py
++++ b/tenacity/backoff_policies.py
+@@ -28,7 +28,19 @@
+     :raises TypeError: If `max_attempts` is not an integer.
+     :raises ValueError: If `max_attempts` is negative.
+     """
+-    raise NotImplementedError("fibonacci_backoff not implemented")
++    if not isinstance(max_attempts, int):
++        raise TypeError("max_attempts must be an integer")
++    if max_attempts < 0:
++        raise ValueError("max_attempts must be non-negative")
++    if max_attempts == 0:
++        return []
++    if max_attempts == 1:
++        return [float(initial)]
++    sequence = [float(initial), float(initial)]
++    for _ in range(2, max_attempts):
++        next_value = (sequence[-1] + sequence[-2]) * multiplier
++        sequence.append(float(next_value))
++    return sequence
  
-     def __init__(self) -> None:
--        '''Initialize an empty tracker.'''
--        raise NotImplementedError
-+        self._total_attempts = 0
-+        self._success_count = 0
-+        self._failure_count = 0
-+        self._total_duration = 0.0
-+        self._error_type_counts: Counter[str] = Counter()
  
-     def record_attempt(
-         self,
-@@ -23,39 +26,44 @@
-         error_type: str | None = None,
-         duration: float = 0.0,
-     ) -> None:
--        '''Record a single retry attempt.
-+        if outcome not in ('success', 'failure'):
-+            raise ValueError(f"outcome must be 'success' or 'failure', got {outcome!r}")
-+        if duration < 0:
-+            raise ValueError(f'duration must be non-negative, got {duration!r}')
-+        if outcome == 'failure':
-+            if error_type is None or not isinstance(error_type, str) or error_type == '':
-+                raise ValueError('error_type must be a non-empty string for failure outcome')
-+        else:
-+            if error_type is not None:
-+                raise ValueError('error_type must be None for success outcome')
- 
--        Args:
--            outcome: Must be ``'success'`` or ``'failure'``.
--            error_type: Required when outcome is ``'failure'``; must be a
--                non-empty string. Must be ``None`` when outcome is
--                ``'success'``.
--            duration: Non-negative number of seconds the attempt took.
--
--        Raises:
--            ValueError: If any argument is invalid.
--        '''
--        raise NotImplementedError
-+        self._total_attempts += 1
-+        self._total_duration += duration
-+        if outcome == 'success':
-+            self._success_count += 1
-+        else:
-+            self._failure_count += 1
-+            self._error_type_counts[error_type] += 1
- 
-     def record_success(self, duration: float = 0.0) -> None:
--        '''Record a successful attempt with the given duration.'''
--        raise NotImplementedError
-+        self.record_attempt('success', None, duration)
- 
-     def record_failure(self, error_type: str, duration: float = 0.0) -> None:
--        '''Record a failed attempt with the given error type and duration.'''
--        raise NotImplementedError
-+        self.record_attempt('failure', error_type, duration)
- 
-     def summary(self) -> dict[str, typing.Any]:
--        '''Return aggregate statistics about recorded attempts.
--
--        Returns:
--            A dictionary with the following keys:
--                total_attempts: total number of recorded attempts.
--                success_count: number of successful attempts.
--                failure_count: number of failed attempts.
--                total_duration: sum of all attempt durations.
--                average_duration: average duration (0.0 if no attempts).
--                success_rate: fraction of successful attempts (0.0 if no attempts).
--                error_type_counts: mapping of error type string to its count.
--        '''
--        raise NotImplementedError
-+        if self._total_attempts == 0:
-+            average_duration = 0.0
-+            success_rate = 0.0
-+        else:
-+            average_duration = self._total_duration / self._total_attempts
-+            success_rate = self._success_count / self._total_attempts
-+        return {
-+            'total_attempts': self._total_attempts,
-+            'success_count': self._success_count,
-+            'failure_count': self._failure_count,
-+            'total_duration': self._total_duration,
-+            'average_duration': average_duration,
-+            'success_rate': success_rate,
-+            'error_type_counts': dict(self._error_type_counts),
-+        }
+ def polynomial_backoff(
+@@ -54,4 +66,15 @@
+     :raises ValueError: If `max_attempts` is negative or `degree` is
+         negative.
+     """
+-    raise NotImplementedError("polynomial_backoff not implemented")
++    if not isinstance(max_attempts, int):
++        raise TypeError("max_attempts must be an integer")
++    if not isinstance(degree, int):
++        raise TypeError("degree must be an integer")
++    if max_attempts < 0:
++        raise ValueError("max_attempts must be non-negative")
++    if degree < 0:
++        raise ValueError("degree must be non-negative")
++    return [
++        float(initial + coefficient * (k ** degree))
++        for k in range(1, max_attempts + 1)
++    ]

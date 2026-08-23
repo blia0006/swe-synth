@@ -1,67 +1,383 @@
 {
-  "ts": "2026-08-22T09:38:03+0000",
-  "duration_sec": 551.8,
+  "ts": "2026-08-22T16:44:21+0000",
+  "duration_sec": 23348.2,
   "task_types_requested": [
     "feature_implementation",
     "module_addition",
     "refactoring"
   ],
-  "attempts": 2,
-  "accepted": 2,
+  "attempts": 41,
+  "accepted": 10,
   "accepted_by_type": {
-    "feature_implementation": 1,
-    "module_addition": 1
+    "feature_implementation": 4,
+    "refactoring": 1,
+    "module_addition": 5
   },
-  "pass_rate": 1.0,
+  "pass_rate": 0.244,
   "llm_usage": {
-    "calls": 6,
-    "prompt_tokens": 9843,
-    "completion_tokens": 36021,
-    "reasoning_chars": 95951,
-    "retries": 1,
+    "calls": 187,
+    "prompt_tokens": 457790,
+    "completion_tokens": 1887094,
+    "reasoning_chars": 4275116,
+    "retries": 80,
     "failures": 0,
     "by_model": {
-      "deepseek-v4-pro-202606": 3,
-      "deepseek-v4-flash": 3
+      "deepseek-v4-pro-202606": 175,
+      "deepseek-v4-flash": 12
     }
   },
-  "llm_cost_estimate_cny": 0.2457,
+  "llm_cost_estimate_cny": 12.6959,
   "llm_pool": {
     "n_keys": 1,
     "per_key": [
       {
-        "calls": 6,
-        "prompt_tokens": 9843,
-        "completion_tokens": 36021,
-        "reasoning_chars": 95951,
-        "retries": 1,
+        "calls": 187,
+        "prompt_tokens": 457790,
+        "completion_tokens": 1887094,
+        "reasoning_chars": 4275116,
+        "retries": 80,
         "failures": 0,
         "by_model": {
-          "deepseek-v4-pro-202606": 3,
-          "deepseek-v4-flash": 3
+          "deepseek-v4-pro-202606": 175,
+          "deepseek-v4-flash": 12
         },
         "key_index": 0,
         "key_suffix": "...DH4w"
       }
     ]
   },
-  "by_stage": {},
+  "by_stage": {
+    "DESIGN": 27,
+    "LOCAL_SANITY": 4
+  },
   "results": [
     {
-      "candidate": "cachecontrol/wrapper.py::CacheControl",
+      "candidate": "cachecontrol/caches/redis_cache.py::RedisCache.set",
       "accepted": true,
       "stage": "BUILD_CTX_READY",
       "reason": "出题成功：本地 sanity + solve-back + schema 全部通过",
-      "task_id": "swe-synth-0011",
-      "duration_sec": 85.6
+      "task_id": "swe-synth-0013",
+      "duration_sec": 42.0
     },
     {
-      "candidate": "cachecontrol/cache_control_directives.py::module_addition",
+      "candidate": "psf/cachecontrol::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['题干包含 2 行原始实现代码，例如：request_headers: Mapping[str, str],']",
+      "task_id": null,
+      "duration_sec": 562.5
+    },
+    {
+      "candidate": "cachecontrol/heuristics.py::LastModified.update_headers",
       "accepted": true,
       "stage": "BUILD_CTX_READY",
-      "reason": "模块添加题出题成功（新模块 cachecontrol/cache_control_directives.py，判据 10 个）",
-      "task_id": "swe-synth-0012",
-      "duration_sec": 432.8
+      "reason": "重构题出题成功（LastModified.update_headers：行 23→≤20，复杂度 10→≤8）",
+      "task_id": "swe-synth-0014",
+      "duration_sec": 272.2
+    },
+    {
+      "candidate": "cachecontrol/caches/file_cache.py::_FileCacheMixin.get",
+      "accepted": true,
+      "stage": "BUILD_CTX_READY",
+      "reason": "出题成功：本地 sanity + solve-back + schema 全部通过",
+      "task_id": "swe-synth-0015",
+      "duration_sec": 38.9
+    },
+    {
+      "candidate": "tenacity/backoff_sequence.py::module_addition",
+      "accepted": true,
+      "stage": "BUILD_CTX_READY",
+      "reason": "模块添加题出题成功（新模块 tenacity/backoff_sequence.py，判据 10 个）",
+      "task_id": "swe-synth-0016",
+      "duration_sec": 681.5
+    },
+    {
+      "candidate": "tenacity/backoff_policies.py::module_addition",
+      "accepted": true,
+      "stage": "BUILD_CTX_READY",
+      "reason": "模块添加题出题成功（新模块 tenacity/backoff_policies.py，判据 11 个）",
+      "task_id": "swe-synth-0017",
+      "duration_sec": 426.1
+    },
+    {
+      "candidate": "tenacity/retry_after.py::module_addition",
+      "accepted": true,
+      "stage": "BUILD_CTX_READY",
+      "reason": "模块添加题出题成功（新模块 tenacity/retry_after.py，判据 4 个）",
+      "task_id": "swe-synth-0018",
+      "duration_sec": 320.5
+    },
+    {
+      "candidate": "python-humanize/humanize::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['调用失败：模型返回的 JSON 无法解析：{\\n  \"feature_slug\": \"filesize_parser\",\\n  \"title\": \"人类可读文件大小解析器\",\\n  \"difficulty\": \"medium\",\\n  \"module_path\": \"src/humanize/filesize_parser.py\",\\n  \"test_path\": \"tests/test_filesize_parser_synth.py\",\\n  \"skeleton_code\": \"\\\\\"\\\\\"\\\\\"Parse human-readable file size strings back into byte counts.\\\\\"\\\\\"\\\\\"\\\\n\\\\nfrom _']",
+      "task_id": null,
+      "duration_sec": 1144.1
+    },
+    {
+      "candidate": "python-humanize/humanize::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.humanize.fraction`，测试与实现无关', '题干包含 2 行原始实现代码，例如：value: int | float | str,']",
+      "task_id": null,
+      "duration_sec": 1061.0
+    },
+    {
+      "candidate": "python-humanize/humanize::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['调用失败：模型返回的 JSON 无法解析：{\\n  \"feature_slug\": \"compact\",\\n  \"title\": \"紧凑数字缩写与展开\",\\n  \"difficulty\": \"medium\",\\n  \"module_path\": \"src/humanize/compact.py\",\\n  \"test_path\": \"tests/test_compact_synth.py\",\\n  \"skeleton_code\": \"\\\\\"\\\\\"\\\\\"Humanize compact numbers with metric suffixes.\\\\\"\\\\\"\\\\\"\\\\n\\\\nfrom __future__ import annotations\\\\n\\\\nfrom typi']",
+      "task_id": null,
+      "duration_sec": 863.7
+    },
+    {
+      "candidate": "python-humanize/humanize::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.humanize.roman_numerals`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 760.5
+    },
+    {
+      "candidate": "python-humanize/humanize::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.humanize.temperature`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 762.6
+    },
+    {
+      "candidate": "python-humanize/humanize::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.humanize.filemode`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 1065.1
+    },
+    {
+      "candidate": "python-humanize/humanize::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['调用失败：模型未返回 JSON：{\\n  \"feature_slug\": \"intword\",\\n  \"title\": \"大数字缩写为单词单位\",\\n  \"difficulty\": \"medium\",\\n  \"module_path\": \"src/humanize/intword.py\",\\n  \"test_path\": \"tests/test_intword_synth.py\",\\n  \"skeleton_code\": \"\\\\\"\\\\\"\\\\\"Convert large integers to human-readable words.\\\\\"\\\\\"\\\\\"\\\\n\\\\nfrom __future__ import annotations\\\\n\\\\nfrom ty']",
+      "task_id": null,
+      "duration_sec": 607.2
+    },
+    {
+      "candidate": "python-humanize/humanize::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.humanize.roman`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 739.4
+    },
+    {
+      "candidate": "python-humanize/humanize::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.humanize.roman_numerals`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 838.2
+    },
+    {
+      "candidate": "src/itsdangerous/signer.py::Signer.unsign",
+      "accepted": false,
+      "stage": "LOCAL_SANITY",
+      "reason": "挖空导致 144 个用例变红（阈值 50），牵连过广",
+      "task_id": null,
+      "duration_sec": 2.0
+    },
+    {
+      "candidate": "pallets/itsdangerous::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.itsdangerous.key_derivation`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 628.5
+    },
+    {
+      "candidate": "src/itsdangerous/timed.py::TimedSerializer.loads",
+      "accepted": true,
+      "stage": "BUILD_CTX_READY",
+      "reason": "出题成功：本地 sanity + solve-back + schema 全部通过",
+      "task_id": "swe-synth-0019",
+      "duration_sec": 97.0
+    },
+    {
+      "candidate": "pallets/itsdangerous::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.itsdangerous.key_derivation`，测试与实现无关', '题干包含 3 行原始实现代码，例如：password: str | bytes,']",
+      "task_id": null,
+      "duration_sec": 384.0
+    },
+    {
+      "candidate": "src/itsdangerous/serializer.py::Serializer.load_payload",
+      "accepted": false,
+      "stage": "LOCAL_SANITY",
+      "reason": "挖空导致 95 个用例变红（阈值 50），牵连过广",
+      "task_id": null,
+      "duration_sec": 1.7
+    },
+    {
+      "candidate": "pallets/itsdangerous::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.itsdangerous.key_derivation`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 662.5
+    },
+    {
+      "candidate": "src/itsdangerous/serializer.py::Serializer.dumps",
+      "accepted": false,
+      "stage": "LOCAL_SANITY",
+      "reason": "挖空导致 96 个用例变红（阈值 50），牵连过广",
+      "task_id": null,
+      "duration_sec": 1.7
+    },
+    {
+      "candidate": "pallets/itsdangerous::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.itsdangerous.key_rotating_signer`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 638.9
+    },
+    {
+      "candidate": "src/itsdangerous/serializer.py::Serializer.loads",
+      "accepted": false,
+      "stage": "LOCAL_SANITY",
+      "reason": "挖空导致 74 个用例变红（阈值 50），牵连过广",
+      "task_id": null,
+      "duration_sec": 1.5
+    },
+    {
+      "candidate": "pallets/itsdangerous::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.itsdangerous.signature_parser`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 510.7
+    },
+    {
+      "candidate": "src/itsdangerous/encoding.py::base64_decode",
+      "accepted": true,
+      "stage": "BUILD_CTX_READY",
+      "reason": "出题成功：本地 sanity + solve-back + schema 全部通过",
+      "task_id": "swe-synth-0020",
+      "duration_sec": 111.0
+    },
+    {
+      "candidate": "pallets/itsdangerous::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.itsdangerous.key_derivation`，测试与实现无关', '题干包含 3 行原始实现代码，例如：password: bytes,']",
+      "task_id": null,
+      "duration_sec": 732.5
+    },
+    {
+      "candidate": "src/itsdangerous/signer.py::Signer.derive_key",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "出题失败：出题失败（尝试 3 次），最后的问题：[\"题干要求调用 ['secret_key']，但真实实现并未调用它们 —— 疑似臆造行为，按此题干实现将无法通过测试。真实实现实际调用的是：['TypeError', 'cast', 'digest', 'digest_method', 'key_derivation', 'new']\"]",
+      "task_id": null,
+      "duration_sec": 277.5
+    },
+    {
+      "candidate": "pallets/itsdangerous::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['调用失败：模型返回的 JSON 无法解析：{\\n  \"feature_slug\": \"key_derivation\",\\n  \"title\": \"密钥派生模块\",\\n  \"difficulty\": \"medium\",\\n  \"module_path\": \"src/itsdangerous/key_derivation.py\",\\n  \"test_path\": \"tests/test_itsdangerous/test_key_derivation_synth.py\",\\n  \"skeleton_code\": \"from __future__ import annotations\\\\n\\\\nimport hashlib\\\\nimport hmac\\\\nim']",
+      "task_id": null,
+      "duration_sec": 508.7
+    },
+    {
+      "candidate": "pallets/itsdangerous::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['调用失败：模型返回的 JSON 无法解析：{\\n  \"feature_slug\": \"signed_value_utils\",\\n  \"title\": \"签名值解析与拼接工具\",\\n  \"difficulty\": \"medium\",\\n  \"module_path\": \"src/itsdangerous/signed_value_utils.py\",\\n  \"test_path\": \"tests/test_itsdangerous/test_signed_value_utils_synth.py\",\\n  \"skeleton_code\": \"from __future__ import annotations\\\\n\\\\n\\\\nclass Malform']",
+      "task_id": null,
+      "duration_sec": 690.6
+    },
+    {
+      "candidate": "pallets/itsdangerous::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.itsdangerous.key_derivation`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 1085.0
+    },
+    {
+      "candidate": "theskumar/python-dotenv::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.dotenv.key_sanitizer`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 525.9
+    },
+    {
+      "candidate": "theskumar/python-dotenv::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.dotenv.env_serializer`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 1248.1
+    },
+    {
+      "candidate": "theskumar/python-dotenv::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.dotenv.nested_keys`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 1254.0
+    },
+    {
+      "candidate": "theskumar/python-dotenv::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.dotenv.typecasts`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 1009.6
+    },
+    {
+      "candidate": "theskumar/python-dotenv::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.dotenv.env_expansion`，测试与实现无关']",
+      "task_id": null,
+      "duration_sec": 359.8
+    },
+    {
+      "candidate": "theskumar/python-dotenv::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['调用失败：模型返回的 JSON 无法解析：{\\n  \"feature_slug\": \"dependency_resolver\",\\n  \"title\": \"依赖解析器\",\\n  \"difficulty\": \"medium\",\\n  \"module_path\": \"src/dotenv/dependency_resolver.py\",\\n  \"test_path\": \"tests/test_dependency_resolver_synth.py\",\\n  \"skeleton_code\": \"import re\\\\nfrom collections.abc import Mapping\\\\nfrom typing import Dict, List, ']",
+      "task_id": null,
+      "duration_sec": 361.9
+    },
+    {
+      "candidate": "john-kurkowski/tldextract::module_addition",
+      "accepted": false,
+      "stage": "DESIGN",
+      "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['调用失败：模型未返回 JSON：{\\n  \"feature_slug\": \"suffix_rules\",\\n  \"title\": \"后缀规则解析与匹配\",\\n  \"difficulty\": \"medium\",\\n  \"module_path\": \"tldextract/suffix_rules.py\",\\n  \"test_path\": \"tests/test_suffix_rules_synth.py\",\\n  \"skeleton_code\": \"from dataclasses import dataclass\\\\nfrom typing import Literal, Sequence\\\\n\\\\n__all__ = [\\\\\"SuffixRu']",
+      "task_id": null,
+      "duration_sec": 473.5
+    },
+    {
+      "candidate": "tldextract/suffix_rule_parser.py::module_addition",
+      "accepted": true,
+      "stage": "BUILD_CTX_READY",
+      "reason": "模块添加题出题成功（新模块 tldextract/suffix_rule_parser.py，判据 7 个）",
+      "task_id": "swe-synth-0021",
+      "duration_sec": 1038.3
+    },
+    {
+      "candidate": "tldextract/idna_utils.py::module_addition",
+      "accepted": true,
+      "stage": "BUILD_CTX_READY",
+      "reason": "模块添加题出题成功（新模块 tldextract/idna_utils.py，判据 8 个）",
+      "task_id": "swe-synth-0022",
+      "duration_sec": 319.9
     }
   ]
 }

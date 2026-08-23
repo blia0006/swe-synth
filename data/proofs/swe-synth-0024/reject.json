@@ -1,5 +1,0 @@
-{
-  "candidate": "src/itsdangerous/serializer.py::Serializer.dumps",
-  "stage": "LOCAL_SANITY",
-  "reason": "挖空导致 96 个用例变红（阈值 50），牵连过广"
-}

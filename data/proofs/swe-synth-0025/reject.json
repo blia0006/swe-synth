@@ -1,5 +1,0 @@
-{
-  "candidate": "src/dotenv/ipython.py::IPythonDotEnv.dotenv",
-  "stage": "LOCAL_SANITY",
-  "reason": "挖空后没有任何测试变红 —— 该函数无有效测试覆盖，无法自动判分"
-}

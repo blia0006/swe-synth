@@ -1,15 +1,22 @@
 {
   "solvable": true,
-  "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据",
-  "first_pass_attempt": 1,
-  "difficulty_signal": "easy_for_llm",
-  "n_attempts": 1,
+  "reason": "题干准确：LLM 第 2 次尝试即依据题干完成任务并通过全部判据",
+  "first_pass_attempt": 2,
+  "difficulty_signal": "moderate",
+  "n_attempts": 2,
   "attempts": [
     {
       "attempt": 1,
+      "passed": false,
+      "f2p": "4/8",
+      "p2p": "0/0",
+      "error": "TypeError: encode() got an unexpected keyword argument 'output'"
+    },
+    {
+      "attempt": 2,
       "passed": true,
-      "f2p": "3/3",
-      "p2p": "7/7",
+      "f2p": "8/8",
+      "p2p": "0/0",
       "error": null
     }
   ]

@@ -1,0 +1,117 @@
+{
+  "task_id": "swe-synth-0024",
+  "task_type": "refactoring",
+  "difficulty": "medium",
+  "state": "LOCAL_OK",
+  "repo": "pallets/itsdangerous",
+  "repo_stars": 2900,
+  "base_commit": "672971d66a2ef9f85151e53283113f33d642dabd",
+  "language": "python",
+  "problem_statement": "## 背景与上下文\n`Serializer.iter_unsigners` 是 itsdangerous 中用于在验签（unsigning）时生成待尝试签名器序列的核心生成器。它首先产出当前默认签名器，然后遍历 `fallback_signers` 并按条目形态（dict / tuple / 其他）构造不同配置的签名器。该函数目前混合了解析 fallback 条目、构造签名器两个层次的职责，圈复杂度偏高，且局部变量 `fallback` 在分支中被重新赋值，降低了可读性。因此需要在不改变行为的前提下，通过提取辅助函数来简化结构。\n\n## 需要实现的功能\n这是一道重构题：请重构 `Serializer.iter_unsigners` 方法。目标是在保持方法签名和所有外部可观察行为完全不变的前提下，降低方法的圈复杂度与有效行数。允许并鼓励提取模块级私有辅助函数，把“解析 fallback 条目为 signer class 与 kwargs”这一独立职责从主流程中分离出去。\n\n## 输入\n- `self`: `Serializer` 实例。\n- `salt`: `str | bytes | None`，默认值为 `None`。若传入 `None`，则使用实例属性 `self.salt`。\n（其余依赖的实例属性：`self.fallback_signers`、`self.signer`、`self.signer_kwargs`、`self.secret_keys`）\n\n## 输出\n该方法是生成器，返回 `cabc.Iterator[Signer]`。依次产出：\n1. 使用当前 salt 通过 `self.make_signer(salt)` 创建的默认签名器。\n2. 对 `self.fallback_signers` 中的每个条目，解析出签名器类和关键字参数后，再对 `self.secret_keys` 中的每个 secret key 依次构造签名器并产出。\n\n## 预期行为\n① 必须保持以下行为完全不变：\n   - 当 `salt` 参数为 `None` 时，转向使用 `self.salt`。\n   - 首次 yield 的签名器由 `self.make_signer(salt)` 生成。\n   - 遍历 `self.fallback_signers` 的顺序、每个条目解析出的 signer class 与 kwargs 的规则均不变：\n     * dict 条目：signer class 为 `self.signer`，kwargs 为该 dict 本身。\n     * tuple 条目：解包 tuple 得到 signer class 和 kwargs（若长度不为 2，需在相同位置抛出相同异常）。\n     * 其他类型条目：signer class 为该条目本身，kwargs 为 `self.signer_kwargs`。\n   - 对 `self.secret_keys` 的遍历顺序及每个生成的 signer 的构造参数（`secret_key`、`salt=salt`、`**kwargs`）完全不变。\n   - 生成器的惰性行为、异常传播、副作用顺序保持一致。\n② 要求消除的具体坏味道：\n   - `fallback` 变量在循环中被重新赋值为 signer class，命名与含义不一致。\n   - 多层嵌套 + 多个 `isinstance` 分支导致圈复杂度偏高，应将解析职责独立出去。\n   - “解析 fallback 条目”和“构造 signer”两层逻辑混杂，应分离到更小的单元。\n   - 三元/多分支条件可以用更明确的函数返回值来代替重复赋值。\n③ 允许的结构性调整：\n   - 提取模块级私有辅助函数（例如 `_resolve_fallback_signer` 或类似命名）负责解析单个 fallback 条目，返回 `(signer_class, kwargs)` 二元组。\n   - 简化主循环，仅保留遍历和 yield 逻辑。\n   - 调整局部变量命名、拆分长行，但不得改变任何计算或条件判断。\n\n## 约束条件\n- 目标方法 `Serializer.iter_unsigners` 的签名（包括参数名、顺序、默认值、类型注解、返回类型注解）必须逐字保持不变。\n- 不得修改任何测试文件。\n- 不得改变任何对外可见行为，包括返回值、异常类型与触发条件、副作用顺序、生成器的惰性求值特性。\n- 不得引入新的第三方依赖；只能使用标准库及该文件已导入的模块。\n- 提取的辅助函数应为模块级私有函数（以下划线开头），放在文件末尾，并保持行为与主方法协调一致。\n- 不得删除、重命名或改变 `Serializer.iter_unsigners` 的可访问性。\n- 不得将重构变成单纯“压行”操作（如把多行压缩成难以读的长表达式），应通过分解职责来降低复杂度。\n\n## 自动化质量门槛\n\n除了「所有既有测试必须保持通过」之外，本题还有一组**静态指标**判据\n（由 `tests/test_itsdangerous/test_refactor_guard_swe_synth_0029.py` 自动检查，该文件属于判据、不可修改）：\n\n| 指标 | 重构前 | 要求 |\n|---|---|---|\n| `Serializer.iter_unsigners` 的有效代码行数 | 13 | ≤ **10** |\n| `Serializer.iter_unsigners` 的圈复杂度 | 6 | ≤ **4** |\n| 文件内任一函数的有效代码行数 | — | ≤ **21** |\n| `Serializer.iter_unsigners` 的参数列表 | `self, salt` | 保持完全不变 |\n\n说明：\n- 「有效代码行数」不含 docstring、空行与纯注释行，所以删注释、压行都无助于达标\n- 最后一项限制的用意是防止「把逻辑整体搬到另一个大函数」这种伪重构\n- 达标的常规做法是：把目标函数中彼此独立的职责，提取为若干个小的私有辅助函数\n",
+  "hints": null,
+  "modified_files": [
+    "src/itsdangerous/serializer.py"
+  ],
+  "do_not_modify": [
+    "tests/test_itsdangerous/test_refactor_guard_swe_synth_0029.py",
+    "tests/test_itsdangerous/test_serializer.py"
+  ],
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_itsdangerous/test_refactor_guard_swe_synth_0029.py::test_target_function_complexity_reduced",
+    "tests/test_itsdangerous/test_refactor_guard_swe_synth_0029.py::test_target_function_is_simplified"
+  ],
+  "PASS_TO_PASS": [
+    "tests/test_itsdangerous/test_refactor_guard_swe_synth_0029.py::test_no_new_monolithic_function",
+    "tests/test_itsdangerous/test_refactor_guard_swe_synth_0029.py::test_signature_unchanged",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_alt_salt[Serializer]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_alt_salt[serializer_factory1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_bad_payload_exception[Serializer]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_bad_payload_exception[serializer_factory1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_bad_signature_exception[Serializer]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_bad_signature_exception[serializer_factory1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_changed_value[Serializer-<lambda>0]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_changed_value[Serializer-<lambda>1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_changed_value[Serializer-<lambda>2]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_changed_value[Serializer-<lambda>3]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_changed_value[serializer_factory1-<lambda>0]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_changed_value[serializer_factory1-<lambda>1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_changed_value[serializer_factory1-<lambda>2]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_changed_value[serializer_factory1-<lambda>3]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_fallback_signers[Serializer]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_fallback_signers[serializer_factory1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_file[Serializer]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_file[serializer_factory1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_iter_unsigners[Serializer]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_iter_unsigners[serializer_factory1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_loads_unsafe[Serializer]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_loads_unsafe[serializer_factory1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[Serializer-None]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[Serializer-True]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[Serializer-str]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[Serializer-text]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[Serializer-value4]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[Serializer-value5]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[serializer_factory1-None]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[serializer_factory1-True]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[serializer_factory1-str]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[serializer_factory1-text]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[serializer_factory1-value4]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer[serializer_factory1-value5]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer_kwargs[Serializer]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_serializer_kwargs[serializer_factory1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_signer_cls[Serializer]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_signer_cls[serializer_factory1]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_signer_kwargs[Serializer]",
+    "tests/test_itsdangerous/test_serializer.py::TestSerializer::test_signer_kwargs[serializer_factory1]",
+    "tests/test_itsdangerous/test_serializer.py::test_digests"
+  ],
+  "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0029:v1",
+  "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0029:v1-sol",
+  "verify_script": "/task/verify.sh",
+  "generated_by": {
+    "model": "deepseek-v4-pro-202606",
+    "agent": "agent1",
+    "ts": "2026-08-20T15:55:44.074215+00:00",
+    "prompt_version": "refactor-v1",
+    "input_tokens": 12829,
+    "output_tokens": 33420
+  },
+  "validation": {
+    "local_sanity_passed": true,
+    "local_duration_sec": 0.6485419273376465,
+    "sandbox_tool": null,
+    "sandbox_instance_id": null,
+    "empty_solution_result": null,
+    "golden_solution_result": null,
+    "deterministic": true,
+    "duration_sec": null,
+    "llm_attempt": {
+      "solvable": true,
+      "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据",
+      "first_pass_attempt": 1,
+      "difficulty_signal": "easy_for_llm",
+      "n_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "passed": true,
+          "f2p": "2/2",
+          "p2p": "43/43",
+          "error": null
+        }
+      ]
+    },
+    "proof_dir": "/Users/jacobliang/学习/课题三-数据合成/data/proofs/swe-synth-0029"
+  },
+  "overlap_check": {
+    "passed": false,
+    "method": "github_search+bm25+embedding+llm_judge",
+    "queried": [],
+    "top_candidates": [],
+    "target_file_last_modified": null,
+    "months_since_last_change": null,
+    "verdict_reason": null
+  },
+  "reject_reason": null
+}

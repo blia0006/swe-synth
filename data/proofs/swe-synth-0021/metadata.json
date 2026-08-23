@@ -1,0 +1,27 @@
+{
+  "task_id": "swe-synth-0021",
+  "repo": "john-kurkowski/tldextract",
+  "base_commit": "72d37955ae5ba86267fd68c97b56866bd04c3ce9",
+  "language": "python",
+  "task_type": "module_addition",
+  "symbol": "tldextract/suffix_rule_parser.py",
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_basic_order",
+    "tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_empty_returns_empty_string",
+    "tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_missing_lists_are_omitted",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_basic_rules",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_empty_text_returns_empty_lists",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_mixed_rules_with_deduplication",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_skips_comments_and_blank_lines"
+  ],
+  "PASS_TO_PASS": [],
+  "modified_files": [
+    "tldextract/suffix_rule_parser.py"
+  ],
+  "do_not_modify": [
+    "tests/test_suffix_rule_parser_synth.py"
+  ],
+  "workspace": "/workspace/repo",
+  "python": "/opt/venv311/bin/python"
+}

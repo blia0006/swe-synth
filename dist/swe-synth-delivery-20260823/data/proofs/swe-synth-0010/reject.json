@@ -1,6 +1,0 @@
-{
-  "candidate": "hukkin/tomli::module_addition",
-  "task_type": "module_addition",
-  "stage": "DESIGN",
-  "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 语法错误：第 51 行 unterminated string literal (detected at line 51)']"
-}

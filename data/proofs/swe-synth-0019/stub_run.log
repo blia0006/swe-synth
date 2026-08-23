@@ -1,49 +1,67 @@
-test_coroutine_sink.py::test_coroutine_function - NotImplemented...
-FAILED tests/test_coroutine_sink.py::test_async_callable_sink - NotImplemente...
-FAILED tests/test_coroutine_sink.py::test_concurrent_execution - NotImplement...
-FAILED tests/test_coroutine_sink.py::test_recursive_coroutine - NotImplemente...
-FAILED tests/test_coroutine_sink.py::test_using_another_event_loop - NotImple...
-FAILED tests/test_coroutine_sink.py::test_run_multiple_different_loops - NotI...
-FAILED tests/test_coroutine_sink.py::test_run_multiple_same_loop - NotImpleme...
-FAILED tests/test_coroutine_sink.py::test_using_sink_without_running_loop_not_none
-FAILED tests/test_coroutine_sink.py::test_using_sink_without_running_loop_none
-FAILED tests/test_coroutine_sink.py::test_global_loop_not_used - NotImplement...
-FAILED tests/test_coroutine_sink.py::test_complete_in_another_run - NotImplem...
-FAILED tests/test_coroutine_sink.py::test_tasks_cancelled_on_remove - NotImpl...
-FAILED tests/test_coroutine_sink.py::test_remove_without_tasks - NotImplement...
-FAILED tests/test_coroutine_sink.py::test_complete_without_tasks - NotImpleme...
-FAILED tests/test_coroutine_sink.py::test_complete_stream_noop - NotImplement...
-FAILED tests/test_coroutine_sink.py::test_complete_file_noop - NotImplemented...
-FAILED tests/test_coroutine_sink.py::test_complete_function_noop - NotImpleme...
-FAILED tests/test_coroutine_sink.py::test_complete_standard_noop - NotImpleme...
-FAILED tests/test_coroutine_sink.py::test_exception_in_coroutine_caught - Not...
-FAILED tests/test_coroutine_sink.py::test_exception_in_coroutine_not_caught
-FAILED tests/test_coroutine_sink.py::test_exception_in_coroutine_during_complete_caught
-FAILED tests/test_coroutine_sink.py::test_exception_in_coroutine_during_complete_not_caught
-FAILED tests/test_coroutine_sink.py::test_enqueue_coroutine_loop - NotImpleme...
-FAILED tests/test_coroutine_sink.py::test_enqueue_coroutine_from_inside_coroutine_without_loop
-FAILED tests/test_coroutine_sink.py::test_custom_complete_function - NotImple...
-FAILED tests/test_coroutine_sink.py::test_complete_from_another_loop[True] - ...
-FAILED tests/test_coroutine_sink.py::test_complete_from_another_loop[False]
-FAILED tests/test_coroutine_sink.py::test_complete_from_multiple_threads_loop_is_none
-FAILED tests/test_coroutine_sink.py::test_complete_from_multiple_threads_loop_is_not_none
-FAILED tests/test_coroutine_sink.py::test_complete_and_sink_write_concurrency
-FAILED tests/test_coroutine_sink.py::test_complete_and_contextualize_concurrency
-FAILED tests/test_coroutine_sink.py::test_complete_with_sub_processes - NotIm...
-FAILED tests/test_multiprocessing.py::test_await_complete_spawn - AssertionEr...
-FAILED tests/test_multiprocessing.py::test_await_complete_fork - AssertionErr...
-FAILED tests/test_multiprocessing.py::test_await_complete_inheritance - Asser...
-FAILED tests/test_multiprocessing.py::test_complete_from_multiple_child_processes
-FAILED tests/test_add_sinks.py::test_coroutine_sink[0] - NotImplementedError:...
-FAILED tests/test_add_sinks.py::test_coroutine_sink[1] - NotImplementedError:...
-FAILED tests/test_add_sinks.py::test_coroutine_sink[2] - NotImplementedError:...
-FAILED tests/test_add_sinks.py::test_custom_sink_invalid_complete[123] - NotI...
-FAILED tests/test_add_sinks.py::test_custom_sink_invalid_complete[None] - Not...
-FAILED tests/test_add_sinks.py::test_custom_sink_invalid_complete[<lambda>]
-FAILED tests/test_exceptions_catch.py::test_unprintable_but_decorated_repr_with_enqueue
-ERROR tests/test_coroutine_sink.py::test_using_sink_without_running_loop_not_none
-ERROR tests/test_coroutine_sink.py::test_complete_from_multiple_threads_loop_is_not_none
-ERROR tests/test_multiprocessing.py::test_await_complete_spawn - pytest.Pytes...
-ERROR tests/test_multiprocessing.py::test_await_complete_fork - pytest.Pytest...
-ERROR tests/test_multiprocessing.py::test_await_complete_inheritance - pytest...
-=================== 43 failed, 129 passed, 5 errors in 8.95s ===================
+    raised. All arguments are forwarded to the signer's
+        :meth:`~TimestampSigner.unsign` method.
+        """
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+src/itsdangerous/timed.py:199: NotImplementedError
+___________________ TestTimedSerializer.test_return_payload ____________________
+
+self = <test_itsdangerous.test_timed.TestTimedSerializer object at 0x7f683b1b7fd0>
+serializer = <itsdangerous.timed.TimedSerializer object at 0x7f683af01d10>
+value = {'id': 42}
+ts = datetime.datetime(2011, 6, 24, 0, 9, 5, tzinfo=datetime.timezone.utc)
+
+    def test_return_payload(self, serializer, value, ts):
+        signed = serializer.dumps(value)
+>       assert serializer.loads(signed, return_timestamp=True) == (value, ts)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_itsdangerous/test_timed.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <itsdangerous.timed.TimedSerializer object at 0x7f683af01d10>
+s = '{"id": 42}.TgPVoQ.go_XSHIC1FOMQN1sUJC45Z1lZRw', max_age = None
+return_timestamp = True, salt = None
+
+    def loads(  # type: ignore[override]
+        self,
+        s: str | bytes,
+        max_age: int | None = None,
+        return_timestamp: bool = False,
+        salt: str | bytes | None = None,
+    ) -> t.Any:
+        """Reverse of :meth:`dumps`, raises :exc:`.BadSignature` if the
+        signature validation fails. If a ``max_age`` is provided it will
+        ensure the signature is not older than that time in seconds. In
+        case the signature is outdated, :exc:`.SignatureExpired` is
+        raised. All arguments are forwarded to the signer's
+        :meth:`~TimestampSigner.unsign` method.
+        """
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+src/itsdangerous/timed.py:199: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_serializer[None]
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_serializer[True]
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_serializer[str]
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_serializer[text]
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_serializer[value4]
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_serializer[value5]
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_changed_value[<lambda>0]
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_changed_value[<lambda>1]
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_changed_value[<lambda>2]
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_changed_value[<lambda>3]
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_bad_signature_exception
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_bad_payload_exception
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_loads_unsafe
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_file
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_alt_salt
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_signer_cls
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_signer_kwargs
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_serializer_kwargs
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_fallback_signers
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_max_age
+FAILED tests/test_itsdangerous/test_timed.py::TestTimedSerializer::test_return_payload
+======================== 21 failed, 121 passed in 0.40s ========================

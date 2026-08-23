@@ -1,17 +1,24 @@
 ============================= test session starts ==============================
-collecting ... collected 10 items
+collecting ... collected 9 items
 
-tests/test_refactor_guard_swe_synth_0022.py::test_signature_unchanged PASSED [ 10%]
-tests/test_refactor_guard_swe_synth_0022.py::test_target_function_is_simplified PASSED [ 20%]
-tests/test_refactor_guard_swe_synth_0022.py::test_target_function_complexity_reduced PASSED [ 30%]
-tests/test_refactor_guard_swe_synth_0022.py::test_no_new_monolithic_function PASSED [ 40%]
-tests/test_release.py::test_happy_path PASSED                            [ 50%]
-tests/cli_test.py::test_cli_no_input PASSED                              [ 60%]
-tests/cli_test.py::test_cli_parses_args PASSED                           [ 70%]
-tests/cli_test.py::test_cli_posargs PASSED                               [ 80%]
-tests/cli_test.py::test_cli_namedargs PASSED                             [ 90%]
-tests/cli_test.py::test_cli_json_output PASSED                           [100%]
+tests/test_idna_utils_synth.py::test_to_ascii_unicode_domain PASSED      [ 11%]
+tests/test_idna_utils_synth.py::test_to_ascii_strips_trailing_dot_and_lowercases PASSED [ 22%]
+tests/test_idna_utils_synth.py::test_to_ascii_ascii_domain_unchanged PASSED [ 33%]
+tests/test_idna_utils_synth.py::test_to_ascii_empty_hostname PASSED      [ 44%]
+tests/test_idna_utils_synth.py::test_to_ascii_invalid_characters PASSED  [ 55%]
+tests/test_idna_utils_synth.py::test_to_unicode_punycode_domain PASSED   [ 66%]
+tests/test_idna_utils_synth.py::test_to_unicode_ascii_domain_unchanged PASSED [ 77%]
+tests/test_idna_utils_synth.py::test_to_unicode_strips_trailing_dot_and_lowercases PASSED [ 88%]
+tests/test_idna_utils_synth.py::test_to_unicode_invalid_punycode FAILED  [100%]
 
---------------------------- snapshot report summary ----------------------------
-3 snapshots passed.
-============================== 10 passed in 0.06s ==============================
+=================================== FAILURES ===================================
+_______________________ test_to_unicode_invalid_punycode _______________________
+
+    def test_to_unicode_invalid_punycode():
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_idna_utils_synth.py:46: Failed
+=========================== short test summary info ============================
+FAILED tests/test_idna_utils_synth.py::test_to_unicode_invalid_punycode - Fai...
+========================= 1 failed, 8 passed in 0.02s ==========================

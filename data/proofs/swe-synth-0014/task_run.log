@@ -1,21 +1,69 @@
-6 (2.33)   [0m[1m  46,374.9748 (72.94)  [0m[1m    396.6168 (2.88)   [0m[1m    408.2892 (24.98)  [0m[1m    375.0320 (2.73)   [0m[1m   41.0364 (705.00) [0m   144;863[1m    2,521.3251 (0.35)   [0m   56472           1
-test_metric         [1m    415.9519 (3.32)   [0m[1m  54,000.0037 (84.93)  [0m[1m    513.1372 (3.72)   [0m[1m    429.3387 (26.27)  [0m[1m    500.0038 (3.64)   [0m[32m[1m    0.0582 (1.0)    [0m 332;52721[1m    1,948.7966 (0.27)   [0m  121833           1
-test_intcomma       [1m    422.8990 (3.38)   [0m[1m   5,841.6481 (9.19)   [0m[1m    481.5802 (3.50)   [0m[1m     93.7159 (5.73)   [0m[1m    475.0007 (3.46)   [0m[1m   25.0002 (429.50) [0m 1325;3608[1m    2,076.4974 (0.29)   [0m   84804          20
-test_naturalsize    [1m    500.0038 (3.99)   [0m[1m  59,957.9653 (94.31)  [0m[1m    646.3045 (4.69)   [0m[1m    444.2738 (27.18)  [0m[1m    625.0339 (4.55)   [0m[1m   41.0364 (705.00) [0m  390;5554[1m    1,547.2584 (0.21)   [0m  141164           1
-test_naturalday     [1m    520.7985 (4.16)   [0m[1m   6,837.4997 (10.75)  [0m[1m    576.6910 (4.19)   [0m[1m    106.0522 (6.49)   [0m[1m    570.8484 (4.16)   [0m[1m   27.1015 (465.60) [0m 1466;2617[1m    1,734.0309 (0.24)   [0m   85712          20
-test_naturaldelta   [1m    542.0297 (4.33)   [0m[1m  44,582.9937 (70.12)  [0m[1m    678.1515 (4.92)   [0m[1m    395.6106 (24.20)  [0m[1m    667.0016 (4.86)   [0m[1m    1.0477 (18.00)  [0m 119;48582[1m    1,474.5968 (0.20)   [0m  102997           1
-test_intword        [1m    665.9538 (5.32)   [0m[1m  57,334.0221 (90.18)  [0m[1m    792.6876 (5.75)   [0m[1m    538.2158 (32.93)  [0m[1m    791.0421 (5.76)   [0m[1m   42.0259 (722.00) [0m  123;3547[1m    1,261.5310 (0.17)   [0m  109087           1
-test_fractional     [1m    916.0140 (7.31)   [0m[1m  47,792.0403 (75.17)  [0m[1m  1,070.5610 (7.77)   [0m[1m    545.4172 (33.37)  [0m[1m  1,042.0335 (7.59)   [0m[1m   83.0041 (>1000.0)[0m    68;830[1m      934.0897 (0.13)   [0m   43638           1
-test_naturaldate    [1m  1,417.0073 (11.31)  [0m[1m  54,958.0436 (86.44)  [0m[1m  1,629.8625 (11.83)  [0m[1m    756.0728 (46.26)  [0m[1m  1,584.0051 (11.54)  [0m[1m   83.0623 (>1000.0)[0m  302;2941[1m      613.5487 (0.08)   [0m   72728           1
-test_naturaltime    [1m  1,417.0073 (11.31)  [0m[1m  49,041.9916 (77.14)  [0m[1m  1,633.3878 (11.85)  [0m[1m    704.7131 (43.12)  [0m[1m  1,624.9833 (11.84)  [0m[1m  123.9823 (>1000.0)[0m  177;1350[1m      612.2245 (0.08)   [0m   88890           1
-test_precisedelta   [31m[1m  4,749.9780 (37.92)  [0m[31m[1m  68,209.0176 (107.28) [0m[31m[1m  5,229.9230 (37.96)  [0m[31m[1m  1,594.7506 (97.57)  [0m[31m[1m  5,166.9776 (37.64)  [0m[31m[1m  290.9801 (>1000.0)[0m   137;326[31m[1m      191.2074 (0.03)   [0m   17254           1
-[33m-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------[0m
+one_day PASSED [ 45%]
+tests/test_expires_heuristics.py::TestExpiresAfter::test_expires_after_one_day PASSED [ 50%]
+tests/test_expires_heuristics.py::TestLastModified::test_last_modified PASSED [ 55%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_no_expiry_is_inferred_when_no_last_modified_is_present PASSED [ 60%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expires_is_not_replaced_when_present PASSED [ 65%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used PASSED [ 70%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_cache_control_present PASSED [ 75%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_status_is_unknown PASSED [ 80%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used_when_cache_control_public PASSED [ 85%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_not_added_when_response_more_recent_than_24_hours PASSED [ 90%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_is_not_added_when_heuristic_was_not_used PASSED [ 95%]
+tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expiry_is_no_more_that_twenty_four_hours PASSED [100%]
 
-Legend:
-  Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
-  OPS: Operations Per Second, computed as 1 / Mean
-[36m[1m=========================== short test summary info ============================[0m
-[31mFAILED[0m tests/test_refactor_guard_swe_synth_0014.py::[1mtest_target_function_is_simplified[0m - AssertionError: naturalsize 的函数体仍有 19 行有效代码（重构前 19 行），要...
-[31mFAILED[0m tests/test_refactor_guard_swe_synth_0014.py::[1mtest_target_function_complexity_reduced[0m - AssertionError: naturalsize 的圈复杂度仍为 12（重构前 12），要求不超过 5。...
-[31mFAILED[0m tests/test_refactor_guard_swe_synth_0014.py::[1mtest_no_new_monolithic_function[0m - AssertionError: 以下函数体量超过 12 行：[('naturalsize', 19)]。把代码整体搬...
-[31m=================== [31m[1m3 failed[0m, [32m98 passed[0m, [33m74 skipped[0m[31m in 6.41s[0m[31m ===================[0m
+=================================== FAILURES ===================================
+______________________ test_target_function_is_simplified ______________________
+
+    def test_target_function_is_simplified():
+        """目标函数的有效代码行数必须降下来（把职责拆分到更小的单元中）。"""
+        lines, _, node = _target()
+        n = _effective_body_lines(node, lines)
+>       assert n <= MAX_TARGET_BODY_LINES, (
+            "%s 的函数体仍有 %d 行有效代码（重构前 %d 行），要求不超过 %d 行。"
+            "请将独立职责提取为单独的函数/方法，而不是原地压缩代码。"
+            % (SYMBOL, n, BEFORE["body_lines"], MAX_TARGET_BODY_LINES)
+        )
+E       AssertionError: LastModified.update_headers 的函数体仍有 23 行有效代码（重构前 23 行），要求不超过 20 行。请将独立职责提取为单独的函数/方法，而不是原地压缩代码。
+E       assert 23 <= 20
+
+tests/test_refactor_guard_swe_synth_0014.py:136: AssertionError
+___________________ test_target_function_complexity_reduced ____________________
+
+    def test_target_function_complexity_reduced():
+        """目标函数的圈复杂度必须降下来（分支/循环/短路判断更少）。"""
+        _, _, node = _target()
+        cx = _cyclomatic(node)
+>       assert cx <= MAX_TARGET_COMPLEXITY, (
+            "%s 的圈复杂度仍为 %d（重构前 %d），要求不超过 %d。"
+            "请减少嵌套分支，把条件判断收敛到辅助函数中。"
+            % (SYMBOL, cx, BEFORE["cyclomatic"], MAX_TARGET_COMPLEXITY)
+        )
+E       AssertionError: LastModified.update_headers 的圈复杂度仍为 10（重构前 10），要求不超过 8。请减少嵌套分支，把条件判断收敛到辅助函数中。
+E       assert 10 <= 8
+
+tests/test_refactor_guard_swe_synth_0014.py:147: AssertionError
+_______________________ test_no_new_monolithic_function ________________________
+
+    def test_no_new_monolithic_function():
+        """防伪重构：不允许把复杂度整体搬运到另一个巨型函数里。"""
+        lines, tree = _load()
+        offenders = [
+            (path, _effective_body_lines(node, lines))
+            for path, node in _iter_defs(tree)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and _effective_body_lines(node, lines) > MAX_ANY_FUNC_BODY_LINES
+        ]
+>       assert not offenders, (
+            "以下函数体量超过 %d 行：%r。"
+            "把代码整体搬到另一个大函数不算重构，请真正拆分职责。"
+            % (MAX_ANY_FUNC_BODY_LINES, offenders)
+        )
+E       AssertionError: 以下函数体量超过 22 行：[('LastModified.update_headers', 23)]。把代码整体搬到另一个大函数不算重构，请真正拆分职责。
+E       assert not [('LastModified.update_headers', 23)]
+
+tests/test_refactor_guard_swe_synth_0014.py:163: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_refactor_guard_swe_synth_0014.py::test_target_function_is_simplified
+FAILED tests/test_refactor_guard_swe_synth_0014.py::test_target_function_complexity_reduced
+FAILED tests/test_refactor_guard_swe_synth_0014.py::test_no_new_monolithic_function
+========================= 3 failed, 17 passed in 0.74s =========================

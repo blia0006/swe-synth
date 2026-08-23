@@ -1,58 +1,90 @@
---- a/src/humanize/filesize.py
-+++ b/src/humanize/filesize.py
-@@ -81,6 +81,21 @@
-     Returns:
-         str: Human readable representation of a filesize.
-     """
-+    suffix, base = _get_suffix_and_base(gnu, binary)
-+    bytes_ = float(value)
-+    abs_bytes = abs(bytes_)
-+
-+    small = _format_small_bytes(bytes_, abs_bytes, gnu, base)
-+    if small is not None:
-+        return small
-+
-+    exp = _get_exponent(abs_bytes, base, suffix, format)
-+    space = "" if gnu else " "
-+    ret: str = format % (bytes_ / (base**exp)) + space + _(suffix[exp - 1])
-+    return ret
-+
-+
-+def _get_suffix_and_base(gnu: bool, binary: bool) -> tuple[list[str], int]:
-     if gnu:
-         suffix = suffixes["gnu"]
-     elif binary:
-@@ -89,15 +104,22 @@
-         suffix = suffixes["decimal"]
+--- a/cachecontrol/heuristics.py
++++ b/cachecontrol/heuristics.py
+@@ -122,36 +122,64 @@
+     }
  
-     base = 1024 if (gnu or binary) else 1000
--    bytes_ = float(value)
--    abs_bytes = abs(bytes_)
-+    return suffix, base
+     def update_headers(self, resp: HTTPResponse) -> dict[str, str]:
+-        headers: Mapping[str, str] = resp.headers
++            headers: Mapping[str, str] = resp.headers
  
-+
-+def _format_small_bytes(
-+    bytes_: float, abs_bytes: float, gnu: bool, base: int
-+) -> str | None:
-     if abs_bytes == 1 and not gnu:
-         return _("%d Byte") % int(bytes_)
--
-     if abs_bytes < base:
-         return f"{int(bytes_)}B" if gnu else _("%d Bytes") % int(bytes_)
-+    return None
+-        if "expires" in headers:
+-            return {}
++            if _has_explicit_expiration(headers):
++                return {}
  
+-        if "cache-control" in headers and headers["cache-control"] != "public":
+-            return {}
++            if _has_non_public_cache_control(headers):
++                return {}
+ 
+-        if resp.status not in self.cacheable_by_default_statuses:
+-            return {}
++            if resp.status not in self.cacheable_by_default_statuses:
++                return {}
+ 
+-        if "date" not in headers or "last-modified" not in headers:
+-            return {}
++            if 'date' not in headers or 'last-modified' not in headers:
++                return {}
+ 
+-        time_tuple = parsedate_tz(headers["date"])
+-        assert time_tuple is not None
+-        date = calendar.timegm(time_tuple[:6])
+-        last_modified = parsedate(headers["last-modified"])
+-        if last_modified is None:
+-            return {}
++            parsed = _parse_revalidation_dates(headers)
++            if parsed is None:
++                return {}
++            date, last_modified = parsed
+ 
+-        now = time.time()
+-        current_age = max(0, now - date)
+-        delta = date - calendar.timegm(last_modified)
+-        freshness_lifetime = max(0, min(delta / 10, 24 * 3600))
+-        if freshness_lifetime <= current_age:
+-            return {}
++            now = time.time()
++            current_age = max(0, now - date)
++            freshness_lifetime = _compute_freshness_lifetime(date, last_modified)
++            if freshness_lifetime <= current_age:
++                return {}
+ 
+-        expires = date + freshness_lifetime
+-        return {"expires": time.strftime(TIME_FMT, time.gmtime(expires))}
++            return {'expires': _format_expires(date, freshness_lifetime)}
+ 
+     def warning(self, resp: HTTPResponse) -> str | None:
+         return None
 +
-+def _get_exponent(
-+    abs_bytes: float, base: int, suffix: list[str], format: str
-+) -> int:
-     exp = int(min(log(abs_bytes, base), len(suffix)))
-     # The suffix is chosen from the unrounded byte count, but `format` rounds the
-     # mantissa afterward; rounding can push it up to `base` (e.g. 999999 is
-@@ -105,6 +127,4 @@
-     # suffix is available, step up one suffix so the result reads "1.0 MB".
-     if exp < len(suffix) and abs(float(format % (abs_bytes / (base**exp)))) >= base:
-         exp += 1
--    space = "" if gnu else " "
--    ret: str = format % (bytes_ / (base**exp)) + space + _(suffix[exp - 1])
--    return ret
-+    return exp
++
++_FRESHNESS_DIVISOR = 10
++_MAX_FRESHNESS_LIFETIME = 24 * 3600
++
++
++def _has_explicit_expiration(headers: Mapping[str, str]) -> bool:
++    return 'expires' in headers
++
++
++def _has_non_public_cache_control(headers: Mapping[str, str]) -> bool:
++    return 'cache-control' in headers and headers['cache-control'] != 'public'
++
++
++def _parse_revalidation_dates(headers: Mapping[str, str]) -> tuple[int, int] | None:
++    time_tuple = parsedate_tz(headers['date'])
++    assert time_tuple is not None
++    date = calendar.timegm(time_tuple[:6])
++    last_modified = parsedate(headers['last-modified'])
++    if last_modified is None:
++        return None
++    return date, calendar.timegm(last_modified)
++
++
++def _compute_freshness_lifetime(date: int, last_modified: int) -> float:
++    delta = date - last_modified
++    return max(0, min(delta / _FRESHNESS_DIVISOR, _MAX_FRESHNESS_LIFETIME))
++
++
++def _format_expires(date: int, freshness_lifetime: float) -> str:
++    expires = date + freshness_lifetime
++    return time.strftime(TIME_FMT, time.gmtime(expires))

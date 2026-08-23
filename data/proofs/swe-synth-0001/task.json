@@ -1,1 +1,76 @@
-{"task_id": "swe-synth-0001", "task_type": "module_addition", "difficulty": "easy", "state": "LOCAL_OK", "repo": "jd/tenacity", "repo_stars": 6000, "base_commit": "26f719dc73d3c5612b9c1b8d18a7883837790ad8", "language": "python", "problem_statement": "## 背景与上下文\n\ntenacity 是一个 Python 重试库，允许用户通过回调（如 `after`、`before_sleep`）观察每次尝试。然而，库本身没有提供记录尝试结果并汇总统计的工具。新增 `tenacity/retry_history.py` 模块，提供一个简单的 `RetryHistory` 类，帮助用户在重试循环中收集成功/失败次数和等待时间等统计信息。\n\n## 需要实现的功能\n\n实现一个名为 `RetryHistory` 的类，用于记录每次重试尝试的结果（成功或失败）以及尝试前等待的时间，并能够返回汇总统计：总尝试次数、成功次数、失败次数、成功率、总等待时间和平均等待时间。\n\n职责边界：只负责记录和统计，不执行任何重试逻辑，不存储每次尝试的具体细节（如异常对象、尝试编号），只计数和累加等待时间。\n\n## 输入\n\n- 构造函数：无参数。\n- `record_success`：接受一个位置参数 `attempt_number`（整数，表示第几次尝试，1 开始），以及一个可选关键字参数 `idle_for`（浮点数或 `None`，表示此次尝试前等待的秒数，默认为 `None` 且视为 `0.0`）。\n- `record_failure`：接受位置参数 `attempt_number` 和 `exception`（必须是 `BaseException` 实例，但仅用于类型提示，不影响统计），以及可选关键字参数 `idle_for`，含义同上。\n\n## 输出\n\n- `__init__` 返回 `None`。\n- `attempts` 属性返回 `int`：成功与失败尝试之和。\n- `successes` 属性返回 `int`：成功尝试次数。\n- `failures` 属性返回 `int`：失败尝试次数。\n- `success_rate()` 返回 `float`：成功次数除以总尝试次数；若总次数为 0，返回 `0.0`。\n- `total_idle_time()` 返回 `float`：所有记录的 `idle_for` 之和（`None` 按 `0.0` 计）。\n- `mean_idle_time()` 返回 `float`：总等待时间除以总尝试次数；若总次数为 0，返回 `0.0`。\n\n## 预期行为\n\n1. 新创建的 `RetryHistory` 实例各统计值均为 0。\n2. 每次调用 `record_success` 或 `record_failure` 后，对应计数增加 1，总尝试次数增加 1。\n3. `record_success` 不接收异常参数；`record_failure` 必须提供异常参数，但异常内容不影响统计。\n4. `idle_for` 若为 `None` 或省略，按 `0.0` 累加到总等待时间；若为其他数值，按该数值累加。\n5. `success_rate` 计算成功比例，当总次数为 0 时返回 `0.0`，避免除零错误。\n6. `mean_idle_time` 返回平均等待时间，当总次数为 0 时返回 `0.0`。\n7. 多次记录后，所有统计属性应反映累计值。\n\n## 约束条件\n\n- 新模块路径必须为 `tenacity/retry_history.py`，不得修改任何现有文件。\n- 不得修改任何测试文件。\n- 只允许使用 Python 标准库，不得引入新的第三方依赖。\n- 不得在实现中使用随机数、当前时间、网络、文件读写等副作用操作。", "hints": null, "modified_files": ["tenacity/retry_history.py"], "do_not_modify": ["tests/test_retry_history_synth.py"], "test_cmd": "pytest tests/ -q", "FAIL_TO_PASS": ["tests/test_retry_history_synth.py::test_idle_time_accumulation", "tests/test_retry_history_synth.py::test_initially_empty", "tests/test_retry_history_synth.py::test_mean_idle_time_empty", "tests/test_retry_history_synth.py::test_mixed_records_and_success_rate", "tests/test_retry_history_synth.py::test_record_failure_increments", "tests/test_retry_history_synth.py::test_record_success_increments"], "PASS_TO_PASS": [], "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0001:v1", "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0001:v1-sol", "verify_script": "/task/verify.sh", "generated_by": {"model": "deepseek-v4-pro-202606", "agent": "agent1", "ts": "2026-08-21T14:01:41.902656+00:00", "prompt_version": "module-v1", "input_tokens": 13698, "output_tokens": 46694}, "validation": {"local_sanity_passed": true, "local_duration_sec": 3.431828737258911, "sandbox_tool": null, "sandbox_instance_id": null, "empty_solution_result": null, "golden_solution_result": null, "deterministic": true, "duration_sec": null, "llm_attempt": {"solvable": true, "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据", "first_pass_attempt": 1, "difficulty_signal": "easy_for_llm", "n_attempts": 1, "attempts": [{"attempt": 1, "passed": true, "f2p": "6/6", "p2p": "0/0", "error": null}]}, "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0001"}, "overlap_check": {"passed": false, "method": "github_search+bm25+embedding+llm_judge", "queried": [], "top_candidates": [], "target_file_last_modified": null, "months_since_last_change": null, "verdict_reason": null}, "reject_reason": null}
+{
+  "task_id": "swe-synth-0001",
+  "task_type": "module_addition",
+  "difficulty": "easy",
+  "state": "LOCAL_OK",
+  "repo": "jd/tenacity",
+  "repo_stars": 6000,
+  "base_commit": "26f719dc73d3c5612b9c1b8d18a7883837790ad8",
+  "language": "python",
+  "problem_statement": "## 背景与上下文\n\ntenacity 是一个 Python 重试库，允许用户通过回调（如 `after`、`before_sleep`）观察每次尝试。然而，库本身没有提供记录尝试结果并汇总统计的工具。新增 `tenacity/retry_history.py` 模块，提供一个简单的 `RetryHistory` 类，帮助用户在重试循环中收集成功/失败次数和等待时间等统计信息。\n\n## 需要实现的功能\n\n实现一个名为 `RetryHistory` 的类，用于记录每次重试尝试的结果（成功或失败）以及尝试前等待的时间，并能够返回汇总统计：总尝试次数、成功次数、失败次数、成功率、总等待时间和平均等待时间。\n\n职责边界：只负责记录和统计，不执行任何重试逻辑，不存储每次尝试的具体细节（如异常对象、尝试编号），只计数和累加等待时间。\n\n## 输入\n\n- 构造函数：无参数。\n- `record_success`：接受一个位置参数 `attempt_number`（整数，表示第几次尝试，1 开始），以及一个可选关键字参数 `idle_for`（浮点数或 `None`，表示此次尝试前等待的秒数，默认为 `None` 且视为 `0.0`）。\n- `record_failure`：接受位置参数 `attempt_number` 和 `exception`（必须是 `BaseException` 实例，但仅用于类型提示，不影响统计），以及可选关键字参数 `idle_for`，含义同上。\n\n## 输出\n\n- `__init__` 返回 `None`。\n- `attempts` 属性返回 `int`：成功与失败尝试之和。\n- `successes` 属性返回 `int`：成功尝试次数。\n- `failures` 属性返回 `int`：失败尝试次数。\n- `success_rate()` 返回 `float`：成功次数除以总尝试次数；若总次数为 0，返回 `0.0`。\n- `total_idle_time()` 返回 `float`：所有记录的 `idle_for` 之和（`None` 按 `0.0` 计）。\n- `mean_idle_time()` 返回 `float`：总等待时间除以总尝试次数；若总次数为 0，返回 `0.0`。\n\n## 预期行为\n\n1. 新创建的 `RetryHistory` 实例各统计值均为 0。\n2. 每次调用 `record_success` 或 `record_failure` 后，对应计数增加 1，总尝试次数增加 1。\n3. `record_success` 不接收异常参数；`record_failure` 必须提供异常参数，但异常内容不影响统计。\n4. `idle_for` 若为 `None` 或省略，按 `0.0` 累加到总等待时间；若为其他数值，按该数值累加。\n5. `success_rate` 计算成功比例，当总次数为 0 时返回 `0.0`，避免除零错误。\n6. `mean_idle_time` 返回平均等待时间，当总次数为 0 时返回 `0.0`。\n7. 多次记录后，所有统计属性应反映累计值。\n\n## 约束条件\n\n- 新模块路径必须为 `tenacity/retry_history.py`，不得修改任何现有文件。\n- 不得修改任何测试文件。\n- 只允许使用 Python 标准库，不得引入新的第三方依赖。\n- 不得在实现中使用随机数、当前时间、网络、文件读写等副作用操作。",
+  "hints": null,
+  "modified_files": [
+    "tenacity/retry_history.py"
+  ],
+  "do_not_modify": [
+    "tests/test_retry_history_synth.py"
+  ],
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_retry_history_synth.py::test_idle_time_accumulation",
+    "tests/test_retry_history_synth.py::test_initially_empty",
+    "tests/test_retry_history_synth.py::test_mean_idle_time_empty",
+    "tests/test_retry_history_synth.py::test_mixed_records_and_success_rate",
+    "tests/test_retry_history_synth.py::test_record_failure_increments",
+    "tests/test_retry_history_synth.py::test_record_success_increments"
+  ],
+  "PASS_TO_PASS": [],
+  "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0001:v1",
+  "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0001:v1-sol",
+  "verify_script": "/task/verify.sh",
+  "generated_by": {
+    "model": "deepseek-v4-pro-202606",
+    "agent": "agent1",
+    "ts": "2026-08-21T14:01:41.902656+00:00",
+    "prompt_version": "module-v1",
+    "input_tokens": 13698,
+    "output_tokens": 46694
+  },
+  "validation": {
+    "local_sanity_passed": true,
+    "local_duration_sec": 3.431828737258911,
+    "sandbox_tool": null,
+    "sandbox_instance_id": null,
+    "empty_solution_result": null,
+    "golden_solution_result": null,
+    "deterministic": true,
+    "duration_sec": null,
+    "llm_attempt": {
+      "solvable": true,
+      "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据",
+      "first_pass_attempt": 1,
+      "difficulty_signal": "easy_for_llm",
+      "n_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "passed": true,
+          "f2p": "6/6",
+          "p2p": "0/0",
+          "error": null
+        }
+      ]
+    },
+    "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0001"
+  },
+  "overlap_check": {
+    "passed": false,
+    "method": "github_search+bm25+embedding+llm_judge",
+    "queried": [],
+    "top_candidates": [],
+    "target_file_last_modified": null,
+    "months_since_last_change": null,
+    "verdict_reason": null
+  },
+  "reject_reason": null
+}

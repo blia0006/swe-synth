@@ -3,30 +3,25 @@
   "repo": "john-kurkowski/tldextract",
   "base_commit": "72d37955ae5ba86267fd68c97b56866bd04c3ce9",
   "language": "python",
-  "task_type": "refactoring",
-  "symbol": "main",
+  "task_type": "module_addition",
+  "symbol": "tldextract/idna_utils.py",
   "test_cmd": "pytest tests/ -q",
   "FAIL_TO_PASS": [
-    "tests/test_refactor_guard_swe_synth_0022.py::test_no_new_monolithic_function",
-    "tests/test_refactor_guard_swe_synth_0022.py::test_target_function_complexity_reduced",
-    "tests/test_refactor_guard_swe_synth_0022.py::test_target_function_is_simplified"
+    "tests/test_idna_utils_synth.py::test_to_ascii_ascii_domain_unchanged",
+    "tests/test_idna_utils_synth.py::test_to_ascii_empty_hostname",
+    "tests/test_idna_utils_synth.py::test_to_ascii_invalid_characters",
+    "tests/test_idna_utils_synth.py::test_to_ascii_strips_trailing_dot_and_lowercases",
+    "tests/test_idna_utils_synth.py::test_to_ascii_unicode_domain",
+    "tests/test_idna_utils_synth.py::test_to_unicode_ascii_domain_unchanged",
+    "tests/test_idna_utils_synth.py::test_to_unicode_punycode_domain",
+    "tests/test_idna_utils_synth.py::test_to_unicode_strips_trailing_dot_and_lowercases"
   ],
-  "PASS_TO_PASS": [
-    "tests/cli_test.py::test_cli_json_output",
-    "tests/cli_test.py::test_cli_namedargs",
-    "tests/cli_test.py::test_cli_no_input",
-    "tests/cli_test.py::test_cli_parses_args",
-    "tests/cli_test.py::test_cli_posargs",
-    "tests/test_refactor_guard_swe_synth_0022.py::test_signature_unchanged",
-    "tests/test_release.py::test_happy_path"
-  ],
+  "PASS_TO_PASS": [],
   "modified_files": [
-    "tldextract/cli.py"
+    "tldextract/idna_utils.py"
   ],
   "do_not_modify": [
-    "tests/cli_test.py",
-    "tests/test_refactor_guard_swe_synth_0022.py",
-    "tests/test_release.py"
+    "tests/test_idna_utils_synth.py"
   ],
   "workspace": "/workspace/repo",
   "python": "/opt/venv311/bin/python"

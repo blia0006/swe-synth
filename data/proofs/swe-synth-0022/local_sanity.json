@@ -2,29 +2,26 @@
   "ok": true,
   "reason": "双向 sanity 通过：题目态必红、golden 态必绿、原有用例未被破坏",
   "fail_to_pass": [
-    "tests/test_refactor_guard_swe_synth_0022.py::test_no_new_monolithic_function",
-    "tests/test_refactor_guard_swe_synth_0022.py::test_target_function_complexity_reduced",
-    "tests/test_refactor_guard_swe_synth_0022.py::test_target_function_is_simplified"
+    "tests/test_idna_utils_synth.py::test_to_ascii_ascii_domain_unchanged",
+    "tests/test_idna_utils_synth.py::test_to_ascii_empty_hostname",
+    "tests/test_idna_utils_synth.py::test_to_ascii_invalid_characters",
+    "tests/test_idna_utils_synth.py::test_to_ascii_strips_trailing_dot_and_lowercases",
+    "tests/test_idna_utils_synth.py::test_to_ascii_unicode_domain",
+    "tests/test_idna_utils_synth.py::test_to_unicode_ascii_domain_unchanged",
+    "tests/test_idna_utils_synth.py::test_to_unicode_punycode_domain",
+    "tests/test_idna_utils_synth.py::test_to_unicode_strips_trailing_dot_and_lowercases"
   ],
-  "pass_to_pass": [
-    "tests/cli_test.py::test_cli_json_output",
-    "tests/cli_test.py::test_cli_namedargs",
-    "tests/cli_test.py::test_cli_no_input",
-    "tests/cli_test.py::test_cli_parses_args",
-    "tests/cli_test.py::test_cli_posargs",
-    "tests/test_refactor_guard_swe_synth_0022.py::test_signature_unchanged",
-    "tests/test_release.py::test_happy_path"
-  ],
+  "pass_to_pass": [],
   "deterministic": true,
-  "duration_sec": 1.7,
+  "duration_sec": 16.77,
   "stub_summary": {
     "returncode": 1,
-    "n_passed": 7,
-    "n_failed": 3
+    "n_passed": 0,
+    "n_failed": 9
   },
   "golden_summary": {
-    "returncode": 0,
-    "n_passed": 10,
-    "n_failed": 0
+    "returncode": 1,
+    "n_passed": 8,
+    "n_failed": 1
   }
 }

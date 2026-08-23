@@ -1,101 +1,86 @@
-  '''Initialize an empty tracker.'''
->       raise NotImplementedError
-E       NotImplementedError
+f(3, degree=-1)
 
-tenacity/retry_stats.py:18: NotImplementedError
-_____________________ test_record_attempt_invalid_outcome ______________________
-
-    def test_record_attempt_invalid_outcome():
->       tracker = RetryStatsTracker()
-                  ^^^^^^^^^^^^^^^^^^^
-
-tests/test_retry_stats_synth.py:66: 
+tests/test_backoff_policies_synth.py:62: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <tenacity.retry_stats.RetryStatsTracker object at 0x106e71a50>
+max_attempts = 3, initial = 1.0, degree = -1, coefficient = 1.0
 
-    def __init__(self) -> None:
-        '''Initialize an empty tracker.'''
->       raise NotImplementedError
-E       NotImplementedError
+    def polynomial_backoff(
+        max_attempts: int,
+        initial: float = 1.0,
+        degree: int = 2,
+        coefficient: float = 1.0,
+    ) -> List[float]:
+        """Generate a polynomial backoff sequence.
+    
+        The k-th element (1-indexed) is computed as::
+    
+            initial + coefficient * (k ** degree)
+    
+        :param max_attempts: Number of attempts to generate. Must be a
+            non-negative integer.
+        :param initial: Constant offset added to every element.
+        :param degree: Exponent for the polynomial term. Must be a
+            non-negative integer.
+        :param coefficient: Multiplicative factor for the polynomial term.
+        :return: A list of floats representing the backoff sequence.
+        :raises TypeError: If `max_attempts` or `degree` is not an integer.
+        :raises ValueError: If `max_attempts` is negative or `degree` is
+            negative.
+        """
+>       raise NotImplementedError("polynomial_backoff not implemented")
+E       NotImplementedError: polynomial_backoff not implemented
 
-tenacity/retry_stats.py:18: NotImplementedError
-_____________________ test_record_attempt_invalid_duration _____________________
+tenacity/backoff_policies.py:57: NotImplementedError
+______________________ test_polynomial_non_integer_degree ______________________
 
-    def test_record_attempt_invalid_duration():
->       tracker = RetryStatsTracker()
-                  ^^^^^^^^^^^^^^^^^^^
+    def test_polynomial_non_integer_degree():
+        """Test polynomial backoff with non-integer degree raises TypeError."""
+        with pytest.raises(TypeError):
+>           polynomial_backoff(3, degree=1.5)
 
-tests/test_retry_stats_synth.py:72: 
+tests/test_backoff_policies_synth.py:68: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <tenacity.retry_stats.RetryStatsTracker object at 0x107189550>
+max_attempts = 3, initial = 1.0, degree = 1.5, coefficient = 1.0
 
-    def __init__(self) -> None:
-        '''Initialize an empty tracker.'''
->       raise NotImplementedError
-E       NotImplementedError
+    def polynomial_backoff(
+        max_attempts: int,
+        initial: float = 1.0,
+        degree: int = 2,
+        coefficient: float = 1.0,
+    ) -> List[float]:
+        """Generate a polynomial backoff sequence.
+    
+        The k-th element (1-indexed) is computed as::
+    
+            initial + coefficient * (k ** degree)
+    
+        :param max_attempts: Number of attempts to generate. Must be a
+            non-negative integer.
+        :param initial: Constant offset added to every element.
+        :param degree: Exponent for the polynomial term. Must be a
+            non-negative integer.
+        :param coefficient: Multiplicative factor for the polynomial term.
+        :return: A list of floats representing the backoff sequence.
+        :raises TypeError: If `max_attempts` or `degree` is not an integer.
+        :raises ValueError: If `max_attempts` is negative or `degree` is
+            negative.
+        """
+>       raise NotImplementedError("polynomial_backoff not implemented")
+E       NotImplementedError: polynomial_backoff not implemented
 
-tenacity/retry_stats.py:18: NotImplementedError
-______________ test_record_attempt_invalid_error_type_for_success ______________
-
-    def test_record_attempt_invalid_error_type_for_success():
->       tracker = RetryStatsTracker()
-                  ^^^^^^^^^^^^^^^^^^^
-
-tests/test_retry_stats_synth.py:78: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <tenacity.retry_stats.RetryStatsTracker object at 0x10717c8d0>
-
-    def __init__(self) -> None:
-        '''Initialize an empty tracker.'''
->       raise NotImplementedError
-E       NotImplementedError
-
-tenacity/retry_stats.py:18: NotImplementedError
-______________ test_record_attempt_invalid_error_type_for_failure ______________
-
-    def test_record_attempt_invalid_error_type_for_failure():
->       tracker = RetryStatsTracker()
-                  ^^^^^^^^^^^^^^^^^^^
-
-tests/test_retry_stats_synth.py:84: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <tenacity.retry_stats.RetryStatsTracker object at 0x107189050>
-
-    def __init__(self) -> None:
-        '''Initialize an empty tracker.'''
->       raise NotImplementedError
-E       NotImplementedError
-
-tenacity/retry_stats.py:18: NotImplementedError
-___________________ test_record_success_and_failure_wrappers ___________________
-
-    def test_record_success_and_failure_wrappers():
->       tracker = RetryStatsTracker()
-                  ^^^^^^^^^^^^^^^^^^^
-
-tests/test_retry_stats_synth.py:92: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <tenacity.retry_stats.RetryStatsTracker object at 0x107191d10>
-
-    def __init__(self) -> None:
-        '''Initialize an empty tracker.'''
->       raise NotImplementedError
-E       NotImplementedError
-
-tenacity/retry_stats.py:18: NotImplementedError
+tenacity/backoff_policies.py:57: NotImplementedError
 =========================== short test summary info ============================
-FAILED tests/test_retry_stats_synth.py::test_initial_summary_is_empty - NotIm...
-FAILED tests/test_retry_stats_synth.py::test_record_success_updates_counts - ...
-FAILED tests/test_retry_stats_synth.py::test_record_failure_updates_counts_and_errors
-FAILED tests/test_retry_stats_synth.py::test_mixed_attempts - NotImplementedE...
-FAILED tests/test_retry_stats_synth.py::test_record_attempt_invalid_outcome
-FAILED tests/test_retry_stats_synth.py::test_record_attempt_invalid_duration
-FAILED tests/test_retry_stats_synth.py::test_record_attempt_invalid_error_type_for_success
-FAILED tests/test_retry_stats_synth.py::test_record_attempt_invalid_error_type_for_failure
-FAILED tests/test_retry_stats_synth.py::test_record_success_and_failure_wrappers
-============================== 9 failed in 0.04s ===============================
+FAILED tests/test_backoff_policies_synth.py::test_fibonacci_default_sequence
+FAILED tests/test_backoff_policies_synth.py::test_fibonacci_with_initial_and_multiplier
+FAILED tests/test_backoff_policies_synth.py::test_fibonacci_zero_attempts - N...
+FAILED tests/test_backoff_policies_synth.py::test_fibonacci_negative_max_attempts
+FAILED tests/test_backoff_policies_synth.py::test_fibonacci_non_integer_max_attempts
+FAILED tests/test_backoff_policies_synth.py::test_polynomial_default_sequence
+FAILED tests/test_backoff_policies_synth.py::test_polynomial_degree_zero - No...
+FAILED tests/test_backoff_policies_synth.py::test_polynomial_custom_degree_and_coefficient
+FAILED tests/test_backoff_policies_synth.py::test_zero_attempts_returns_empty_list
+FAILED tests/test_backoff_policies_synth.py::test_polynomial_negative_degree
+FAILED tests/test_backoff_policies_synth.py::test_polynomial_non_integer_degree
+============================== 11 failed in 0.07s ==============================

@@ -1,47 +1,92 @@
-onor_no_color_standard[__stderr__--True] PASSED [ 46%]
-tests/test_colorama.py::test_honor_no_color_standard[stdout--True] PASSED [ 48%]
-tests/test_colorama.py::test_honor_no_color_standard[stderr--True] PASSED [ 49%]
-tests/test_colorama.py::test_honor_no_color_standard[--True] PASSED      [ 50%]
-tests/test_colorama.py::test_honor_force_color_standard[__stdout__-1-True] PASSED [ 51%]
-tests/test_colorama.py::test_honor_force_color_standard[__stderr__-1-True] PASSED [ 53%]
-tests/test_colorama.py::test_honor_force_color_standard[stdout-1-True] PASSED [ 54%]
-tests/test_colorama.py::test_honor_force_color_standard[stderr-1-True] PASSED [ 55%]
-tests/test_colorama.py::test_honor_force_color_standard[-1-False] PASSED [ 56%]
-tests/test_colorama.py::test_honor_force_color_standard[__stdout__--False] PASSED [ 57%]
-tests/test_colorama.py::test_honor_force_color_standard[__stderr__--False] PASSED [ 59%]
-tests/test_colorama.py::test_honor_force_color_standard[stdout--False] PASSED [ 60%]
-tests/test_colorama.py::test_honor_force_color_standard[stderr--False] PASSED [ 61%]
-tests/test_colorama.py::test_honor_force_color_standard[--False] PASSED  [ 62%]
-tests/test_colorama.py::test_no_color_takes_precedence_over_force_color PASSED [ 63%]
-tests/test_colorama.py::test_mintty_not_fixed_linux[__stdout__-False] PASSED [ 65%]
-tests/test_colorama.py::test_mintty_not_fixed_linux[__stderr__-False] PASSED [ 66%]
-tests/test_colorama.py::test_mintty_not_fixed_linux[stdout-False] PASSED [ 67%]
-tests/test_colorama.py::test_mintty_not_fixed_linux[stderr-False] PASSED [ 68%]
-tests/test_colorama.py::test_mintty_not_fixed_linux[-False] PASSED       [ 69%]
-tests/test_colorama.py::test_jupyter_fixed[stdout-StreamIsattyFalse-True] PASSED [ 71%]
-tests/test_colorama.py::test_jupyter_fixed[stderr-StreamIsattyFalse-True] PASSED [ 72%]
-tests/test_colorama.py::test_jupyter_fixed[__stdout__-StreamIsattyFalse-False] PASSED [ 73%]
-tests/test_colorama.py::test_jupyter_fixed[__stderr__-StreamIsattyFalse-False] PASSED [ 74%]
-tests/test_colorama.py::test_jupyter_fixed[stdout-StreamIsattyTrue-False] PASSED [ 75%]
-tests/test_colorama.py::test_jupyter_fixed[stderr-StreamIsattyTrue-False] PASSED [ 77%]
-tests/test_colorama.py::test_jupyter_fixed[-StreamIsattyFalse-False] PASSED [ 78%]
-tests/test_colorama.py::test_jupyter_missing_lib PASSED                  [ 79%]
-tests/test_colorama.py::test_dont_wrap_on_linux[__stdout__] PASSED       [ 80%]
-tests/test_colorama.py::test_dont_wrap_on_linux[__stderr__] PASSED       [ 81%]
-tests/test_colorama.py::test_dont_wrap_if_not_original_stdout_or_stderr[stdout] SKIPPED [ 83%]
-tests/test_colorama.py::test_dont_wrap_if_not_original_stdout_or_stderr[stderr] SKIPPED [ 84%]
-tests/test_colorama.py::test_dont_wrap_if_not_original_stdout_or_stderr[] SKIPPED [ 85%]
-tests/test_colorama.py::test_dont_wrap_if_terminal_has_vt_support[__stdout__] SKIPPED [ 86%]
-tests/test_colorama.py::test_dont_wrap_if_terminal_has_vt_support[__stderr__] SKIPPED [ 87%]
-tests/test_colorama.py::test_dont_wrap_if_winapi_false[__stdout__] SKIPPED [ 89%]
-tests/test_colorama.py::test_dont_wrap_if_winapi_false[__stderr__] SKIPPED [ 90%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_no_vt_support[__stdout__] SKIPPED [ 91%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_no_vt_support[__stderr__] SKIPPED [ 92%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_vt_check_fails[__stdout__] SKIPPED [ 93%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_vt_check_fails[__stderr__] SKIPPED [ 95%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_stream_has_no_fileno[__stdout__] SKIPPED [ 96%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_stream_has_no_fileno[__stderr__] SKIPPED [ 97%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_old_colorama_version[__stdout__] SKIPPED [ 98%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_old_colorama_version[__stderr__] SKIPPED [100%]
+e either a non-negative integer number of seconds or an
+        HTTP-date. If the value is a date in the past, the delay is 0.0.
+        If the value cannot be parsed, None is returned.
+        '''
+        stripped = value.strip()
+        if not stripped:
+            return None
+    
+        if stripped.isdigit():
+            return float(int(stripped))
+    
+        parsed = parsedate_to_datetime(stripped)
+        if parsed is None:
+            return None
+    
+>       delta = parsed - now
+                ^^^^^^^^^^^^
+E       TypeError: can't subtract offset-naive and offset-aware datetimes
 
-======================== 59 passed, 24 skipped in 0.05s ========================
+tenacity/retry_after.py:24: TypeError
+______________ test_parse_retry_after_invalid_string_returns_none ______________
+
+    def test_parse_retry_after_invalid_string_returns_none():
+        now = datetime.datetime(2023, 1, 1, 0, 0, 0)
+>       assert parse_retry_after('not-a-date-or-seconds', now) is None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_retry_after_synth.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tenacity/retry_after.py:20: in parse_retry_after
+    parsed = parsedate_to_datetime(stripped)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+data = 'not-a-date-or-seconds'
+
+    def parsedate_to_datetime(data):
+        parsed_date_tz = _parsedate_tz(data)
+        if parsed_date_tz is None:
+>           raise ValueError('Invalid date value or format "%s"' % str(data))
+E           ValueError: Invalid date value or format "not-a-date-or-seconds"
+
+/root/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/email/utils.py:316: ValueError
+_________________ test_retry_after_delay_returns_parsed_value __________________
+
+    def test_retry_after_delay_returns_parsed_value():
+        now = datetime.datetime(2023, 1, 1, 0, 0, 0)
+        headers = {'RETRY-AFTER': 'Sun, 01 Jan 2023 00:00:30 GMT'}
+>       assert retry_after_delay(headers, now) == 30.0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_retry_after_synth.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tenacity/retry_after.py:36: in retry_after_delay
+    return parse_retry_after(value, now)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = 'Sun, 01 Jan 2023 00:00:30 GMT'
+now = datetime.datetime(2023, 1, 1, 0, 0)
+
+    def parse_retry_after(value: str, now: datetime) -> float | None:
+        '''Parse a Retry-After header value and return the retry delay in seconds.
+    
+        The value may be either a non-negative integer number of seconds or an
+        HTTP-date. If the value is a date in the past, the delay is 0.0.
+        If the value cannot be parsed, None is returned.
+        '''
+        stripped = value.strip()
+        if not stripped:
+            return None
+    
+        if stripped.isdigit():
+            return float(int(stripped))
+    
+        parsed = parsedate_to_datetime(stripped)
+        if parsed is None:
+            return None
+    
+>       delta = parsed - now
+                ^^^^^^^^^^^^
+E       TypeError: can't subtract offset-naive and offset-aware datetimes
+
+tenacity/retry_after.py:24: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_negative_digit_returns_none
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_float_string_returns_none
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_future_http_date
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_past_http_date_returns_zero
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_invalid_string_returns_none
+FAILED tests/test_retry_after_synth.py::test_retry_after_delay_returns_parsed_value
+========================= 6 failed, 4 passed in 0.07s ==========================

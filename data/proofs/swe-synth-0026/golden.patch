@@ -1,32 +1,81 @@
---- a/src/itsdangerous/timed.py
-+++ b/src/itsdangerous/timed.py
-@@ -196,7 +196,28 @@
-         raised. All arguments are forwarded to the signer's
-         :meth:`~TimestampSigner.unsign` method.
-         """
--        raise NotImplementedError("TODO: implement this function")
-+        s = want_bytes(s)
-+        last_exception = None
-+
-+        for signer in self.iter_unsigners(salt):
-+            try:
-+                base64d, timestamp = signer.unsign(
-+                    s, max_age=max_age, return_timestamp=True
-+                )
-+                payload = self.load_payload(base64d)
-+
-+                if return_timestamp:
-+                    return payload, timestamp
-+
-+                return payload
-+            except SignatureExpired:
-+                # The signature was unsigned successfully but was
-+                # expired. Do not try the next signer.
-+                raise
-+            except BadSignature as err:
-+                last_exception = err
-+
-+        raise t.cast(BadSignature, last_exception)
+--- a/cachecontrol/serialize.py
++++ b/cachecontrol/serialize.py
+@@ -28,34 +28,10 @@
+         )
  
-     def loads_unsafe(  # type: ignore[override]
-         self,
+         if body is None:
+-            # When a body isn't passed in, we'll read the response. We
+-            # also update the response with a new file handler to be
+-            # sure it acts as though it was never read.
+-            body = response.read(decode_content=False)
+-            response._fp = io.BytesIO(body)  # type: ignore[assignment]
+-            response.length_remaining = len(body)
++            body = _read_response_body(response)
+ 
+-        data = {
+-            "response": {
+-                "body": body,  # Empty bytestring if body is stored separately
+-                "headers": {str(k): str(v) for k, v in response.headers.items()},
+-                "status": response.status,
+-                "version": response.version,
+-                "reason": str(response.reason),
+-                "decode_content": response.decode_content,
+-            }
+-        }
+-
+-        # Construct our vary headers
+-        data["vary"] = {}
+-        if "vary" in response_headers:
+-            varied_headers = response_headers["vary"].split(",")
+-            for header in varied_headers:
+-                header = str(header).strip()
+-                header_value = request.headers.get(header, None)
+-                if header_value is not None:
+-                    header_value = str(header_value)
+-                data["vary"][header] = header_value
++        data = _build_response_data(response, body)
++        data["vary"] = _build_vary_data(request, response_headers)
+ 
+         return b",".join([f"cc={self.serde_version}".encode(), self.serialize(data)])
+ 
+@@ -144,3 +120,40 @@
+             return None
+ 
+         return self.prepare_response(request, cached, body_file)
++
++
++def _read_response_body(response: HTTPResponse) -> bytes:
++    body = response.read(decode_content=False)
++    response._fp = io.BytesIO(body)  # type: ignore[assignment]
++    response.length_remaining = len(body)
++    return body
++
++
++def _build_response_data(response: HTTPResponse, body: bytes) -> dict[str, Any]:
++    return {
++        "response": {
++            "body": body,
++            "headers": {str(k): str(v) for k, v in response.headers.items()},
++            "status": response.status,
++            "version": response.version,
++            "reason": str(response.reason),
++            "decode_content": response.decode_content,
++        }
++    }
++
++
++def _build_vary_data(
++    request: PreparedRequest, response_headers: Mapping[str, str]
++) -> dict[str, str | None]:
++    vary: dict[str, str | None] = {}
++    if "vary" not in response_headers:
++        return vary
++
++    varied_headers = response_headers["vary"].split(",")
++    for header in varied_headers:
++        header = str(header).strip()
++        header_value = request.headers.get(header, None)
++        if header_value is not None:
++            header_value = str(header_value)
++        vary[header] = header_value
++    return vary

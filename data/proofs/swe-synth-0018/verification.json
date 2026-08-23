@@ -2,47 +2,48 @@
   "task_id": "swe-synth-0018",
   "passed": true,
   "reason": "双向验证通过：空解失败（题目有内容）、参考解通过（题目可解）",
-  "empty_sandbox_id": "jfuwfeiy47g7k2mveboixnb2bvzopr33qbuz76hd",
-  "golden_sandbox_id": "ifhsh4zrda3ka4n77tkngjntmd24f745xkhjuefd",
+  "empty_sandbox_id": "kw5cdxurxbiqrvh377hrs6sbnsvbmdhh5z5yvecv",
+  "golden_sandbox_id": "k4dhd65sjbgf27drjvumj73vtz2heniytomqpwhk",
   "empty_run": {
     "task_id": "swe-synth-0018",
     "passed": false,
     "fail_to_pass": {
-      "total": 3,
+      "total": 4,
       "passed": 0,
       "failing": [
-        "tests/test_refactor_guard_swe_synth_0018.py::test_no_new_monolithic_function",
-        "tests/test_refactor_guard_swe_synth_0018.py::test_target_function_complexity_reduced",
-        "tests/test_refactor_guard_swe_synth_0018.py::test_target_function_is_simplified"
+        "tests/test_retry_after_synth.py::test_parse_retry_after_positive_digit",
+        "tests/test_retry_after_synth.py::test_parse_retry_after_zero_digit",
+        "tests/test_retry_after_synth.py::test_retry_after_delay_ignores_case",
+        "tests/test_retry_after_synth.py::test_retry_after_delay_missing_header_returns_none"
       ]
     },
     "pass_to_pass": {
-      "total": 56,
-      "passed": 56,
+      "total": 0,
+      "passed": 0,
       "failing": []
     },
     "collect_error": false,
     "pytest_returncode": 1,
-    "n_collected": 83,
+    "n_collected": 10,
     "raw_log_path": "/task/pytest_raw.log"
   },
   "golden_run": {
     "task_id": "swe-synth-0018",
     "passed": true,
     "fail_to_pass": {
-      "total": 3,
-      "passed": 3,
+      "total": 4,
+      "passed": 4,
       "failing": []
     },
     "pass_to_pass": {
-      "total": 56,
-      "passed": 56,
+      "total": 0,
+      "passed": 0,
       "failing": []
     },
     "collect_error": false,
-    "pytest_returncode": 0,
-    "n_collected": 83,
+    "pytest_returncode": 1,
+    "n_collected": 10,
     "raw_log_path": "/task/pytest_raw.log"
   },
-  "duration_sec": 207.4
+  "duration_sec": 81.7
 }

@@ -1,1 +1,84 @@
-{"task_id": "swe-synth-0009", "task_type": "module_addition", "difficulty": "easy", "state": "LOCAL_OK", "repo": "john-kurkowski/tldextract", "repo_stars": 2000, "base_commit": "72d37955ae5ba86267fd68c97b56866bd04c3ce9", "language": "python", "problem_statement": "## 背景与上下文\n\ntldextract 是一个从 URL 和域名中提取子域、注册域和公共后缀的库。在提取过程中，经常需要对域名进行预处理，例如去除尾随点、统一小写、将国际化域名（IDN）转换为 ASCII（Punycode），以及校验域名是否符合 DNS 主机名规则。目前项目还缺少一个独立的、可复用的域名处理工具模块。本题目要求新增一个纯逻辑模块，提供域名的规范化、拆分和有效性检查，以辅助后续的域名提取和分析。\n\n## 需要实现的功能\n\n在 `tldextract/domain_utils.py` 中实现三个公开函数：\n\n- `normalize_domain(domain: str) -> str`\n- `split_domain(domain: str) -> list[str]`\n- `is_valid_domain(domain: str) -> bool`\n\n该模块不进行任何网络请求、文件读写、随机数、时间获取或其他 I/O 操作，仅对传入的字符串进行纯内存处理。实现时只能使用 Python 标准库和项目已有的 `idna` 依赖。\n\n## 输入\n\n- `normalize_domain(domain: str)`：`domain` 是一个可能包含 Unicode 字符和尾随点的域名字符串。如果传入的不是字符串，应抛出 `TypeError`。\n- `split_domain(domain: str)`：`domain` 是一个域名字符串，可以为空或包含任意字符。如果传入的不是字符串，应抛出 `TypeError`。\n- `is_valid_domain(domain: str)`：`domain` 是一个域名字符串，可以为空或包含任意字符。如果传入的不是字符串，应抛出 `TypeError`（内部调用的 `normalize_domain` 会抛出该异常）。\n\n## 输出\n\n- `normalize_domain` 返回规范化后的 ASCII 小写域名，且不包含任何尾随点。如果输入是空字符串或仅由点组成（例如 `\"\"`、`\".\"`、`\"...\"`），则返回空字符串 `\"\"`。如果输入包含无法通过 IDNA 编码的非法字符（例如空字符 `\\u0000`），则抛出 `ValueError`。\n- `split_domain` 返回一个字符串列表，表示域名拆分后的标签。如果规范化后的域名为空字符串，则返回空列表 `[]`；否则返回按 `.` 拆分后的列表。该列表可能包含空字符串，例如当域名中存在连续点（`\"example..com\"`）或开头点（`\".example.com\"`）时。`split_domain` 不做有效性检查，也不过滤空标签。\n- `is_valid_domain` 返回布尔值 `True` 或 `False`。如果域名有效，返回 `True`；否则返回 `False`。对于 `normalize_domain` 抛出的 `ValueError`，`is_valid_domain` 会捕获并返回 `False`；但不会捕获 `TypeError`，因此非字符串输入会传播 `TypeError`。\n\n## 预期行为\n\n1. **尾随点处理**：`normalize_domain(\"example.com.\")` 返回 `\"example.com\"`；多个尾随点如 `\"example.com...\"` 也会被全部去除。\n2. **空输入处理**：`normalize_domain(\"\")` 返回 `\"\"`；`normalize_domain(\"...\")` 返回 `\"\"`；`split_domain(\"\")` 返回 `[]`；`is_valid_domain(\"\")` 返回 `False`；`is_valid_domain(\".\")` 返回 `False`。\n3. **大小写归一化**：`normalize_domain(\"WWW.Example.COM\")` 返回 `\"www.example.com\"`。\n4. **IDN 转换**：`normalize_domain(\"bücher.example\")` 返回 `\"xn--bcher-kva.example\"`；`is_valid_domain(\"bücher.example\")` 返回 `True`。\n5. **非法字符处理**：`normalize_domain` 对包含无法 IDNA 编码的字符（如空字符 `\\u0000`）的域名抛出 `ValueError`；`is_valid_domain` 捕获该异常并返回 `False`。\n6. **域名拆分**：`split_domain(\"www.example.com\")` 返回 `[\"www\", \"example\", \"com\"]`；`split_domain(\"example.com.\")` 返回 `[\"example\", \"com\"]`；`split_domain(\".example.com\")` 返回 `[\"\", \"example\", \"com\"]`；`split_domain(\"example..com\")` 返回 `[\"example\", \"\", \"com\"]`。\n7. **有效域名判断**：以下域名应返回 `True`：`\"example.com\"`、`\"localhost\"`、`\"foo-bar.example.com\"`。\n8. **无效域名判断**：以下域名应返回 `False`：空字符串、仅由点组成的字符串、以连字符开头或结尾的标签（如 `\"-example.com\"`、`\"example.com-\"`）、包含连续点（`\"example..com\"`）、包含下划线（`\"exa_mple.com\"`）、标签长度超过 63 个字符或整体长度超过 253 个字符、标签包含非法字符（如空格）。其中，连续点和下划线等非法字符在 `normalize_domain` 后仍保留，后续校验会返回 `False`。\n9. **类型错误**：`normalize_domain`、`split_domain`、`is_valid_domain` 对非字符串输入（如 `None`、整数）会抛出 `TypeError`。\n\n## 约束条件\n\n- 新模块路径必须为 `tldextract/domain_utils.py`，不得修改项目任何现有文件。\n- 不得修改任何测试文件。\n- 不得引入新的第三方依赖；只能使用 Python 标准库和项目已有依赖 `idna`。\n- 代码必须为纯逻辑，不得包含网络请求、文件读写、随机数、时间获取、子进程等副作用。", "hints": null, "modified_files": ["tldextract/domain_utils.py"], "do_not_modify": ["tests/test_domain_utils_synth.py"], "test_cmd": "pytest tests/ -q", "FAIL_TO_PASS": ["tests/test_domain_utils_synth.py::test_is_valid_domain_idna", "tests/test_domain_utils_synth.py::test_is_valid_domain_invalid", "tests/test_domain_utils_synth.py::test_is_valid_domain_valid", "tests/test_domain_utils_synth.py::test_normalize_domain_empty_and_dots", "tests/test_domain_utils_synth.py::test_normalize_domain_idna", "tests/test_domain_utils_synth.py::test_normalize_domain_invalid_unicode", "tests/test_domain_utils_synth.py::test_normalize_domain_lowercase_no_trailing_dot"], "PASS_TO_PASS": [], "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0009:v1", "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0009:v1-sol", "verify_script": "/task/verify.sh", "generated_by": {"model": "deepseek-v4-pro-202606", "agent": "agent1", "ts": "2026-08-21T20:57:10.513745+00:00", "prompt_version": "module-v1", "input_tokens": 414303, "output_tokens": 1918570}, "validation": {"local_sanity_passed": true, "local_duration_sec": 12.32383418083191, "sandbox_tool": null, "sandbox_instance_id": null, "empty_solution_result": null, "golden_solution_result": null, "deterministic": true, "duration_sec": null, "llm_attempt": {"solvable": true, "reason": "题干准确：LLM 第 2 次尝试即依据题干完成任务并通过全部判据", "first_pass_attempt": 2, "difficulty_signal": "moderate", "n_attempts": 2, "attempts": [{"attempt": 1, "passed": false, "f2p": "6/7", "p2p": "0/0", "error": "AssertionError: assert 'WWW.Example.COM' == 'www.example.com'"}, {"attempt": 2, "passed": true, "f2p": "7/7", "p2p": "0/0", "error": null}]}, "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0009"}, "overlap_check": {"passed": false, "method": "github_search+bm25+embedding+llm_judge", "queried": [], "top_candidates": [], "target_file_last_modified": null, "months_since_last_change": null, "verdict_reason": null}, "reject_reason": null}
+{
+  "task_id": "swe-synth-0009",
+  "task_type": "module_addition",
+  "difficulty": "easy",
+  "state": "LOCAL_OK",
+  "repo": "john-kurkowski/tldextract",
+  "repo_stars": 2000,
+  "base_commit": "72d37955ae5ba86267fd68c97b56866bd04c3ce9",
+  "language": "python",
+  "problem_statement": "## 背景与上下文\n\ntldextract 是一个从 URL 和域名中提取子域、注册域和公共后缀的库。在提取过程中，经常需要对域名进行预处理，例如去除尾随点、统一小写、将国际化域名（IDN）转换为 ASCII（Punycode），以及校验域名是否符合 DNS 主机名规则。目前项目还缺少一个独立的、可复用的域名处理工具模块。本题目要求新增一个纯逻辑模块，提供域名的规范化、拆分和有效性检查，以辅助后续的域名提取和分析。\n\n## 需要实现的功能\n\n在 `tldextract/domain_utils.py` 中实现三个公开函数：\n\n- `normalize_domain(domain: str) -> str`\n- `split_domain(domain: str) -> list[str]`\n- `is_valid_domain(domain: str) -> bool`\n\n该模块不进行任何网络请求、文件读写、随机数、时间获取或其他 I/O 操作，仅对传入的字符串进行纯内存处理。实现时只能使用 Python 标准库和项目已有的 `idna` 依赖。\n\n## 输入\n\n- `normalize_domain(domain: str)`：`domain` 是一个可能包含 Unicode 字符和尾随点的域名字符串。如果传入的不是字符串，应抛出 `TypeError`。\n- `split_domain(domain: str)`：`domain` 是一个域名字符串，可以为空或包含任意字符。如果传入的不是字符串，应抛出 `TypeError`。\n- `is_valid_domain(domain: str)`：`domain` 是一个域名字符串，可以为空或包含任意字符。如果传入的不是字符串，应抛出 `TypeError`（内部调用的 `normalize_domain` 会抛出该异常）。\n\n## 输出\n\n- `normalize_domain` 返回规范化后的 ASCII 小写域名，且不包含任何尾随点。如果输入是空字符串或仅由点组成（例如 `\"\"`、`\".\"`、`\"...\"`），则返回空字符串 `\"\"`。如果输入包含无法通过 IDNA 编码的非法字符（例如空字符 `\\u0000`），则抛出 `ValueError`。\n- `split_domain` 返回一个字符串列表，表示域名拆分后的标签。如果规范化后的域名为空字符串，则返回空列表 `[]`；否则返回按 `.` 拆分后的列表。该列表可能包含空字符串，例如当域名中存在连续点（`\"example..com\"`）或开头点（`\".example.com\"`）时。`split_domain` 不做有效性检查，也不过滤空标签。\n- `is_valid_domain` 返回布尔值 `True` 或 `False`。如果域名有效，返回 `True`；否则返回 `False`。对于 `normalize_domain` 抛出的 `ValueError`，`is_valid_domain` 会捕获并返回 `False`；但不会捕获 `TypeError`，因此非字符串输入会传播 `TypeError`。\n\n## 预期行为\n\n1. **尾随点处理**：`normalize_domain(\"example.com.\")` 返回 `\"example.com\"`；多个尾随点如 `\"example.com...\"` 也会被全部去除。\n2. **空输入处理**：`normalize_domain(\"\")` 返回 `\"\"`；`normalize_domain(\"...\")` 返回 `\"\"`；`split_domain(\"\")` 返回 `[]`；`is_valid_domain(\"\")` 返回 `False`；`is_valid_domain(\".\")` 返回 `False`。\n3. **大小写归一化**：`normalize_domain(\"WWW.Example.COM\")` 返回 `\"www.example.com\"`。\n4. **IDN 转换**：`normalize_domain(\"bücher.example\")` 返回 `\"xn--bcher-kva.example\"`；`is_valid_domain(\"bücher.example\")` 返回 `True`。\n5. **非法字符处理**：`normalize_domain` 对包含无法 IDNA 编码的字符（如空字符 `\\u0000`）的域名抛出 `ValueError`；`is_valid_domain` 捕获该异常并返回 `False`。\n6. **域名拆分**：`split_domain(\"www.example.com\")` 返回 `[\"www\", \"example\", \"com\"]`；`split_domain(\"example.com.\")` 返回 `[\"example\", \"com\"]`；`split_domain(\".example.com\")` 返回 `[\"\", \"example\", \"com\"]`；`split_domain(\"example..com\")` 返回 `[\"example\", \"\", \"com\"]`。\n7. **有效域名判断**：以下域名应返回 `True`：`\"example.com\"`、`\"localhost\"`、`\"foo-bar.example.com\"`。\n8. **无效域名判断**：以下域名应返回 `False`：空字符串、仅由点组成的字符串、以连字符开头或结尾的标签（如 `\"-example.com\"`、`\"example.com-\"`）、包含连续点（`\"example..com\"`）、包含下划线（`\"exa_mple.com\"`）、标签长度超过 63 个字符或整体长度超过 253 个字符、标签包含非法字符（如空格）。其中，连续点和下划线等非法字符在 `normalize_domain` 后仍保留，后续校验会返回 `False`。\n9. **类型错误**：`normalize_domain`、`split_domain`、`is_valid_domain` 对非字符串输入（如 `None`、整数）会抛出 `TypeError`。\n\n## 约束条件\n\n- 新模块路径必须为 `tldextract/domain_utils.py`，不得修改项目任何现有文件。\n- 不得修改任何测试文件。\n- 不得引入新的第三方依赖；只能使用 Python 标准库和项目已有依赖 `idna`。\n- 代码必须为纯逻辑，不得包含网络请求、文件读写、随机数、时间获取、子进程等副作用。",
+  "hints": null,
+  "modified_files": [
+    "tldextract/domain_utils.py"
+  ],
+  "do_not_modify": [
+    "tests/test_domain_utils_synth.py"
+  ],
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_domain_utils_synth.py::test_is_valid_domain_idna",
+    "tests/test_domain_utils_synth.py::test_is_valid_domain_invalid",
+    "tests/test_domain_utils_synth.py::test_is_valid_domain_valid",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_empty_and_dots",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_idna",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_invalid_unicode",
+    "tests/test_domain_utils_synth.py::test_normalize_domain_lowercase_no_trailing_dot"
+  ],
+  "PASS_TO_PASS": [],
+  "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0009:v1",
+  "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0009:v1-sol",
+  "verify_script": "/task/verify.sh",
+  "generated_by": {
+    "model": "deepseek-v4-pro-202606",
+    "agent": "agent1",
+    "ts": "2026-08-21T20:57:10.513745+00:00",
+    "prompt_version": "module-v1",
+    "input_tokens": 414303,
+    "output_tokens": 1918570
+  },
+  "validation": {
+    "local_sanity_passed": true,
+    "local_duration_sec": 12.32383418083191,
+    "sandbox_tool": null,
+    "sandbox_instance_id": null,
+    "empty_solution_result": null,
+    "golden_solution_result": null,
+    "deterministic": true,
+    "duration_sec": null,
+    "llm_attempt": {
+      "solvable": true,
+      "reason": "题干准确：LLM 第 2 次尝试即依据题干完成任务并通过全部判据",
+      "first_pass_attempt": 2,
+      "difficulty_signal": "moderate",
+      "n_attempts": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "passed": false,
+          "f2p": "6/7",
+          "p2p": "0/0",
+          "error": "AssertionError: assert 'WWW.Example.COM' == 'www.example.com'"
+        },
+        {
+          "attempt": 2,
+          "passed": true,
+          "f2p": "7/7",
+          "p2p": "0/0",
+          "error": null
+        }
+      ]
+    },
+    "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0009"
+  },
+  "overlap_check": {
+    "passed": false,
+    "method": "github_search+bm25+embedding+llm_judge",
+    "queried": [],
+    "top_candidates": [],
+    "target_file_last_modified": null,
+    "months_since_last_change": null,
+    "verdict_reason": null
+  },
+  "reject_reason": null
+}

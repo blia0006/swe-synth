@@ -1,0 +1,73 @@
+test_cache_control.py:163: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_cache_control.py:221: in update_cached_response_with_valid_headers_test
+    result = cc.update_cached_response(req, resp)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cachecontrol/controller.py:484: in update_cached_response
+    cached_response = self._load_from_cache(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cachecontrol/controller.py:154: in _load_from_cache
+    cache_data = self.cache.get(cache_url)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <cachecontrol.caches.file_cache.SeparateBodyFileCache object at 0x7f8ebc4aa790>
+key = 'http://localhost:123/x'
+
+    def get(self, key: str) -> bytes | None:
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+cachecontrol/caches/file_cache.py:66: NotImplementedError
+____________ Test39.test_file_cache_recognizes_consumed_file_handle ____________
+
+self = <tests.test_regressions.Test39 object at 0x7f8ebe035c10>
+url = 'http://127.0.0.1:39535/'
+
+    def test_file_cache_recognizes_consumed_file_handle(self, url):
+        s = CacheControl(Session(), FileCache("web_cache"))
+        the_url = url + "cache_60"
+>       s.get(the_url)
+
+tests/test_regressions.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv_swe/lib/python3.11/site-packages/requests/sessions.py:671: in get
+    return self.request("GET", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv_swe/lib/python3.11/site-packages/requests/sessions.py:651: in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv_swe/lib/python3.11/site-packages/requests/sessions.py:784: in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cachecontrol/adapter.py:67: in send
+    cached_response = self.controller.cached_request(request)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cachecontrol/controller.py:189: in cached_request
+    resp = self._load_from_cache(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cachecontrol/controller.py:154: in _load_from_cache
+    cache_data = self.cache.get(cache_url)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <cachecontrol.caches.file_cache.FileCache object at 0x7f8ebe004110>
+key = 'http://127.0.0.1:39535/cache_60'
+
+    def get(self, key: str) -> bytes | None:
+>       raise NotImplementedError("TODO: implement this function")
+E       NotImplementedError: TODO: implement this function
+
+cachecontrol/caches/file_cache.py:66: NotImplementedError
+=========================== short test summary info ============================
+FAILED tests/test_storage_filecache.py::TestFileCache::test_filecache_from_cache
+FAILED tests/test_storage_filecache.py::TestFileCache::test_filecache_directory_not_exists
+FAILED tests/test_storage_filecache.py::TestFileCache::test_filecache_directory_already_exists
+FAILED tests/test_storage_filecache.py::TestFileCache::test_body_stored_inline
+FAILED tests/test_storage_filecache.py::TestSeparateBodyFileCache::test_filecache_from_cache
+FAILED tests/test_storage_filecache.py::TestSeparateBodyFileCache::test_filecache_directory_not_exists
+FAILED tests/test_storage_filecache.py::TestSeparateBodyFileCache::test_filecache_directory_already_exists
+FAILED tests/test_storage_filecache.py::TestSeparateBodyFileCache::test_body_actually_stored_separately
+FAILED tests/test_cache_control.py::TestCacheControllerResponse::test_update_cached_response_with_valid_headers_separate_body
+FAILED tests/test_regressions.py::Test39::test_file_cache_recognizes_consumed_file_handle
+======================== 10 failed, 51 passed in 1.00s =========================

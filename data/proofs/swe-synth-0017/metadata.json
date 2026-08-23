@@ -4,25 +4,27 @@
   "base_commit": "26f719dc73d3c5612b9c1b8d18a7883837790ad8",
   "language": "python",
   "task_type": "module_addition",
-  "symbol": "tenacity/retry_stats.py",
+  "symbol": "tenacity/backoff_policies.py",
   "test_cmd": "pytest tests/ -q",
   "FAIL_TO_PASS": [
-    "tests/test_retry_stats_synth.py::test_initial_summary_is_empty",
-    "tests/test_retry_stats_synth.py::test_mixed_attempts",
-    "tests/test_retry_stats_synth.py::test_record_attempt_invalid_duration",
-    "tests/test_retry_stats_synth.py::test_record_attempt_invalid_error_type_for_failure",
-    "tests/test_retry_stats_synth.py::test_record_attempt_invalid_error_type_for_success",
-    "tests/test_retry_stats_synth.py::test_record_attempt_invalid_outcome",
-    "tests/test_retry_stats_synth.py::test_record_failure_updates_counts_and_errors",
-    "tests/test_retry_stats_synth.py::test_record_success_and_failure_wrappers",
-    "tests/test_retry_stats_synth.py::test_record_success_updates_counts"
+    "tests/test_backoff_policies_synth.py::test_fibonacci_default_sequence",
+    "tests/test_backoff_policies_synth.py::test_fibonacci_negative_max_attempts",
+    "tests/test_backoff_policies_synth.py::test_fibonacci_non_integer_max_attempts",
+    "tests/test_backoff_policies_synth.py::test_fibonacci_with_initial_and_multiplier",
+    "tests/test_backoff_policies_synth.py::test_fibonacci_zero_attempts",
+    "tests/test_backoff_policies_synth.py::test_polynomial_custom_degree_and_coefficient",
+    "tests/test_backoff_policies_synth.py::test_polynomial_default_sequence",
+    "tests/test_backoff_policies_synth.py::test_polynomial_degree_zero",
+    "tests/test_backoff_policies_synth.py::test_polynomial_negative_degree",
+    "tests/test_backoff_policies_synth.py::test_polynomial_non_integer_degree",
+    "tests/test_backoff_policies_synth.py::test_zero_attempts_returns_empty_list"
   ],
   "PASS_TO_PASS": [],
   "modified_files": [
-    "tenacity/retry_stats.py"
+    "tenacity/backoff_policies.py"
   ],
   "do_not_modify": [
-    "tests/test_retry_stats_synth.py"
+    "tests/test_backoff_policies_synth.py"
   ],
   "workspace": "/workspace/repo",
   "python": "/opt/venv311/bin/python"

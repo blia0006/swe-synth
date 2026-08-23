@@ -1,41 +1,86 @@
---- a/src/itsdangerous/serializer.py
-+++ b/src/itsdangerous/serializer.py
-@@ -295,16 +295,12 @@
-         yield self.make_signer(salt)
- 
-         for fallback in self.fallback_signers:
--            if isinstance(fallback, dict):
--                kwargs = fallback
--                fallback = self.signer
--            elif isinstance(fallback, tuple):
--                fallback, kwargs = fallback
--            else:
--                kwargs = self.signer_kwargs
-+            signer_class, kwargs = _resolve_fallback_signer(
-+                fallback, self.signer, self.signer_kwargs
-+            )
- 
-             for secret_key in self.secret_keys:
--                yield fallback(secret_key, salt=salt, **kwargs)
-+                yield signer_class(secret_key, salt=salt, **kwargs)
- 
-     def dumps(self, obj: t.Any, salt: str | bytes | None = None) -> _TSerialized:
-         """Returns a signed string serialized with the internal
-@@ -402,3 +398,17 @@
-         .. versionadded:: 0.15
-         """
-         return self.loads_unsafe(f.read(), salt=salt)
+--- a/cachecontrol/http_date_utils.py
++++ b/cachecontrol/http_date_utils.py
+@@ -2,6 +2,25 @@
+ #
+ # SPDX-License-Identifier: Apache-2.0
+ from __future__ import annotations
 +
++import re
++from datetime import datetime, timezone
 +
-+def _resolve_fallback_signer(
-+    fallback: dict[str, t.Any] | tuple[type[Signer], dict[str, t.Any]] | type[Signer],
-+    default_signer: type[Signer],
-+    default_kwargs: dict[str, t.Any],
-+) -> tuple[type[Signer], dict[str, t.Any]]:
-+    if isinstance(fallback, dict):
-+        return default_signer, fallback
-+    elif isinstance(fallback, tuple):
-+        signer_class, kwargs = fallback
-+        return signer_class, kwargs
-+    else:
-+        return fallback, default_kwargs
++# Month abbreviations to month numbers
++_MONTHS = {
++    "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
++    "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
++}
++
++_IMF_FIXDATE_RE = re.compile(
++    r"^[A-Z][a-z]{2}, (\d{2}) ([A-Z][a-z]{2}) (\d{4}) (\d{2}):(\d{2}):(\d{2}) GMT$"
++)
++_RFC850_RE = re.compile(
++    r"^[A-Z][a-z]{2,8}, (\d{2})-([A-Z][a-z]{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) GMT$"
++)
++_ASCTIME_RE = re.compile(
++    r"^[A-Z][a-z]{2} ([A-Z][a-z]{2}) ([ \d]\d) (\d{2}):(\d{2}):(\d{2}) (\d{4})$"
++)
+ 
+ 
+ def parse_http_date(date_str: str) -> int:
+@@ -12,7 +31,49 @@
+     Returns the timestamp as an integer number of seconds since the Unix epoch.
+     Raises ValueError if the string cannot be parsed.
+     """
+-    raise NotImplementedError
++    match = _IMF_FIXDATE_RE.match(date_str)
++    if match:
++        day, mon, year, hour, minute, second = match.groups()
++        month = _MONTHS.get(mon)
++        if month is None:
++            raise ValueError(f"Invalid HTTP date: {date_str!r}")
++        dt = datetime(
++            int(year), month, int(day), int(hour), int(minute), int(second),
++            tzinfo=timezone.utc,
++        )
++        return int(dt.timestamp())
++
++    match = _RFC850_RE.match(date_str)
++    if match:
++        day, mon, year2, hour, minute, second = match.groups()
++        month = _MONTHS.get(mon)
++        if month is None:
++            raise ValueError(f"Invalid HTTP date: {date_str!r}")
++        year = int(year2)
++        if year < 70:
++            year += 2000
++        else:
++            year += 1900
++        dt = datetime(
++            year, month, int(day), int(hour), int(minute), int(second),
++            tzinfo=timezone.utc,
++        )
++        return int(dt.timestamp())
++
++    match = _ASCTIME_RE.match(date_str)
++    if match:
++        mon, day, hour, minute, second, year = match.groups()
++        month = _MONTHS.get(mon)
++        if month is None:
++            raise ValueError(f"Invalid HTTP date: {date_str!r}")
++        day = day.strip()
++        dt = datetime(
++            int(year), month, int(day), int(hour), int(minute), int(second),
++            tzinfo=timezone.utc,
++        )
++        return int(dt.timestamp())
++
++    raise ValueError(f"Invalid HTTP date: {date_str!r}")
+ 
+ 
+ def format_http_date(timestamp: int) -> str:
+@@ -20,4 +81,5 @@
+ 
+     The returned string uses English abbreviations and the GMT timezone.
+     """
+-    raise NotImplementedError
++    dt = datetime.fromtimestamp(timestamp, timezone.utc)
++    return dt.strftime("%a, %d %b %Y %H:%M:%S GMT")

@@ -1,0 +1,48 @@
+{
+  "task_id": "swe-synth-0020",
+  "passed": true,
+  "reason": "双向验证通过：空解失败（题目有内容）、参考解通过（题目可解）",
+  "empty_sandbox_id": "eclsjxu7zcuv37qgroc5of4yusp5oyeuvx65tjrl",
+  "golden_sandbox_id": "y3e474ikflvqrsgcoayegid7yvowl2r5zhy6bims",
+  "empty_run": {
+    "task_id": "swe-synth-0020",
+    "passed": false,
+    "fail_to_pass": {
+      "total": 3,
+      "passed": 0,
+      "failing": [
+        "tests/test_itsdangerous/test_encoding.py::test_base64[\\u7121\\u9650]",
+        "tests/test_itsdangerous/test_encoding.py::test_base64[infinite]",
+        "tests/test_itsdangerous/test_encoding.py::test_base64_bad"
+      ]
+    },
+    "pass_to_pass": {
+      "total": 5,
+      "passed": 5,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 1,
+    "n_collected": 8,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "golden_run": {
+    "task_id": "swe-synth-0020",
+    "passed": true,
+    "fail_to_pass": {
+      "total": 3,
+      "passed": 3,
+      "failing": []
+    },
+    "pass_to_pass": {
+      "total": 5,
+      "passed": 5,
+      "failing": []
+    },
+    "collect_error": false,
+    "pytest_returncode": 0,
+    "n_collected": 8,
+    "raw_log_path": "/task/pytest_raw.log"
+  },
+  "duration_sec": 80.2
+}

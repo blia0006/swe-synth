@@ -1,131 +1,32 @@
---- a/loguru/_colorama.py
-+++ b/loguru/_colorama.py
-@@ -7,51 +7,25 @@
-     if stream is None:
-         return False
- 
--    is_standard_stream = stream is sys.stdout or stream is sys.stderr
--    is_original_standard_stream = stream is sys.__stdout__ or stream is sys.__stderr__
-+    is_standard_stream = _is_standard_stream(stream)
-+    is_original_standard_stream = _is_original_standard_stream(stream)
- 
-     if is_standard_stream or is_original_standard_stream:
--        # Per the spec (https://no-color.org/), this needs to check for a
--        # non-empty string, not just presence of the variable:
--        if os.getenv("NO_COLOR"):
--            return False
--
--        # Per the spec (https://force-color.org/), this needs to check for a
--        # non-empty string, not just presence of the variable:
--        if os.getenv("FORCE_COLOR"):
--            return True
-+        decision = _check_color_related_env_vars()
-+        if decision is not None:
-+            return decision
- 
-     if getattr(builtins, "__IPYTHON__", False) and is_standard_stream:
--        try:
--            import ipykernel
--            import IPython
--
--            ipython = IPython.get_ipython()
--            is_jupyter_stream = isinstance(stream, ipykernel.iostream.OutStream)
--            is_jupyter_shell = isinstance(ipython, ipykernel.zmqshell.ZMQInteractiveShell)
--        except Exception:
--            pass
--        else:
--            if is_jupyter_stream and is_jupyter_shell:
--                return True
-+        decision = _check_jupyter(stream)
-+        if decision is not None:
-+            return decision
- 
-     if is_original_standard_stream:
--        if "CI" in os.environ and any(
--            ci in os.environ
--            for ci in ["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "GITHUB_ACTIONS"]
--        ):
--            return True
--        if "PYCHARM_HOSTED" in os.environ:
--            return True
--        if os.environ.get("TERM", "") in ("dumb",):
--            return False
--        if os.name == "nt" and "TERM" in os.environ:
--            return True
-+        decision = _check_original_standard_stream_env()
-+        if decision is not None:
-+            return decision
- 
--    try:
--        return stream.isatty()
--    except Exception:
--        return False
-+    return _isatty(stream)
- 
- 
- def should_wrap(stream):
-@@ -81,3 +55,64 @@
-     from colorama import AnsiToWin32
- 
-     return AnsiToWin32(stream, convert=True, strip=True, autoreset=False).stream
-+
-+
-+def _is_standard_stream(stream):
-+    return stream is sys.stdout or stream is sys.stderr
-+
-+
-+def _is_original_standard_stream(stream):
-+    return stream is sys.__stdout__ or stream is sys.__stderr__
-+
-+
-+def _check_color_related_env_vars():
-+    # Per the spec (https://no-color.org/), this needs to check for a
-+    # non-empty string, not just presence of the variable:
-+    if os.getenv("NO_COLOR"):
-+        return False
-+
-+    # Per the spec (https://force-color.org/), this needs to check for a
-+    # non-empty string, not just presence of the variable:
-+    if os.getenv("FORCE_COLOR"):
-+        return True
-+
-+    return None
-+
-+
-+def _check_jupyter(stream):
-+    try:
-+        import ipykernel
-+        import IPython
-+
-+        ipython = IPython.get_ipython()
-+        is_jupyter_stream = isinstance(stream, ipykernel.iostream.OutStream)
-+        is_jupyter_shell = isinstance(ipython, ipykernel.zmqshell.ZMQInteractiveShell)
-+    except Exception:
+--- a/tenacity/retry_after.py
++++ b/tenacity/retry_after.py
+@@ -10,7 +10,19 @@
+     HTTP-date. If the value is a date in the past, the delay is 0.0.
+     If the value cannot be parsed, None is returned.
+     '''
+-    raise NotImplementedError
++    stripped = value.strip()
++    if not stripped:
 +        return None
 +
-+    if is_jupyter_stream and is_jupyter_shell:
-+        return True
++    if stripped.isdigit():
++        return float(int(stripped))
 +
++    parsed = parsedate_to_datetime(stripped)
++    if parsed is None:
++        return None
++
++    delta = parsed - now
++    return max(0.0, delta.total_seconds())
+ 
+ 
+ def retry_after_delay(headers: typing.Mapping[str, str], now: datetime) -> float | None:
+@@ -19,4 +31,7 @@
+     Header names are matched case-insensitively. If the header is missing
+     or its value cannot be parsed, None is returned.
+     '''
+-    raise NotImplementedError
++    for key, value in headers.items():
++        if key.lower() == 'retry-after':
++            return parse_retry_after(value, now)
 +    return None
-+
-+
-+def _check_original_standard_stream_env():
-+    if "CI" in os.environ and any(
-+        ci in os.environ
-+        for ci in ["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "GITHUB_ACTIONS"]
-+    ):
-+        return True
-+    if "PYCHARM_HOSTED" in os.environ:
-+        return True
-+    if os.environ.get("TERM", "") in ("dumb",):
-+        return False
-+    if os.name == "nt" and "TERM" in os.environ:
-+        return True
-+    return None
-+
-+
-+def _isatty(stream):
-+    try:
-+        return stream.isatty()
-+    except Exception:
-+        return False

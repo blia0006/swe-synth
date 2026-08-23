@@ -1,69 +1,17 @@
---- a/tests/exceptions/source/modern/grouped_with_cause_and_context.py
-+++ b/tests/exceptions/source/modern/grouped_with_cause_and_context.py
-@@ -12,28 +12,18 @@
- 
- @logger.catch
- def main():
--    try:
--        try:
--            a()
--        except Exception as err:
--            raise ValueError("ContextError") from err
--    except Exception as err:
--        from_context = err
--    try:
--        try:
--            a()
--        except Exception as err:
--            raise ValueError("CauseError")
--    except Exception as err:
--        from_cause = err
-+    context_error = _capture_a_value_error('ContextError', attach_cause=True)
-+    if context_error is not None:
-+        from_context = context_error
- 
--    try:
--        a()
--    except Exception as err:
--        try:
--            raise ValueError("Error") from err
--        except Exception:
--            raise ExceptionGroup("from_context", [from_context, from_cause])
-+    cause_error = _capture_a_value_error('CauseError', attach_cause=False)
-+    if cause_error is not None:
-+        from_cause = cause_error
+--- a/src/itsdangerous/encoding.py
++++ b/src/itsdangerous/encoding.py
+@@ -29,7 +29,13 @@
+     """Base64 decode a URL-safe string of bytes or text. The result is
+     bytes.
+     """
+-    raise NotImplementedError("TODO: implement this function")
++    string = want_bytes(string, encoding="ascii", errors="ignore")
++    string += b"=" * (-len(string) % 4)
 +
-+    _raise_error_group_from_a(
-+        lambda: from_context,
-+        lambda: from_cause,
-+    )
- 
- 
- logger.remove()
-@@ -41,3 +31,26 @@
- logger.add(sys.stderr, format="", diagnose=True, backtrace=True, colorize=True)
- 
- main()
-+
-+
-+def _capture_a_value_error(message, attach_cause):
 +    try:
-+        try:
-+            a()
-+        except Exception as err:
-+            if attach_cause:
-+                raise ValueError(message) from err
-+            raise ValueError(message)
-+    except Exception as err:
-+        return err
-+    return None
-+
-+
-+def _raise_error_group_from_a(context_getter, cause_getter):
-+    try:
-+        a()
-+    except Exception as err:
-+        try:
-+            raise ValueError('Error') from err
-+        except Exception:
-+            raise ExceptionGroup('from_context', [context_getter(), cause_getter()])
++        return base64.urlsafe_b64decode(string)
++    except (TypeError, ValueError) as e:
++        raise BadData("Invalid base64-encoded data") from e
+ 
+ 
+ # The alphabet used by base64.urlsafe_*

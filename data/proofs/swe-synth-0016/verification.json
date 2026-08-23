@@ -2,27 +2,25 @@
   "task_id": "swe-synth-0016",
   "passed": true,
   "reason": "双向验证通过：空解失败（题目有内容）、参考解通过（题目可解）",
-  "empty_sandbox_id": "fewg3hmy3sfquwdmiwsjgm2fyujpo2wtnnxys5dk",
-  "golden_sandbox_id": "k2bxtrxft5av66bruorwmjlqs7zfrdedpm5d4kcp",
+  "empty_sandbox_id": "2xftlodcyt5f3gczhst3746gwytgqir4oldwjtcz",
+  "golden_sandbox_id": "hwcw6qmd2uz2fqrid5eyazsbsczfign7udmc7o32",
   "empty_run": {
     "task_id": "swe-synth-0016",
     "passed": false,
     "fail_to_pass": {
-      "total": 12,
+      "total": 10,
       "passed": 0,
       "failing": [
-        "tests/test_jitter_synth.py::test_decorrelated_jitter_basic",
-        "tests/test_jitter_synth.py::test_decorrelated_jitter_cap_bounds",
-        "tests/test_jitter_synth.py::test_decorrelated_jitter_invalid_cap_raises",
-        "tests/test_jitter_synth.py::test_decorrelated_jitter_negative_previous_raises",
-        "tests/test_jitter_synth.py::test_decorrelated_jitter_previous_zero_returns_base",
-        "tests/test_jitter_synth.py::test_equal_jitter_basic",
-        "tests/test_jitter_synth.py::test_equal_jitter_extremes",
-        "tests/test_jitter_synth.py::test_equal_jitter_negative_base_raises",
-        "tests/test_jitter_synth.py::test_full_jitter_basic",
-        "tests/test_jitter_synth.py::test_full_jitter_invalid_random_value_raises",
-        "tests/test_jitter_synth.py::test_full_jitter_negative_base_raises",
-        "tests/test_jitter_synth.py::test_full_jitter_zero_random_value"
+        "tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_invalid_base_delay",
+        "tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_no_max",
+        "tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_with_max",
+        "tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_zero_retries",
+        "tests/test_backoff_sequence_synth.py::test_linear_backoff_sequence_expected",
+        "tests/test_backoff_sequence_synth.py::test_linear_backoff_sequence_invalid_increment",
+        "tests/test_backoff_sequence_synth.py::test_linear_backoff_sequence_with_max",
+        "tests/test_backoff_sequence_synth.py::test_total_delay_empty_sequence",
+        "tests/test_backoff_sequence_synth.py::test_total_delay_negative_value_raises",
+        "tests/test_backoff_sequence_synth.py::test_total_delay_sums_sequence"
       ]
     },
     "pass_to_pass": {
@@ -32,15 +30,15 @@
     },
     "collect_error": false,
     "pytest_returncode": 1,
-    "n_collected": 12,
+    "n_collected": 10,
     "raw_log_path": "/task/pytest_raw.log"
   },
   "golden_run": {
     "task_id": "swe-synth-0016",
     "passed": true,
     "fail_to_pass": {
-      "total": 12,
-      "passed": 12,
+      "total": 10,
+      "passed": 10,
       "failing": []
     },
     "pass_to_pass": {
@@ -50,8 +48,8 @@
     },
     "collect_error": false,
     "pytest_returncode": 0,
-    "n_collected": 12,
+    "n_collected": 10,
     "raw_log_path": "/task/pytest_raw.log"
   },
-  "duration_sec": 216.7
+  "duration_sec": 79.3
 }

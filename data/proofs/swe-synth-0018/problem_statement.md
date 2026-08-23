@@ -1,56 +1,35 @@
 ## 背景与上下文
-Loguru 是一个流行的 Python 日志库。`loguru/_colorama.py` 中的 `should_colorize` 负责决定是否应该为给定的输出流启用 ANSI 颜色。该函数需要处理多种终端、Jupyter 以及 CI 环境，当前将所有这些判断逻辑塞在一个函数中，导致圈复杂度高达 22，可读性和可维护性较差。希望通过重构将其拆分为多个职责单一的小函数，同时不改变任何对外可见行为。
+tenacity 是一个通用的 Python 重试库，广泛用于需要自动重试失败操作的场景。在 HTTP 客户端重试中，服务器经常通过 `Retry-After` 响应头告知客户端应该等待多久再发起下一次请求。为方便集成，tenacity 需要一个纯逻辑模块来解析该头部并计算重试延迟。
 
 ## 需要实现的功能
-这是一道代码重构题。目标不是增加或修改功能，而是改善 `should_colorize` 的内部结构：降低圈复杂度、消除重复、使决策逻辑更清晰。重构后的函数签名必须保持不变，对外可见行为必须与重构前完全一致。
+新增 `tenacity/retry_after.py` 模块，提供两个公开函数：`parse_retry_after` 和 `retry_after_delay`。前者解析单个 `Retry-After` 值并计算从给定时刻起的延迟秒数；后者从一组 HTTP 头中提取 `Retry-After` 并计算延迟。所有实现不得进行任何 I/O 或依赖当前时间，需要的当前时间作为参数传入。
 
 ## 输入
-`stream`：一个类似文件的对象，可能是 `sys.stdout`、`sys.stderr`、`sys.__stdout__`、`sys.__stderr__`、其他输出流或 `None`。
+- `parse_retry_after(value: str, now: datetime.datetime) -> float | None`
+  - `value`：`Retry-After` 头部的原始字符串。
+  - `now`：参考时刻，应为 naive `datetime.datetime` 对象（不带时区），通常表示当前 UTC 时间。
+- `retry_after_delay(headers: typing.Mapping[str, str], now: datetime.datetime) -> float | None`
+  - `headers`：HTTP 头部映射，键为头部名称（大小写不敏感），值为字符串。
+  - `now`：同上，naive `datetime.datetime` 对象。
 
 ## 输出
-返回布尔值：`True` 表示应该为 `stream` 启用颜色输出；`False` 表示不应该。该函数不会主动抛出受检异常；所有内部异常（如 `stream.isatty()` 失败、Jupyter 相关导入失败）都会被捕获并导致返回 `False` 或继续后续判断。
+- 两函数返回 `float | None`。
+- 当成功计算出延迟时返回非负 `float`（单位秒）。数字形式直接转为 `float`；HTTP-date 形式返回 `max(0.0, (parsed_date - now).total_seconds())`。
+- 当值缺失、非法、或无法解析时返回 `None`。
 
 ## 预期行为
-① 必须保持以下行为完全不变：
-- 对 `None` 流直接返回 `False`。
-- 对环境变量 `NO_COLOR` 和 `FORCE_COLOR` 的检查顺序与取值语义（非空字符串为有效）不变。
-- 对标准流/原始标准流的识别逻辑不变。
-- 对 IPython/Jupyter 流的特殊检测逻辑及其异常处理不变。
-- 对 CI 环境、PyCharm、`TERM=dumb` 和 Windows 下 `TERM` 存在的判断顺序与结果不变。
-- 最终使用 `stream.isatty()` 的回退逻辑及异常捕获不变。
-② 要求消除以下坏味道：
-- 单一函数承担过多不同层次的决策，圈复杂度高。
-- 标准流判断表达式重复出现。
-- 环境变量与魔法字符串直接散落在主流程中。
-- Jupyter 检测和 CI 检测等独立职责没有分离。
-③ 允许的结构性调整：
-- 提取模块级私有辅助函数。
-- 将可选决策抽象为返回 `Optional[bool]` 的小函数。
-- 保留原有的注释和文档 URL（如 no-color.org、force-color.org）到合适位置。
-- 保持主流程线性、可读。
+1. `parse_retry_after` 对去除首尾空白后的字符串进行判断。
+2. 若字符串仅由数字组成（非负整数），解析为对应秒数并返回 `float`。例如 `"120"` 返回 `120.0`，`"0"` 返回 `0.0`。
+3. 若字符串包含负号、小数点、或其他非数字字符（如 `"-5"`、`"1.5"`、`"abc"`），不能按数字解析，进入下一步尝试按 HTTP-date 解析。
+4. 使用标准库中的日期解析工具（例如 `email.utils.parsedate_to_datetime`）尝试将字符串解析为 HTTP-date（支持 RFC 1123、RFC 850、asctime 等常见格式）。若解析成功，计算 `(parsed_date - now).total_seconds()`，若差值为负则返回 `0.0`，否则返回差值。
+5. 若解析失败，返回 `None`。
+6. `retry_after_delay` 遍历 `headers` 的键，忽略大小写查找 `"retry-after"`。若找到，取其值调用 `parse_retry_after` 并返回结果；若未找到，返回 `None`。
+7. 注意：`headers` 的值应为字符串；不符合类型约定的输入行为未定义。
+8. 两函数不抛出异常（除类型错误等调用约定错误外），所有非法值均返回 `None`。
 
 ## 约束条件
-- `should_colorize` 的签名不得改变（参数名、顺序、默认值等）。
-- 不得修改任何测试文件。
-- 不得改变任何对外可见行为，包括所有分支返回值、异常类型与触发条件、副作用顺序。
-- 不得引入新的第三方依赖；只能使用标准库及文件已导入的模块（`builtins`、`os`、`sys`）。
-- 提取出的辅助函数应放在模块级、以下划线开头表示私有。
-- 不得删除或重命名 `should_colorize`。
-- 不要将大段逻辑压成长表达式或塞进另一个巨型函数，必须显著降低有效行数与圈复杂度。
-
-## 自动化质量门槛
-
-除了「所有既有测试必须保持通过」之外，本题还有一组**静态指标**判据
-（由 `tests/test_refactor_guard_swe_synth_0018.py` 自动检查，该文件属于判据、不可修改）：
-
-| 指标 | 重构前 | 要求 |
-|---|---|---|
-| `should_colorize` 的有效代码行数 | 37 | ≤ **22** |
-| `should_colorize` 的圈复杂度 | 22 | ≤ **13** |
-| 文件内任一函数的有效代码行数 | — | ≤ **20** |
-| `should_colorize` 的参数列表 | `stream` | 保持完全不变 |
-
-说明：
-- 「有效代码行数」不含 docstring、空行与纯注释行，所以删注释、压行都无助于达标
-- 最后一项限制的用意是防止「把逻辑整体搬到另一个大函数」这种伪重构
-- 达标的常规做法是：把目标函数中彼此独立的职责，提取为若干个小的私有辅助函数
+- 模块路径必须为 `tenacity/retry_after.py`。
+- 不得修改任何测试文件或项目内已有文件。
+- 不得引入新的第三方依赖，仅使用 Python 标准库。
+- 实现必须为纯逻辑，不访问网络、文件、随机数、当前时间等副作用。
+- 公开接口必须与文档一致，函数体需完整实现。

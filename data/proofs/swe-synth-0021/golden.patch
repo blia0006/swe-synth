@@ -1,0 +1,37 @@
+--- a/tldextract/suffix_rule_parser.py
++++ b/tldextract/suffix_rule_parser.py
+@@ -22,7 +22,26 @@
+         exception rules start with ``!``.
+         Comment lines (starting with ``//``) and blank lines are ignored.
+     """
+-    raise NotImplementedError("TODO: implement rule parsing")
++    regular: list[str] = []
++    wildcard: list[str] = []
++    exception: list[str] = []
++
++    for raw_line in text.splitlines():
++        line = raw_line.strip()
++        if not line or line.startswith("//"):
++            continue
++
++        if line.startswith("!"):
++            if line not in exception:
++                exception.append(line)
++        elif line.startswith("*."):
++            if line not in wildcard:
++                wildcard.append(line)
++        else:
++            if line not in regular:
++                regular.append(line)
++
++    return SuffixRules(regular=regular, wildcard=wildcard, exception=exception)
+ 
+ 
+ def format_suffix_rules(rules: SuffixRules) -> str:
+@@ -35,4 +54,5 @@
+         A string with one rule per line, in the order regular, wildcard, exception.
+         Returns an empty string if all lists are empty.
+     """
+-    raise NotImplementedError("TODO: implement rule formatting")
++    lines = rules.regular + rules.wildcard + rules.exception
++    return "\n".join(lines)

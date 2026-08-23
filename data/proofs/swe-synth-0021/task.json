@@ -1,0 +1,77 @@
+{
+  "task_id": "swe-synth-0021",
+  "task_type": "module_addition",
+  "difficulty": "easy",
+  "state": "LOCAL_OK",
+  "repo": "john-kurkowski/tldextract",
+  "repo_stars": 2000,
+  "base_commit": "72d37955ae5ba86267fd68c97b56866bd04c3ce9",
+  "language": "python",
+  "problem_statement": "## 背景与上下文\ntldextract 是一个从 URL 和域名中提取子域名、域名和公共后缀的 Python 库。它依赖公共后缀列表（Public Suffix List, PSL）来判断域名后缀。PSL 文本中除了普通规则外，还包含通配符规则（`*.` 前缀）和异常规则（`!` 前缀），以及注释行和私有域标记。现有代码只能提取后缀字符串，无法区分规则类型，因此需要新增一个纯逻辑模块，将 PSL 文本解析为按类型分类的规则集合。\n\n## 需要实现的功能\n新增模块 `tldextract/suffix_rule_parser.py`，提供两个公开函数：\n- `parse_suffix_rules(text: str) -> SuffixRules`：解析 PSL 文本，将其中的三类规则（普通、通配符、异常）提取并去重后返回。\n- `format_suffix_rules(rules: SuffixRules) -> str`：将分类后的规则重新格式化为 PSL 文本。\n该模块只做纯文本解析与格式化，不涉及网络、文件读写或任何副作用。\n\n## 输入\n- `parse_suffix_rules` 接收一个字符串 `text`，内容为 PSL 规则的原始文本。文本可能包含注释行（以 `//` 开头，包括 `// ===BEGIN PRIVATE DOMAINS===`）、空白行和规则行。规则行可能以 `!` 开头表示异常规则，以 `*.` 开头表示通配符规则，否则为普通规则。规则中不含空白字符。\n- `format_suffix_rules` 接收一个 `SuffixRules` 对象，其中包含三个字符串列表：`regular`、`wildcard`、`exception`。\n\n## 输出\n- `parse_suffix_rules` 返回一个 `SuffixRules` 对象，其字段 `regular`、`wildcard`、`exception` 分别为按出现顺序去重后的普通规则、通配符规则、异常规则列表。对于空文本，三个列表均为空列表。\n- `format_suffix_rules` 返回一个字符串，依次按 `regular`、`wildcard`、`exception` 的顺序输出每一条规则，每行一条规则，行与行之间用 `\\n` 分隔。如果三个列表都为空，返回空字符串。不输出额外注释或私有域标记。\n\n## 预期行为\n1. 解析普通规则：输入 `\"com\\norg\\n\"`，`regular` 应包含 `\"com\"` 和 `\"org\"`，其他列表为空。\n2. 解析通配符规则：输入包含 `\"*.ck\"`，该规则应归入 `wildcard`。\n3. 解析异常规则：输入包含 `\"!www.ck\"`，该规则应归入 `exception`。\n4. 注释行跳过：以 `//` 开头的行（包括私有域分隔行 `// ===BEGIN PRIVATE DOMAINS===`）应被忽略，不进入任何列表。\n5. 空白行跳过：空字符串行应被忽略。\n6. 去重：同一类型中重复出现的规则只保留第一次出现的位置，后续重复丢弃。\n7. 保持顺序：规则在各自类型列表中按照在原始文本中首次出现的相对顺序排列。\n8. 格式化输出：`format_suffix_rules` 对给定的 `SuffixRules` 对象输出字符串，顺序为 `regular`、`wildcard`、`exception`，每行一条规则；若所有列表为空，返回空字符串。\n9. 空输入：`parse_suffix_rules(\"\")` 返回三个空列表。\n\n## 约束条件\n- 必须将新模块实现于 `tldextract/suffix_rule_parser.py`，不要修改任何现有文件。\n- 只能使用 Python 标准库，不得引入新的第三方依赖（项目已安装的依赖除外，但本模块无需使用）。\n- 不得修改任何测试文件。\n- 函数签名和 `SuffixRules` 定义需与提供骨架完全一致。\n- 实现不得包含任何副作用（网络、文件读写等）。",
+  "hints": null,
+  "modified_files": [
+    "tldextract/suffix_rule_parser.py"
+  ],
+  "do_not_modify": [
+    "tests/test_suffix_rule_parser_synth.py"
+  ],
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_basic_order",
+    "tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_empty_returns_empty_string",
+    "tests/test_suffix_rule_parser_synth.py::test_format_suffix_rules_missing_lists_are_omitted",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_basic_rules",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_empty_text_returns_empty_lists",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_mixed_rules_with_deduplication",
+    "tests/test_suffix_rule_parser_synth.py::test_parse_skips_comments_and_blank_lines"
+  ],
+  "PASS_TO_PASS": [],
+  "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0021:v1",
+  "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0021:v1-sol",
+  "verify_script": "/task/verify.sh",
+  "generated_by": {
+    "model": "deepseek-v4-pro-202606",
+    "agent": "agent1",
+    "ts": "2026-08-22T16:39:02.023752+00:00",
+    "prompt_version": "module-v1",
+    "input_tokens": 449268,
+    "output_tokens": 1863962
+  },
+  "validation": {
+    "local_sanity_passed": true,
+    "local_duration_sec": 16.01275086402893,
+    "sandbox_tool": null,
+    "sandbox_instance_id": null,
+    "empty_solution_result": null,
+    "golden_solution_result": null,
+    "deterministic": true,
+    "duration_sec": null,
+    "llm_attempt": {
+      "solvable": true,
+      "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据",
+      "first_pass_attempt": 1,
+      "difficulty_signal": "easy_for_llm",
+      "n_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "passed": true,
+          "f2p": "7/7",
+          "p2p": "0/0",
+          "error": null
+        }
+      ]
+    },
+    "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0021"
+  },
+  "overlap_check": {
+    "passed": false,
+    "method": "github_search+bm25+embedding+llm_judge",
+    "queried": [],
+    "top_candidates": [],
+    "target_file_last_modified": null,
+    "months_since_last_change": null,
+    "verdict_reason": null
+  },
+  "reject_reason": null
+}

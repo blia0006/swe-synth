@@ -1,6 +1,0 @@
-{
-  "candidate": "hukkin/tomli::module_addition",
-  "task_type": "module_addition",
-  "stage": "DESIGN",
-  "reason": "模块添加题设计失败：模块添加题设计失败（尝试 3 次），最后的问题：['test_code 未导入新模块 `src.tomli.toml_flatten`，测试与实现无关']"
-}

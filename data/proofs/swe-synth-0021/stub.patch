@@ -1,0 +1,97 @@
+diff --git a/tldextract/suffix_rule_parser.py b/tldextract/suffix_rule_parser.py
+new file mode 100644
+--- /dev/null
++++ b/tldextract/suffix_rule_parser.py
+@@ -0,0 +1,38 @@
++from dataclasses import dataclass
++
++
++@dataclass(frozen=True)
++class SuffixRules:
++    """Parsed suffix rules split by type."""
++
++    regular: list[str]
++    wildcard: list[str]
++    exception: list[str]
++
++
++def parse_suffix_rules(text: str) -> SuffixRules:
++    """Parse a PSL text block into regular, wildcard, and exception rules.
++
++    Args:
++        text: Raw Public Suffix List text.
++
++    Returns:
++        A SuffixRules object with de-duplicated rules in order of first appearance.
++        Regular rules have no prefix, wildcard rules start with ``*.``,
++        exception rules start with ``!``.
++        Comment lines (starting with ``//``) and blank lines are ignored.
++    """
++    raise NotImplementedError("TODO: implement rule parsing")
++
++
++def format_suffix_rules(rules: SuffixRules) -> str:
++    """Format rules back into PSL text order: regular, wildcard, exception.
++
++    Args:
++        rules: SuffixRules object containing the categorized rules.
++
++    Returns:
++        A string with one rule per line, in the order regular, wildcard, exception.
++        Returns an empty string if all lists are empty.
++    """
++    raise NotImplementedError("TODO: implement rule formatting")
+diff --git a/tests/test_suffix_rule_parser_synth.py b/tests/test_suffix_rule_parser_synth.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_suffix_rule_parser_synth.py
+@@ -0,0 +1,49 @@
++from tldextract.suffix_rule_parser import SuffixRules, parse_suffix_rules, format_suffix_rules
++
++
++def test_parse_basic_rules():
++    text = "com\norg\n"
++    rules = parse_suffix_rules(text)
++    assert rules.regular == ["com", "org"]
++    assert rules.wildcard == []
++    assert rules.exception == []
++
++
++def test_parse_mixed_rules_with_deduplication():
++    text = "com\n*.ck\n!www.ck\ncom\n*.ck\n!www.ck\n"
++    rules = parse_suffix_rules(text)
++    assert rules.regular == ["com"]
++    assert rules.wildcard == ["*.ck"]
++    assert rules.exception == ["!www.ck"]
++
++
++def test_parse_skips_comments_and_blank_lines():
++    text = "// comment\n\ncom\n// another\n*.jp\n"
++    rules = parse_suffix_rules(text)
++    assert rules.regular == ["com"]
++    assert rules.wildcard == ["*.jp"]
++    assert rules.exception == []
++
++
++def test_parse_empty_text_returns_empty_lists():
++    rules = parse_suffix_rules("")
++    assert rules.regular == []
++    assert rules.wildcard == []
++    assert rules.exception == []
++
++
++def test_format_suffix_rules_basic_order():
++    rules = SuffixRules(regular=["com", "org"], wildcard=["*.ck"], exception=["!www.ck"])
++    result = format_suffix_rules(rules)
++    assert result == "com\norg\n*.ck\n!www.ck"
++
++
++def test_format_suffix_rules_empty_returns_empty_string():
++    rules = SuffixRules(regular=[], wildcard=[], exception=[])
++    assert format_suffix_rules(rules) == ""
++
++
++def test_format_suffix_rules_missing_lists_are_omitted():
++    rules = SuffixRules(regular=["com"], wildcard=[], exception=["!city.kawasaki.jp"])
++    result = format_suffix_rules(rules)
++    assert result == "com\n!city.kawasaki.jp"

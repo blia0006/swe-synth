@@ -1,157 +1,17 @@
-diff --git a/tenacity/backoff_calculator.py b/tenacity/backoff_calculator.py
-new file mode 100644
---- /dev/null
-+++ b/tenacity/backoff_calculator.py
-@@ -0,0 +1,79 @@
-+# Copyright 2016 Julien Danjou
-+# Copyright 2016 Joshua Harlow
-+# Copyright 2013-2014 Ray Holder
-+#
-+# Licensed under the Apache License, Version 2.0 (the "License");
-+# you may not use this file except in compliance with the License.
-+# You may obtain a copy of the License at
-+#
-+# http://www.apache.org/licenses/LICENSE-2.0
-+#
-+# Unless required by applicable law or agreed to in writing, software
-+# distributed under the License is distributed on an "AS IS" BASIS,
-+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+# See the License for the specific language governing permissions and
-+# limitations under the License.
-+import typing
-+
-+
-+def exponential_delay(
-+    attempt: int,
-+    initial_delay: float,
-+    multiplier: float = 1.0,
-+    max_delay: typing.Optional[float] = None,
-+) -> float:
-+    '''Calculate the delay for a given attempt using exponential backoff.
-+
-+    The delay is computed as ``initial_delay * (multiplier ** (attempt - 1))``,
-+    capped at ``max_delay`` if provided.
-+
-+    :param attempt: The attempt number (starting from 1).
-+    :param initial_delay: The delay for the first attempt.
-+    :param multiplier: The backoff multiplier (must be >= 1).
-+    :param max_delay: Optional cap on the delay (must be > 0 if provided).
-+    :return: The computed delay in seconds.
-+    :raises ValueError: If any argument is invalid.
-+    '''
-+    raise NotImplementedError('Implement exponential_delay')
-+
-+
-+def total_delay_until_attempt(
-+    attempt: int,
-+    initial_delay: float,
-+    multiplier: float = 1.0,
-+    max_delay: typing.Optional[float] = None,
-+) -> float:
-+    '''Calculate total delay before a given attempt.
-+
-+    This is the sum of delays for attempts 1 through ``attempt - 1``.
-+
-+    :param attempt: The attempt number (starting from 1).
-+    :param initial_delay: The delay for the first attempt.
-+    :param multiplier: The backoff multiplier (must be >= 1).
-+    :param max_delay: Optional cap on the delay (must be > 0 if provided).
-+    :return: The total delay in seconds.
-+    :raises ValueError: If any argument is invalid.
-+    '''
-+    raise NotImplementedError('Implement total_delay_until_attempt')
-+
-+
-+def attempts_possible_within_budget(
-+    budget: float,
-+    initial_delay: float,
-+    multiplier: float = 1.0,
-+    max_delay: typing.Optional[float] = None,
-+) -> int:
-+    '''Calculate the maximum number of retries possible within a time budget.
-+
-+    The initial call is not counted as a retry. The function returns the
-+    largest non-negative integer N such that ``total_delay_until_attempt(N+1)``
-+    is less than or equal to ``budget``.
-+
-+    :param budget: Total time budget in seconds (must be >= 0).
-+    :param initial_delay: The delay for the first attempt.
-+    :param multiplier: The backoff multiplier (must be >= 1).
-+    :param max_delay: Optional cap on the delay (must be > 0 if provided).
-+    :return: The maximum number of retries.
-+    :raises ValueError: If any argument is invalid.
-+    '''
-+    raise NotImplementedError('Implement attempts_possible_within_budget')
-diff --git a/tests/test_backoff_calculator_synth.py b/tests/test_backoff_calculator_synth.py
-new file mode 100644
---- /dev/null
-+++ b/tests/test_backoff_calculator_synth.py
-@@ -0,0 +1,68 @@
-+import pytest
-+
-+from tenacity.backoff_calculator import (
-+    attempts_possible_within_budget,
-+    exponential_delay,
-+    total_delay_until_attempt,
-+)
-+
-+
-+def test_exponential_delay_basic():
-+    assert exponential_delay(1, initial_delay=1.0, multiplier=1.0) == 1.0
-+    assert exponential_delay(1, initial_delay=1.0, multiplier=2.0) == 1.0
-+    assert exponential_delay(4, initial_delay=1.0, multiplier=2.0) == 8.0
-+
-+
-+def test_exponential_delay_with_max_delay():
-+    assert exponential_delay(3, initial_delay=1.0, multiplier=2.0, max_delay=3.0) == 3.0
-+    assert exponential_delay(2, initial_delay=2.0, multiplier=2.0, max_delay=3.0) == 3.0
-+
-+
-+def test_total_delay_until_attempt():
-+    assert total_delay_until_attempt(1, initial_delay=1.0, multiplier=2.0) == 0.0
-+    assert total_delay_until_attempt(4, initial_delay=1.0, multiplier=2.0) == pytest.approx(7.0)
-+
-+
-+def test_total_delay_with_cap():
-+    assert total_delay_until_attempt(4, initial_delay=1.0, multiplier=2.0, max_delay=3.0) == pytest.approx(1 + 2 + 3)
-+
-+
-+def test_attempts_possible_within_budget():
-+    assert attempts_possible_within_budget(10.0, initial_delay=1.0, multiplier=2.0) == 3
-+    assert attempts_possible_within_budget(7.0, initial_delay=1.0, multiplier=2.0) == 3
-+    assert attempts_possible_within_budget(6.9, initial_delay=1.0, multiplier=2.0) == 2
-+
-+
-+def test_attempts_possible_within_budget_zero():
-+    assert attempts_possible_within_budget(0.0, initial_delay=1.0, multiplier=2.0) == 0
-+
-+
-+def test_invalid_attempt():
-+    with pytest.raises(ValueError):
-+        exponential_delay(0, initial_delay=1.0, multiplier=2.0)
-+    with pytest.raises(ValueError):
-+        total_delay_until_attempt(-1, initial_delay=1.0, multiplier=2.0)
-+
-+
-+def test_invalid_initial_delay():
-+    with pytest.raises(ValueError):
-+        exponential_delay(1, initial_delay=0.0, multiplier=2.0)
-+    with pytest.raises(ValueError):
-+        exponential_delay(1, initial_delay=-1.0, multiplier=2.0)
-+
-+
-+def test_invalid_multiplier():
-+    with pytest.raises(ValueError):
-+        exponential_delay(1, initial_delay=1.0, multiplier=0.5)
-+    with pytest.raises(ValueError):
-+        attempts_possible_within_budget(10.0, initial_delay=1.0, multiplier=0.5)
-+
-+
-+def test_invalid_budget():
-+    with pytest.raises(ValueError):
-+        attempts_possible_within_budget(-1.0, initial_delay=1.0, multiplier=2.0)
-+
-+
-+def test_invalid_max_delay():
-+    with pytest.raises(ValueError):
-+        exponential_delay(1, initial_delay=1.0, multiplier=2.0, max_delay=0.0)
+--- a/cachecontrol/caches/file_cache.py
++++ b/cachecontrol/caches/file_cache.py
+@@ -63,13 +63,7 @@
+         return os.path.join(self.directory, *parts)
+ 
+     def get(self, key: str) -> bytes | None:
+-        name = self._fn(key)
+-        try:
+-            with open(name, "rb") as fh:
+-                return fh.read()
+-
+-        except FileNotFoundError:
+-            return None
++        raise NotImplementedError("TODO: implement this function")
+ 
+     def set(
+         self, key: str, value: bytes, expires: int | datetime | None = None

@@ -1,31 +1,25 @@
 {
-  "max_target_body_lines": 12,
-  "max_target_complexity": 5,
-  "max_any_func_body_lines": 12,
+  "max_target_body_lines": 20,
+  "max_target_complexity": 8,
+  "max_any_func_body_lines": 22,
   "expected_args": [
-    "value",
-    "binary",
-    "gnu",
-    "format"
+    "self",
+    "resp"
   ],
   "before": {
-    "body_lines": 19,
-    "cyclomatic": 12,
+    "body_lines": 23,
+    "cyclomatic": 10,
     "args": [
-      "value",
-      "binary",
-      "gnu",
-      "format"
+      "self",
+      "resp"
     ]
   },
   "after": {
-    "body_lines": 10,
-    "cyclomatic": 3,
+    "body_lines": 19,
+    "cyclomatic": 8,
     "args": [
-      "value",
-      "binary",
-      "gnu",
-      "format"
+      "self",
+      "resp"
     ]
   }
 }

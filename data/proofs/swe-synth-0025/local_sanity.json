@@ -1,18 +1,40 @@
 {
-  "ok": false,
-  "reason": "挖空后没有任何测试变红 —— 该函数无有效测试覆盖，无法自动判分",
-  "fail_to_pass": [],
-  "pass_to_pass": [],
-  "deterministic": null,
-  "duration_sec": 0.0,
+  "ok": true,
+  "reason": "双向 sanity 通过：题目态必红、golden 态必绿、原有用例未被破坏",
+  "fail_to_pass": [
+    "tests/test_refactor_guard_swe_synth_0030.py::test_no_new_monolithic_function",
+    "tests/test_refactor_guard_swe_synth_0030.py::test_target_function_complexity_reduced",
+    "tests/test_refactor_guard_swe_synth_0030.py::test_target_function_is_simplified"
+  ],
+  "pass_to_pass": [
+    "tests/test_expires_heuristics.py::TestExpiresAfter::test_expires_after_one_day",
+    "tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_301",
+    "tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_304",
+    "tests/test_expires_heuristics.py::TestHeuristicWithoutWarning::test_no_header_change_means_no_warning_header",
+    "tests/test_expires_heuristics.py::TestLastModified::test_last_modified",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expires_is_not_replaced_when_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expiry_is_no_more_that_twenty_four_hours",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_cache_control_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_status_is_unknown",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used_when_cache_control_public",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_no_expiry_is_inferred_when_no_last_modified_is_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_is_not_added_when_heuristic_was_not_used",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_not_added_when_response_more_recent_than_24_hours",
+    "tests/test_expires_heuristics.py::TestOneDayCache::test_cache_for_one_day",
+    "tests/test_expires_heuristics.py::TestUseExpiresHeuristic::test_expires_heuristic_arg",
+    "tests/test_refactor_guard_swe_synth_0030.py::test_signature_unchanged"
+  ],
+  "deterministic": true,
+  "duration_sec": 4.44,
   "stub_summary": {
     "returncode": 1,
-    "n_passed": 157,
-    "n_failed": 1
+    "n_passed": 17,
+    "n_failed": 3
   },
   "golden_summary": {
-    "returncode": 1,
-    "n_passed": 157,
-    "n_failed": 1
+    "returncode": 0,
+    "n_passed": 20,
+    "n_failed": 0
   }
 }

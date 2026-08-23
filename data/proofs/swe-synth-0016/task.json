@@ -1,1 +1,80 @@
-{"task_id": "swe-synth-0016", "task_type": "module_addition", "difficulty": "easy", "state": "LOCAL_OK", "repo": "jd/tenacity", "repo_stars": 6000, "base_commit": "26f719dc73d3c5612b9c1b8d18a7883837790ad8", "language": "python", "problem_statement": "## 背景与上下文\ntenacity 是一个 Python 重试库，提供多种退避等待策略。在实际系统中，大量客户端同时重试可能造成雷群效应，因此等待时间需要加入随机抖动。虽然项目现有的 wait 模块提供了一些内置抖动能力，但缺少一组独立的、可复用的抖动计算函数。本模块将补充这一功能。\n\n## 需要实现的功能\n新增模块 `tenacity/jitter.py`，实现三个公开的纯函数 `full_jitter`、`equal_jitter` 和 `decorrelated_jitter`。它们接收基础延迟 `base_delay` 和一个返回 `[0, 1)` 浮点数的零参数 callable `random_func`，计算并返回抖动后的延迟。对于 `decorrelated_jitter` 还需要 `previous_delay`（上一次等待时间）和 `cap`（上限）。函数内部不得调用全局随机源或引入任何副作用，随机性完全由传入的 `random_func` 提供。所有非法参数必须抛出 `ValueError`。\n\n## 输入\n- `base_delay`: float，基础延迟（秒），必须非负。\n- `previous_delay`: float，上一次延迟（秒），仅 `decorrelated_jitter` 使用，必须非负。\n- `cap`: float，最大允许延迟（秒），仅 `decorrelated_jitter` 使用，必须大于等于 `base_delay`。\n- `random_func`: `typing.Callable[[], float]`，零参数 callable，每次调用返回一个 `[0, 1)` 区间内的浮点数。返回值若不在该区间，必须抛出 `ValueError`。\n\n## 输出\n每个函数返回一个 float，表示抖动后的延迟（秒）。若任何参数不合法（见各函数说明），抛出 `ValueError`。\n\n## 预期行为\n1. `full_jitter(base_delay, random_func)` 返回 `base_delay * random_func()`。因此当 `base_delay` 为 0 时返回 0；当 `random_func` 返回 0 时返回 0。\n2. `equal_jitter(base_delay, random_func)` 返回 `base_delay / 2 + (base_delay / 2) * random_func()`。因此结果总在 `[base_delay/2, base_delay)` 区间内。\n3. `decorrelated_jitter(base_delay, previous_delay, cap, random_func)`：\n   - 计算 `upper = min(cap, previous_delay * 3.0)`。\n   - 如果 `upper <= base_delay`，返回 `base_delay`。\n   - 否则返回 `base_delay + (upper - base_delay) * random_func()`。\n   - 这保证返回不低于 `base_delay`，且当 `previous_delay` 为 0 时返回 `base_delay`。\n4. 所有函数在以下情况下必须抛出 `ValueError`：\n   - `base_delay < 0`；\n   - `previous_delay < 0`（仅 `decorrelated_jitter`）；\n   - `cap < base_delay`（仅 `decorrelated_jitter`）；\n   - `random_func()` 返回值小于 0 或大于等于 1。\n\n## 约束条件\n- 新模块必须位于 `tenacity/jitter.py`。\n- 不得修改项目内任何现有文件（包括 `tenacity/__init__.py`），只新增该模块。\n- 不得修改任何测试文件。\n- 不得引入新的第三方依赖；只能使用 Python 标准库和项目已有依赖（本模块实际仅需标准库）。\n- 实现必须为纯逻辑，无网络、文件、随机数种子、时间等副作用；随机性只能来自传入的 `random_func` 参数。", "hints": null, "modified_files": ["tenacity/jitter.py"], "do_not_modify": ["tests/test_jitter_synth.py"], "test_cmd": "pytest tests/ -q", "FAIL_TO_PASS": ["tests/test_jitter_synth.py::test_decorrelated_jitter_basic", "tests/test_jitter_synth.py::test_decorrelated_jitter_cap_bounds", "tests/test_jitter_synth.py::test_decorrelated_jitter_invalid_cap_raises", "tests/test_jitter_synth.py::test_decorrelated_jitter_negative_previous_raises", "tests/test_jitter_synth.py::test_decorrelated_jitter_previous_zero_returns_base", "tests/test_jitter_synth.py::test_equal_jitter_basic", "tests/test_jitter_synth.py::test_equal_jitter_extremes", "tests/test_jitter_synth.py::test_equal_jitter_negative_base_raises", "tests/test_jitter_synth.py::test_full_jitter_basic", "tests/test_jitter_synth.py::test_full_jitter_invalid_random_value_raises", "tests/test_jitter_synth.py::test_full_jitter_negative_base_raises", "tests/test_jitter_synth.py::test_full_jitter_zero_random_value"], "PASS_TO_PASS": [], "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0016:v1", "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0016:v1-sol", "verify_script": "/task/verify.sh", "generated_by": {"model": "deepseek-v4-pro-202606", "agent": "agent1", "ts": "2026-08-20T08:42:23.915880+00:00", "prompt_version": "module-v1", "input_tokens": 18486, "output_tokens": 68234}, "validation": {"local_sanity_passed": true, "local_duration_sec": 2.606876850128174, "sandbox_tool": null, "sandbox_instance_id": null, "empty_solution_result": null, "golden_solution_result": null, "deterministic": true, "duration_sec": null, "llm_attempt": {"solvable": true, "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据", "first_pass_attempt": 1, "difficulty_signal": "easy_for_llm", "n_attempts": 1, "attempts": [{"attempt": 1, "passed": true, "f2p": "12/12", "p2p": "0/0", "error": null}]}, "proof_dir": "/Users/jacobliang/学习/课题三-数据合成/data/proofs/swe-synth-0016"}, "overlap_check": {"passed": false, "method": "github_search+bm25+embedding+llm_judge", "queried": [], "top_candidates": [], "target_file_last_modified": null, "months_since_last_change": null, "verdict_reason": null}, "reject_reason": null}
+{
+  "task_id": "swe-synth-0016",
+  "task_type": "module_addition",
+  "difficulty": "easy",
+  "state": "LOCAL_OK",
+  "repo": "jd/tenacity",
+  "repo_stars": 6000,
+  "base_commit": "26f719dc73d3c5612b9c1b8d18a7883837790ad8",
+  "language": "python",
+  "problem_statement": "## 背景与上下文\n\ntenacity 是一个 Python 重试库，内置了 `wait_exponential`、`wait_incrementing` 等等待策略，但这些策略都返回可供重试调度使用的函数，不直接给出每次重试前的具体延迟序列。在实际使用中，用户可能需要提前计算、展示或分析退避延迟序列（例如生成文档、估算超时时间、调试重试配置），当前项目缺少一个公开的纯计算工具。\n\n## 需要实现的功能\n\n请新增模块 `tenacity/backoff_sequence.py`，提供三个纯函数，用于计算重试退避延迟序列：\n`exponential_backoff_sequence` 计算指数退避序列；\n`linear_backoff_sequence` 计算线性递增序列；\n`total_delay` 计算给定延迟序列的总和。\n这三个函数只做数值计算，不进行任何重试执行、时间格式化、网络或文件操作。\n\n## 输入\n\n`exponential_backoff_sequence(base_delay, multiplier, max_delay, retries)`：\n- `base_delay`：float，首次重试前的等待时间，必须为非负数\n- `multiplier`：float，指数增长因子，必须大于 1\n- `max_delay`：Optional[float]，单个延迟的上限；传入 `None` 表示不设上限；传入非 `None` 时必须大于 0\n- `retries`：int，需要生成的重试延迟个数，必须为非负整数\n\n`linear_backoff_sequence(base_delay, increment, max_delay, retries)`：\n- `base_delay`：float，首次重试前的等待时间，必须为非负数\n- `increment`：float，每次重试延迟的固定增量，必须为非负数\n- `max_delay`：Optional[float]，含义同上\n- `retries`：int，含义同上\n\n`total_delay(sequence)`：\n- `sequence`：Iterable[float]，一个非负延迟值的可迭代对象\n\n## 输出\n\n- `exponential_backoff_sequence` 与 `linear_backoff_sequence` 均返回 `tuple[float, ...]`，长度等于 `retries`。元组索引 `i`（从 0 开始）对应第 `i+1` 次重试前的等待时间。\n- 指数序列的第 `i` 个元素为 `min(base_delay * multiplier**i, max_delay)`（当 `max_delay` 为 `None` 时只取前半部分）；线性序列的第 `i` 个元素为 `min(base_delay + increment * i, max_delay)`（当 `max_delay` 为 `None` 时只取前半部分）。\n- `total_delay` 返回 `float`，为输入序列中所有元素之和。\n- 当任何参数违反上述输入约束时，抛出 `ValueError`，具体消息内容不限。`total_delay` 遇到负数元素时同样抛出 `ValueError`。\n\n## 预期行为\n\n1. 指数退避无上限时，元素严格按照 `base_delay * multiplier**i` 生成；例如 base=1.0、multiplier=2.0、max_delay=None、retries=5 应返回 `(1.0, 2.0, 4.0, 8.0, 16.0)`。\n2. 指数退避有上限时，任何超过 `max_delay` 的计算值都会被截断为该上限；例如 base=1.0、multiplier=2.0、max_delay=3.0、retries=5 返回 `(1.0, 2.0, 3.0, 3.0, 3.0)`。\n3. 线性退避无上限时，元素严格按照 `base_delay + increment * i` 生成；有上限时同样截断。\n4. 当 `retries` 为 0 时，两个序列生成函数都返回空元组 `()`。\n5. `total_delay` 对空序列返回 `0.0`。\n6. `base_delay < 0`、`multiplier <= 1`、`increment < 0`、`retries < 0`、或 `max_delay` 非 `None` 且 `<= 0` 时，抛出 `ValueError`。\n7. `total_delay` 的输入序列包含任意负数时，抛出 `ValueError`。\n8. 当 `max_delay` 非 `None` 且 `max_delay < base_delay` 时，指数和线性序列的所有元素都等于 `max_delay`（因为首个元素即被截断，后续元素更大）。\n\n## 约束条件\n\n- 新模块路径必须为 `tenacity/backoff_sequence.py`，不能修改项目内任何现有文件。\n- 不得修改测试文件。\n- 只允许使用 Python 标准库和项目已有依赖；`typing` 已足够，禁止引入任何新的第三方依赖。\n- 实现必须是纯逻辑功能，不得进行网络请求、文件读写、子进程、随机数生成，也不得依赖当前时间。\n- 所有公开函数的名称、参数列表和返回值类型必须与题干描述完全一致。",
+  "hints": null,
+  "modified_files": [
+    "tenacity/backoff_sequence.py"
+  ],
+  "do_not_modify": [
+    "tests/test_backoff_sequence_synth.py"
+  ],
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_invalid_base_delay",
+    "tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_no_max",
+    "tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_with_max",
+    "tests/test_backoff_sequence_synth.py::test_exponential_backoff_sequence_zero_retries",
+    "tests/test_backoff_sequence_synth.py::test_linear_backoff_sequence_expected",
+    "tests/test_backoff_sequence_synth.py::test_linear_backoff_sequence_invalid_increment",
+    "tests/test_backoff_sequence_synth.py::test_linear_backoff_sequence_with_max",
+    "tests/test_backoff_sequence_synth.py::test_total_delay_empty_sequence",
+    "tests/test_backoff_sequence_synth.py::test_total_delay_negative_value_raises",
+    "tests/test_backoff_sequence_synth.py::test_total_delay_sums_sequence"
+  ],
+  "PASS_TO_PASS": [],
+  "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0016:v1",
+  "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0016:v1-sol",
+  "verify_script": "/task/verify.sh",
+  "generated_by": {
+    "model": "deepseek-v4-pro-202606",
+    "agent": "agent1",
+    "ts": "2026-08-22T10:42:54.710779+00:00",
+    "prompt_version": "module-v1",
+    "input_tokens": 40113,
+    "output_tokens": 174863
+  },
+  "validation": {
+    "local_sanity_passed": true,
+    "local_duration_sec": 3.4910879135131836,
+    "sandbox_tool": null,
+    "sandbox_instance_id": null,
+    "empty_solution_result": null,
+    "golden_solution_result": null,
+    "deterministic": true,
+    "duration_sec": null,
+    "llm_attempt": {
+      "solvable": true,
+      "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据",
+      "first_pass_attempt": 1,
+      "difficulty_signal": "easy_for_llm",
+      "n_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "passed": true,
+          "f2p": "10/10",
+          "p2p": "0/0",
+          "error": null
+        }
+      ]
+    },
+    "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0016"
+  },
+  "overlap_check": {
+    "passed": false,
+    "method": "github_search+bm25+embedding+llm_judge",
+    "queried": [],
+    "top_candidates": [],
+    "target_file_last_modified": null,
+    "months_since_last_change": null,
+    "verdict_reason": null
+  },
+  "reject_reason": null
+}

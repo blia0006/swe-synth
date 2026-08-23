@@ -2,13 +2,13 @@
   "passed": true,
   "method": "github_search+bm25+embedding+llm_judge",
   "queried": [
-    "loads",
-    "timed",
-    "return_timestamp",
-    "SignatureExpired"
+    "dumps",
+    "serialize",
+    "test_refactor_guard_swe_synth_0031",
+    "CaseInsensitiveDict"
   ],
   "top_candidates": [],
-  "target_file_last_modified": "2025-05-28T20:47:57Z",
-  "months_since_last_change": 14.7,
+  "target_file_last_modified": "2023-10-18T00:24:18Z",
+  "months_since_last_change": 34.1,
   "verdict_reason": "未检索到与本题相关的 issue/PR"
 }

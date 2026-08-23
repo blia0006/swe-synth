@@ -2,55 +2,54 @@
   "task_id": "swe-synth-0015",
   "passed": true,
   "reason": "双向验证通过：空解失败（题目有内容）、参考解通过（题目可解）",
-  "empty_sandbox_id": "vmmssmr7agxqupkebbuh373oinkahw5byzf7ngqh",
-  "golden_sandbox_id": "lb64rt73d3mplfuee7epz4tcifpzwwblhwh4iymo",
+  "empty_sandbox_id": "atuichpqj2gkenf327apzuslapjtu2hxl3uueztp",
+  "golden_sandbox_id": "j5ble3sr2bw2fbqpggrrpi22rn4a4q65fplflef2",
   "empty_run": {
     "task_id": "swe-synth-0015",
     "passed": false,
     "fail_to_pass": {
-      "total": 11,
+      "total": 10,
       "passed": 0,
       "failing": [
-        "tests/test_backoff_calculator_synth.py::test_attempts_possible_within_budget",
-        "tests/test_backoff_calculator_synth.py::test_attempts_possible_within_budget_zero",
-        "tests/test_backoff_calculator_synth.py::test_exponential_delay_basic",
-        "tests/test_backoff_calculator_synth.py::test_exponential_delay_with_max_delay",
-        "tests/test_backoff_calculator_synth.py::test_invalid_attempt",
-        "tests/test_backoff_calculator_synth.py::test_invalid_budget",
-        "tests/test_backoff_calculator_synth.py::test_invalid_initial_delay",
-        "tests/test_backoff_calculator_synth.py::test_invalid_max_delay",
-        "tests/test_backoff_calculator_synth.py::test_invalid_multiplier",
-        "tests/test_backoff_calculator_synth.py::test_total_delay_until_attempt",
-        "tests/test_backoff_calculator_synth.py::test_total_delay_with_cap"
+        "tests/test_cache_control.py::TestCacheControllerResponse::test_update_cached_response_with_valid_headers_separate_body",
+        "tests/test_regressions.py::Test39::test_file_cache_recognizes_consumed_file_handle",
+        "tests/test_storage_filecache.py::TestFileCache::test_body_stored_inline",
+        "tests/test_storage_filecache.py::TestFileCache::test_filecache_directory_already_exists",
+        "tests/test_storage_filecache.py::TestFileCache::test_filecache_directory_not_exists",
+        "tests/test_storage_filecache.py::TestFileCache::test_filecache_from_cache",
+        "tests/test_storage_filecache.py::TestSeparateBodyFileCache::test_body_actually_stored_separately",
+        "tests/test_storage_filecache.py::TestSeparateBodyFileCache::test_filecache_directory_already_exists",
+        "tests/test_storage_filecache.py::TestSeparateBodyFileCache::test_filecache_directory_not_exists",
+        "tests/test_storage_filecache.py::TestSeparateBodyFileCache::test_filecache_from_cache"
       ]
     },
     "pass_to_pass": {
-      "total": 0,
-      "passed": 0,
+      "total": 51,
+      "passed": 51,
       "failing": []
     },
     "collect_error": false,
     "pytest_returncode": 1,
-    "n_collected": 11,
+    "n_collected": 61,
     "raw_log_path": "/task/pytest_raw.log"
   },
   "golden_run": {
     "task_id": "swe-synth-0015",
     "passed": true,
     "fail_to_pass": {
-      "total": 11,
-      "passed": 11,
+      "total": 10,
+      "passed": 10,
       "failing": []
     },
     "pass_to_pass": {
-      "total": 0,
-      "passed": 0,
+      "total": 51,
+      "passed": 51,
       "failing": []
     },
     "collect_error": false,
     "pytest_returncode": 0,
-    "n_collected": 11,
+    "n_collected": 61,
     "raw_log_path": "/task/pytest_raw.log"
   },
-  "duration_sec": 195.5
+  "duration_sec": 85.6
 }

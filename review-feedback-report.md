@@ -6,8 +6,8 @@
 > 说明：共 4 条评审意见，本文逐条给出**实测结论**与整改方案。
 > 所有结论均来自真实环境实测（远端 amd64 构建机 + 腾讯云 AGS 沙箱），非推测。
 >
-> **⭐ 最新状态（2026-08-23）**：数据集最终核实为 **24 道题全部 ACCEPTED**（其中
-> 12 道已用本报告 4.5 节的双镜像新架构），详见 `交付说明.md`。本文数字（19 道）
+> **⭐ 最新状态（2026-08-23）**：数据集最终核实为 **29 道题全部 ACCEPTED**（其中
+> 22 道已用本报告 4.5 节的双镜像新架构），详见 `交付说明.md`。本文数字（19 道）
 > 是撰写时的快照，整改结论与技术方案不受影响。
 
 ---
@@ -391,7 +391,7 @@ base image（env+工具，不随题目变化）→ 放在 volume image mount 位
 | P2 | e2b 2.x 适配层（生产默认） | ✅ 已完成：`E2B_VALIDATE_API_KEY=false` 官方开关 + `requirements.txt` 锁 2.x |
 | P2 | base 走 `StorageMounts` 挂载卷（用户明确要求的确切双镜像架构） | ✅ 已完成：`AGSClient.create_tool(storage_mounts=...)` + `_ensure_shared_tool(base_image=...)`，见 4.5 |
 
-> ⚠️ 重要：现有 19 道 ACCEPTED 题目及其 38 个镜像**仍然有效可用**，
+> ⚠️ 重要：早期批次已验收的题目及其镜像**仍然有效可用**，
 > 改造属于工程优化，不影响已交付数据集的正确性。`config/settings.yaml` 的
 > `image.base` **现已指向共享 base 镜像**（`swe-synth-base:ubuntu22.04-v1`），
 > 新出题/新验证都会自动走共享 base 快速路径 + 挂载卷；`dockerfile_gen` 保留

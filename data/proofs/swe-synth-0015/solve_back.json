@@ -1,6 +1,6 @@
 {
   "solvable": true,
-  "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据",
+  "reason": "题干准确：LLM 第 1 次尝试即依据题干实现并通过全部判据",
   "first_pass_attempt": 1,
   "difficulty_signal": "easy_for_llm",
   "n_attempts": 1,
@@ -8,8 +8,8 @@
     {
       "attempt": 1,
       "passed": true,
-      "f2p": "11/11",
-      "p2p": "0/0",
+      "f2p": "10/10",
+      "p2p": "51/51",
       "error": null
     }
   ]

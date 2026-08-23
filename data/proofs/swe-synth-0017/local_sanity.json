@@ -2,27 +2,29 @@
   "ok": true,
   "reason": "双向 sanity 通过：题目态必红、golden 态必绿、原有用例未被破坏",
   "fail_to_pass": [
-    "tests/test_retry_stats_synth.py::test_initial_summary_is_empty",
-    "tests/test_retry_stats_synth.py::test_mixed_attempts",
-    "tests/test_retry_stats_synth.py::test_record_attempt_invalid_duration",
-    "tests/test_retry_stats_synth.py::test_record_attempt_invalid_error_type_for_failure",
-    "tests/test_retry_stats_synth.py::test_record_attempt_invalid_error_type_for_success",
-    "tests/test_retry_stats_synth.py::test_record_attempt_invalid_outcome",
-    "tests/test_retry_stats_synth.py::test_record_failure_updates_counts_and_errors",
-    "tests/test_retry_stats_synth.py::test_record_success_and_failure_wrappers",
-    "tests/test_retry_stats_synth.py::test_record_success_updates_counts"
+    "tests/test_backoff_policies_synth.py::test_fibonacci_default_sequence",
+    "tests/test_backoff_policies_synth.py::test_fibonacci_negative_max_attempts",
+    "tests/test_backoff_policies_synth.py::test_fibonacci_non_integer_max_attempts",
+    "tests/test_backoff_policies_synth.py::test_fibonacci_with_initial_and_multiplier",
+    "tests/test_backoff_policies_synth.py::test_fibonacci_zero_attempts",
+    "tests/test_backoff_policies_synth.py::test_polynomial_custom_degree_and_coefficient",
+    "tests/test_backoff_policies_synth.py::test_polynomial_default_sequence",
+    "tests/test_backoff_policies_synth.py::test_polynomial_degree_zero",
+    "tests/test_backoff_policies_synth.py::test_polynomial_negative_degree",
+    "tests/test_backoff_policies_synth.py::test_polynomial_non_integer_degree",
+    "tests/test_backoff_policies_synth.py::test_zero_attempts_returns_empty_list"
   ],
   "pass_to_pass": [],
   "deterministic": true,
-  "duration_sec": 2.6,
+  "duration_sec": 3.47,
   "stub_summary": {
     "returncode": 1,
     "n_passed": 0,
-    "n_failed": 9
+    "n_failed": 11
   },
   "golden_summary": {
     "returncode": 0,
-    "n_passed": 9,
+    "n_passed": 11,
     "n_failed": 0
   }
 }

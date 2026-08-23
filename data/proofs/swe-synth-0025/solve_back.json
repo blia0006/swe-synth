@@ -1,23 +1,16 @@
 {
-  "solvable": false,
-  "reason": "题干可能不准确或过于含糊：2 次尝试均未通过（最好一次 FAIL_TO_PASS 0/6）。常见原因是题干描述的行为与真实实现不一致。",
-  "first_pass_attempt": null,
-  "difficulty_signal": "too_hard_or_ambiguous",
-  "n_attempts": 2,
+  "solvable": true,
+  "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据",
+  "first_pass_attempt": 1,
+  "difficulty_signal": "easy_for_llm",
+  "n_attempts": 1,
   "attempts": [
     {
       "attempt": 1,
-      "passed": false,
-      "f2p": "0/0",
-      "p2p": "0/0",
-      "error": "生成的代码语法错误：第 72 行 unexpected indent"
-    },
-    {
-      "attempt": 2,
-      "passed": false,
-      "f2p": "0/0",
-      "p2p": "0/0",
-      "error": "生成的代码语法错误：第 72 行 unexpected indent"
+      "passed": true,
+      "f2p": "3/3",
+      "p2p": "17/17",
+      "error": null
     }
   ]
 }

@@ -1,1 +1,92 @@
-{"task_id": "swe-synth-0014", "task_type": "refactoring", "difficulty": "medium", "state": "LOCAL_OK", "repo": "python-humanize/humanize", "repo_stars": 1900, "base_commit": "ce4147b6c8f8a132f772be0929d58305eb22c5d9", "language": "python", "problem_statement": "## 背景与上下文\n\n在 `python-humanize/humanize` 项目中，`src/humanize/filesize.py` 里的 `naturalsize` 函数负责将字节数格式化为人类可读的文件大小字符串（如 `3.0 MB`）。当前实现虽然功能正确，但把多个独立职责（选择后缀与基数、处理小字节特例、计算指数、调整进位、最终格式化）全部堆在一个函数里，导致圈复杂度高达 12，有效代码行数多且难以理解和维护。需要在不改变任何对外行为的前提下，对该函数进行结构性重构，使其更清晰、更易测试和扩展。\n\n## 需要实现的功能\n\n这是一道代码重构题，目标是改善 `naturalsize` 的结构，降低其圈复杂度和有效行数，而不是改变或新增任何功能。请将函数中可独立的职责提取为模块级私有辅助函数（以下划线开头），并让 `naturalsize` 只保留高层编排逻辑。重构后的代码必须与现有实现行为完全等价。\n\n## 输入\n\n`naturalsize` 的参数保持不变：\n- `value (int, float, str)`：要转换的字节数。\n- `binary (bool)`：若为 `True`，使用二进制后缀（KiB、MiB）并以 1024 为底；默认为 `False`。\n- `gnu (bool)`：若为 `True`，忽略 `binary`，使用 GNU 风格后缀（K、M）并以 1024 为底；默认为 `False`。\n- `format (str)`：自定义格式化字符串，默认为 `\"%.1f\"`。\n\n## 输出\n\n返回值类型为 `str`，表示人类可读的文件大小。异常行为也必须与原来一致：例如 `float(value)` 转换失败时抛出 `ValueError`，格式化字符串无效时也可能抛出异常。不得改变任何异常类型或触发条件。\n\n## 预期行为\n\n① 必须保持以下行为完全不变：\n- 所有分支逻辑和返回值（包括 GNU 与非 GNU 模式下的单字节和低于基数的特例）必须与原实现一致。\n- 四舍五入导致尾数达到基数时，是否提升后缀的逻辑必须保持不变。\n- 翻译函数 `_` 的使用位置和参数不变。\n- 函数签名、默认参数、类型注解逐字不变。\n\n② 要求消除以下具体坏味道：\n- 函数过长且承担多个职责。\n- 圈复杂度高：`gnu/binary` 选择、小字节特例、指数调整等多个条件分支混杂。\n- 魔法数字：1024 和 1000 散落在函数中。\n- 可读性差：计算指数和进位调整的逻辑晦涩，缺少有意义的命名。\n\n③ 允许做以下结构性调整：\n- 将选择后缀和基数的逻辑提取为辅助函数。\n- 将处理小字节（小于基数或单字节）的逻辑提取为辅助函数。\n- 将计算并调整指数的逻辑提取为辅助函数。\n- 调整局部变量的命名以提高可读性，但不得改变计算过程。\n\n## 约束条件\n\n- 必须保持 `naturalsize` 的函数签名逐字不变（包括参数名、顺序、默认值、类型注解）。\n- 不得修改任何测试文件。\n- 不得改变任何对外可见的行为，包括返回值、异常、文档字符串中的示例输出。\n- 不得引入新的第三方依赖，只能使用标准库和文件中已导入的模块。\n- 提取的辅助函数应为模块级私有函数（以下划线开头），并放置在文件末尾。\n\n## 自动化质量门槛\n\n除了「所有既有测试必须保持通过」之外，本题还有一组**静态指标**判据\n（由 `tests/test_refactor_guard_swe_synth_0014.py` 自动检查，该文件属于判据、不可修改）：\n\n| 指标 | 重构前 | 要求 |\n|---|---|---|\n| `naturalsize` 的有效代码行数 | 19 | ≤ **12** |\n| `naturalsize` 的圈复杂度 | 12 | ≤ **5** |\n| 文件内任一函数的有效代码行数 | — | ≤ **12** |\n| `naturalsize` 的参数列表 | `value, binary, gnu, format` | 保持完全不变 |\n\n说明：\n- 「有效代码行数」不含 docstring、空行与纯注释行，所以删注释、压行都无助于达标\n- 最后一项限制的用意是防止「把逻辑整体搬到另一个大函数」这种伪重构\n- 达标的常规做法是：把目标函数中彼此独立的职责，提取为若干个小的私有辅助函数\n", "hints": null, "modified_files": ["src/humanize/filesize.py"], "do_not_modify": ["tests/test_benchmarks.py", "tests/test_filesize.py", "tests/test_i18n.py", "tests/test_refactor_guard_swe_synth_0014.py"], "test_cmd": "pytest tests/ -q", "FAIL_TO_PASS": ["tests/test_refactor_guard_swe_synth_0014.py::test_no_new_monolithic_function", "tests/test_refactor_guard_swe_synth_0014.py::test_target_function_complexity_reduced", "tests/test_refactor_guard_swe_synth_0014.py::test_target_function_is_simplified"], "PASS_TO_PASS": ["tests/test_benchmarks.py::test_apnumber", "tests/test_benchmarks.py::test_clamp", "tests/test_benchmarks.py::test_fractional", "tests/test_benchmarks.py::test_intcomma", "tests/test_benchmarks.py::test_intword", "tests/test_benchmarks.py::test_metric", "tests/test_benchmarks.py::test_natural_list", "tests/test_benchmarks.py::test_naturaldate", "tests/test_benchmarks.py::test_naturalday", "tests/test_benchmarks.py::test_naturaldelta", "tests/test_benchmarks.py::test_naturalsize", "tests/test_benchmarks.py::test_naturaltime", "tests/test_benchmarks.py::test_ordinal", "tests/test_benchmarks.py::test_precisedelta", "tests/test_benchmarks.py::test_scientific", "tests/test_filesize.py::test_naturalsize[test_args43-30.3K]", "tests/test_filesize.py::test_naturalsize[test_args44-30.5M]", "tests/test_filesize.py::test_naturalsize[test_args45-30.7G]", "tests/test_filesize.py::test_naturalsize[test_args46-30.9T]", "tests/test_filesize.py::test_naturalsize[test_args47-31.1P]", "tests/test_filesize.py::test_naturalsize[test_args48-31.2E]", "tests/test_filesize.py::test_naturalsize[test_args49-31.3Z]", "tests/test_filesize.py::test_naturalsize[test_args50-31.4Y]", "tests/test_filesize.py::test_naturalsize[test_args51-31.5R]", "tests/test_filesize.py::test_naturalsize[test_args52-31.6Q]", "tests/test_filesize.py::test_naturalsize[test_args53-300B]", "tests/test_filesize.py::test_naturalsize[test_args54-2.9K]", "tests/test_filesize.py::test_naturalsize[test_args55-2.9M]", "tests/test_filesize.py::test_naturalsize[test_args56-1.0K]", "tests/test_filesize.py::test_naturalsize[test_args61-2.930K]", "tests/test_filesize.py::test_naturalsize[test_args62-3G]", "tests/test_filesize.py::test_naturalsize[test_args67-1B]", "tests/test_filesize.py::test_naturalsize[test_args68-1.1K]", "tests/test_filesize.py::test_naturalsize[test_args69-1.1M]", "tests/test_filesize.py::test_naturalsize[test_args75-1.0M]", "tests/test_i18n.py::TestActivate::test_default_locale_path_null__spec__", "tests/test_i18n.py::TestActivate::test_default_locale_path_undefined__spec__", "tests/test_i18n.py::TestActivate::test_en_locale", "tests/test_i18n.py::test_default_locale_path_defined__spec__", "tests/test_i18n.py::test_default_locale_path_none__spec__", "tests/test_i18n.py::test_default_locale_path_undefined__file__", "tests/test_refactor_guard_swe_synth_0014.py::test_signature_unchanged"], "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0014:v1", "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0014:v1-sol", "verify_script": "/task/verify.sh", "generated_by": {"model": "deepseek-v4-pro-202606", "agent": "agent1", "ts": "2026-08-20T06:19:00.917807+00:00", "prompt_version": "refactor-v1", "input_tokens": 59073, "output_tokens": 237673}, "validation": {"local_sanity_passed": true, "local_duration_sec": 25.22148823738098, "sandbox_tool": null, "sandbox_instance_id": null, "empty_solution_result": null, "golden_solution_result": null, "deterministic": true, "duration_sec": null, "llm_attempt": {"solvable": true, "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据", "first_pass_attempt": 1, "difficulty_signal": "easy_for_llm", "n_attempts": 1, "attempts": [{"attempt": 1, "passed": true, "f2p": "3/3", "p2p": "42/42", "error": null}]}, "proof_dir": "/Users/jacobliang/学习/课题三-数据合成/data/proofs/swe-synth-0014"}, "overlap_check": {"passed": false, "method": "github_search+bm25+embedding+llm_judge", "queried": [], "top_candidates": [], "target_file_last_modified": null, "months_since_last_change": null, "verdict_reason": null}, "reject_reason": null}
+{
+  "task_id": "swe-synth-0014",
+  "task_type": "refactoring",
+  "difficulty": "medium",
+  "state": "LOCAL_OK",
+  "repo": "psf/cachecontrol",
+  "repo_stars": 500,
+  "base_commit": "91a26abbbebd4d08cbfca909f90cb3a186fe7739",
+  "language": "python",
+  "problem_statement": "## 背景与上下文\n\n在 psf/cachecontrol 项目的 cachecontrol/heuristics.py 中，LastModified.update_headers 实现了基于 Last-Modified 与 Date 响应头的启发式缓存过期策略。该函数当前将所有条件检查、日期解析、新鲜期计算和响应头格式化逻辑集中在一个方法里，导致圈复杂度达 10，可读性和可测试性较差。为降低维护成本，需要对它进行结构优化，而不改变其对外行为。\n\n## 需要实现的功能\n\n这是一道代码重构题：请重构 LastModified.update_headers 方法，将独立的职责提取为模块级私有辅助函数，使主流程更清晰、分支更少，同时保证所有输入输出和异常行为完全一致。\n\n## 输入\n\n- `resp`: `HTTPResponse` 类型，包含 `headers`（映射类型）和 `status` 属性。\n- 重构前后该参数及其类型保持不变。\n\n## 输出\n\n- 返回 `dict[str, str]`。\n- 若决定不添加过期响应头，返回空字典 `{}`。\n- 否则返回 `{'expires': <格式化的 HTTP 日期字符串>}`。\n- 当 `Date` 头存在但无法被解析时，原实现会触发 `AssertionError`；重构后必须保持同样的异常触发条件与类型。\n\n## 预期行为\n\n1. 必须保持以下行为完全不变：\n   - 所有提前返回的条件及其顺序；\n   - 对 `headers` 中 `expires`、`cache-control`、`date`、`last-modified` 的检查和取值方式；\n   - 对 `resp.status` 与 `self.cacheable_by_default_statuses` 的比较；\n   - `Date` 和 `Last-Modified` 的解析、时间元组转换和浮点除法精度；\n   - `time.time()`、`time.gmtime()`、`time.strftime()` 的调用时机与参数；\n   - 返回的过期时间字符串格式。\n2. 需要消除的具体坏味道：\n   - 多重提前返回导致的圈复杂度过高；\n   - 日期解析、新鲜期计算、格式化等职责混合；\n   - 魔法数字 `10` 和 `24 * 3600` 缺少命名；\n   - 使用 `assert` 进行业务校验导致错误路径不清晰；\n   - 重复的 headers 键检查逻辑。\n3. 允许以下结构性调整：\n   - 提取模块级私有辅助函数（建议以 `_` 开头）；\n   - 提取模块级常量（如新鲜期除数、最大新鲜期）；\n   - 将检查逻辑拆分为若干小函数，使主方法更扁平；\n   - 保留原有类型标注和函数签名。\n\n## 约束条件\n\n- `LastModified.update_headers` 的签名必须逐字保持不变，包括参数名、顺序、默认值、类型标注和返回标注。\n- 不得修改任何测试文件或添加新的测试。\n- 不得改变任何对外可见的行为，包括返回值、异常类型、触发条件、副作用顺序和数值精度。\n- 不得引入新的第三方依赖，只能使用该文件已导入的标准库模块。\n- 不得将大段逻辑压缩为长表达式以“降低行数”；必须通过提取小函数来降低圈复杂度。\n\n## 自动化质量门槛\n\n除了「所有既有测试必须保持通过」之外，本题还有一组**静态指标**判据\n（由 `tests/test_refactor_guard_swe_synth_0014.py` 自动检查，该文件属于判据、不可修改）：\n\n| 指标 | 重构前 | 要求 |\n|---|---|---|\n| `LastModified.update_headers` 的有效代码行数 | 23 | ≤ **20** |\n| `LastModified.update_headers` 的圈复杂度 | 10 | ≤ **8** |\n| 文件内任一函数的有效代码行数 | — | ≤ **22** |\n| `LastModified.update_headers` 的参数列表 | `self, resp` | 保持完全不变 |\n\n说明：\n- 「有效代码行数」不含 docstring、空行与纯注释行，所以删注释、压行都无助于达标\n- 最后一项限制的用意是防止「把逻辑整体搬到另一个大函数」这种伪重构\n- 达标的常规做法是：把目标函数中彼此独立的职责，提取为若干个小的私有辅助函数\n",
+  "hints": null,
+  "modified_files": [
+    "cachecontrol/heuristics.py"
+  ],
+  "do_not_modify": [
+    "tests/test_expires_heuristics.py",
+    "tests/test_refactor_guard_swe_synth_0014.py"
+  ],
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_refactor_guard_swe_synth_0014.py::test_no_new_monolithic_function",
+    "tests/test_refactor_guard_swe_synth_0014.py::test_target_function_complexity_reduced",
+    "tests/test_refactor_guard_swe_synth_0014.py::test_target_function_is_simplified"
+  ],
+  "PASS_TO_PASS": [
+    "tests/test_expires_heuristics.py::TestExpiresAfter::test_expires_after_one_day",
+    "tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_301",
+    "tests/test_expires_heuristics.py::TestHeuristicWith3xxResponse::test_heuristic_applies_to_304",
+    "tests/test_expires_heuristics.py::TestHeuristicWithoutWarning::test_no_header_change_means_no_warning_header",
+    "tests/test_expires_heuristics.py::TestLastModified::test_last_modified",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expires_is_not_replaced_when_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_expiry_is_no_more_that_twenty_four_hours",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_cache_control_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_not_used_when_status_is_unknown",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_last_modified_is_used_when_cache_control_public",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_no_expiry_is_inferred_when_no_last_modified_is_present",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_is_not_added_when_heuristic_was_not_used",
+    "tests/test_expires_heuristics.py::TestModifiedUnitTests::test_warning_not_added_when_response_more_recent_than_24_hours",
+    "tests/test_expires_heuristics.py::TestOneDayCache::test_cache_for_one_day",
+    "tests/test_expires_heuristics.py::TestUseExpiresHeuristic::test_expires_heuristic_arg",
+    "tests/test_refactor_guard_swe_synth_0014.py::test_signature_unchanged"
+  ],
+  "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0014:v1",
+  "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0014:v1-sol",
+  "verify_script": "/task/verify.sh",
+  "generated_by": {
+    "model": "deepseek-v4-pro-202606",
+    "agent": "agent1",
+    "ts": "2026-08-22T10:30:30.808198+00:00",
+    "prompt_version": "refactor-v1",
+    "input_tokens": 23702,
+    "output_tokens": 109090
+  },
+  "validation": {
+    "local_sanity_passed": true,
+    "local_duration_sec": 4.607229948043823,
+    "sandbox_tool": null,
+    "sandbox_instance_id": null,
+    "empty_solution_result": null,
+    "golden_solution_result": null,
+    "deterministic": true,
+    "duration_sec": null,
+    "llm_attempt": {
+      "solvable": true,
+      "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据",
+      "first_pass_attempt": 1,
+      "difficulty_signal": "easy_for_llm",
+      "n_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "passed": true,
+          "f2p": "3/3",
+          "p2p": "17/17",
+          "error": null
+        }
+      ]
+    },
+    "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0014"
+  },
+  "overlap_check": {
+    "passed": false,
+    "method": "github_search+bm25+embedding+llm_judge",
+    "queried": [],
+    "top_candidates": [],
+    "target_file_last_modified": null,
+    "months_since_last_change": null,
+    "verdict_reason": null
+  },
+  "reject_reason": null
+}

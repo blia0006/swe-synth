@@ -1,1 +1,83 @@
-{"task_id": "swe-synth-0008", "task_type": "refactoring", "difficulty": "medium", "state": "LOCAL_OK", "repo": "john-kurkowski/tldextract", "repo_stars": 2000, "base_commit": "72d37955ae5ba86267fd68c97b56866bd04c3ce9", "language": "python", "problem_statement": "## 背景与上下文\n项目 tldextract 是一个用于从 URL 或 FQDN 中提取子域、域名、后缀等信息的 Python 库。`main` 是命令行入口，负责解析参数、构造 `TLDExtract` 对象、处理更新/输入，以及输出结果。当前 `main` 函数有效代码 92 行，圈复杂度 10，参数解析、对象构建、结果输出等职责混杂，难以阅读和测试。因此需要在不改变对外行为的前提下，通过提取函数降低复杂度、提升可维护性。\n\n## 需要实现的功能\n这是一道重构题：请对 `main` 进行结构优化，通过提取模块级辅助函数（以下划线开头）来分离职责，显著降低 `main` 的有效行数与圈复杂度。重构不得改变 `main` 的签名与任何对外可见行为。\n\n## 输入\n`main` 无入参，所有输入来自命令行参数（通过 `argparse` 解析）。重构后 `main` 仍需无参，且内部解析参数的方式必须保持相同选项与默认值。\n\n## 输出\n`main` 无返回值。其行为包括：打印提取结果、打印帮助/用法信息，或调用 `sys.exit(1)` 退出程序。重构后这些输出的内容、顺序与触发条件必须与原来完全一致。\n\n## 预期行为\n1. 必须保持以下行为完全不变：\n   - 参数解析的选项名称、默认值、帮助文本。\n   - 当指定 `--update` 时，先执行更新操作，然后如果同时提供了输入，仍会处理并输出结果；此时不会进入打印用法的分支。\n   - 当未指定 `--update` 且未提供输入时，打印用法并以退出码 1 退出。\n   - 当未指定 `--update` 且提供了输入时，处理输入并输出结果。\n   - 对本地文件路径转换为 file URI 的逻辑。\n   - 普通输出格式 `\"{subdomain} {domain} {suffix}\"` 与 JSON 输出内容。\n2. 要求消除以下具体坏味道：\n   - 过长函数：拆分参数解析、对象构造、输出格式化。\n   - 圈复杂度高：将条件与循环分散到独立的小函数中。\n   - 职责单一性：每个辅助函数只做一件事。\n3. 允许做以下结构性调整：\n   - 提取 `_build_parser()` 负责创建并配置 `ArgumentParser`。\n   - 提取 `_build_obj_kwargs(args)` 负责根据命名空间构建 `TLDExtract` 的参数字典。\n   - 提取 `_print_extraction(ext, as_json)` 负责输出单个提取结果。\n   - 允许使用私有辅助函数（下划线开头）并放置在模块级。\n\n## 约束条件\n- `main` 的签名不得改变，参数名、顺序、默认值、`*args`/`**kwargs` 一律不动。\n- 不得修改任何测试文件。\n- 不得改变任何对外行为，包括打印内容、退出码、异常类型与触发条件、副作用顺序。\n- 不得引入新的第三方依赖，只能使用标准库及项目已有导入。\n- 辅助函数必须放在模块级（作为 helpers）以下划线开头表示私有。\n- 不得删除或重命名 `main`。\n\n## 自动化质量门槛\n\n除了「所有既有测试必须保持通过」之外，本题还有一组**静态指标**判据\n（由 `tests/test_refactor_guard_swe_synth_0008.py` 自动检查，该文件属于判据、不可修改）：\n\n| 指标 | 重构前 | 要求 |\n|---|---|---|\n| `main` 的有效代码行数 | 92 | ≤ **32** |\n| `main` 的圈复杂度 | 10 | ≤ **5** |\n| 文件内任一函数的有效代码行数 | — | ≤ **56** |\n| `main` 的参数列表 | `` | 保持完全不变 |\n\n说明：\n- 「有效代码行数」不含 docstring、空行与纯注释行，所以删注释、压行都无助于达标\n- 最后一项限制的用意是防止「把逻辑整体搬到另一个大函数」这种伪重构\n- 达标的常规做法是：把目标函数中彼此独立的职责，提取为若干个小的私有辅助函数\n", "hints": null, "modified_files": ["tldextract/cli.py"], "do_not_modify": ["tests/cli_test.py", "tests/test_refactor_guard_swe_synth_0008.py", "tests/test_release.py"], "test_cmd": "pytest tests/ -q", "FAIL_TO_PASS": ["tests/test_refactor_guard_swe_synth_0008.py::test_no_new_monolithic_function", "tests/test_refactor_guard_swe_synth_0008.py::test_target_function_complexity_reduced", "tests/test_refactor_guard_swe_synth_0008.py::test_target_function_is_simplified"], "PASS_TO_PASS": ["tests/cli_test.py::test_cli_json_output", "tests/cli_test.py::test_cli_namedargs", "tests/cli_test.py::test_cli_no_input", "tests/cli_test.py::test_cli_parses_args", "tests/cli_test.py::test_cli_posargs", "tests/test_refactor_guard_swe_synth_0008.py::test_signature_unchanged", "tests/test_release.py::test_happy_path"], "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0008:v1", "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0008:v1-sol", "verify_script": "/task/verify.sh", "generated_by": {"model": "deepseek-v4-pro-202606", "agent": "agent1", "ts": "2026-08-21T20:50:29.641001+00:00", "prompt_version": "refactor-v1", "input_tokens": 405630, "output_tokens": 1883451}, "validation": {"local_sanity_passed": true, "local_duration_sec": 2.1821954250335693, "sandbox_tool": null, "sandbox_instance_id": null, "empty_solution_result": null, "golden_solution_result": null, "deterministic": true, "duration_sec": null, "llm_attempt": {"solvable": true, "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据", "first_pass_attempt": 1, "difficulty_signal": "easy_for_llm", "n_attempts": 1, "attempts": [{"attempt": 1, "passed": true, "f2p": "3/3", "p2p": "7/7", "error": null}]}, "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0008"}, "overlap_check": {"passed": false, "method": "github_search+bm25+embedding+llm_judge", "queried": [], "top_candidates": [], "target_file_last_modified": null, "months_since_last_change": null, "verdict_reason": null}, "reject_reason": null}
+{
+  "task_id": "swe-synth-0008",
+  "task_type": "refactoring",
+  "difficulty": "medium",
+  "state": "LOCAL_OK",
+  "repo": "john-kurkowski/tldextract",
+  "repo_stars": 2000,
+  "base_commit": "72d37955ae5ba86267fd68c97b56866bd04c3ce9",
+  "language": "python",
+  "problem_statement": "## 背景与上下文\n项目 tldextract 是一个用于从 URL 或 FQDN 中提取子域、域名、后缀等信息的 Python 库。`main` 是命令行入口，负责解析参数、构造 `TLDExtract` 对象、处理更新/输入，以及输出结果。当前 `main` 函数有效代码 92 行，圈复杂度 10，参数解析、对象构建、结果输出等职责混杂，难以阅读和测试。因此需要在不改变对外行为的前提下，通过提取函数降低复杂度、提升可维护性。\n\n## 需要实现的功能\n这是一道重构题：请对 `main` 进行结构优化，通过提取模块级辅助函数（以下划线开头）来分离职责，显著降低 `main` 的有效行数与圈复杂度。重构不得改变 `main` 的签名与任何对外可见行为。\n\n## 输入\n`main` 无入参，所有输入来自命令行参数（通过 `argparse` 解析）。重构后 `main` 仍需无参，且内部解析参数的方式必须保持相同选项与默认值。\n\n## 输出\n`main` 无返回值。其行为包括：打印提取结果、打印帮助/用法信息，或调用 `sys.exit(1)` 退出程序。重构后这些输出的内容、顺序与触发条件必须与原来完全一致。\n\n## 预期行为\n1. 必须保持以下行为完全不变：\n   - 参数解析的选项名称、默认值、帮助文本。\n   - 当指定 `--update` 时，先执行更新操作，然后如果同时提供了输入，仍会处理并输出结果；此时不会进入打印用法的分支。\n   - 当未指定 `--update` 且未提供输入时，打印用法并以退出码 1 退出。\n   - 当未指定 `--update` 且提供了输入时，处理输入并输出结果。\n   - 对本地文件路径转换为 file URI 的逻辑。\n   - 普通输出格式 `\"{subdomain} {domain} {suffix}\"` 与 JSON 输出内容。\n2. 要求消除以下具体坏味道：\n   - 过长函数：拆分参数解析、对象构造、输出格式化。\n   - 圈复杂度高：将条件与循环分散到独立的小函数中。\n   - 职责单一性：每个辅助函数只做一件事。\n3. 允许做以下结构性调整：\n   - 提取 `_build_parser()` 负责创建并配置 `ArgumentParser`。\n   - 提取 `_build_obj_kwargs(args)` 负责根据命名空间构建 `TLDExtract` 的参数字典。\n   - 提取 `_print_extraction(ext, as_json)` 负责输出单个提取结果。\n   - 允许使用私有辅助函数（下划线开头）并放置在模块级。\n\n## 约束条件\n- `main` 的签名不得改变，参数名、顺序、默认值、`*args`/`**kwargs` 一律不动。\n- 不得修改任何测试文件。\n- 不得改变任何对外行为，包括打印内容、退出码、异常类型与触发条件、副作用顺序。\n- 不得引入新的第三方依赖，只能使用标准库及项目已有导入。\n- 辅助函数必须放在模块级（作为 helpers）以下划线开头表示私有。\n- 不得删除或重命名 `main`。\n\n## 自动化质量门槛\n\n除了「所有既有测试必须保持通过」之外，本题还有一组**静态指标**判据\n（由 `tests/test_refactor_guard_swe_synth_0008.py` 自动检查，该文件属于判据、不可修改）：\n\n| 指标 | 重构前 | 要求 |\n|---|---|---|\n| `main` 的有效代码行数 | 92 | ≤ **32** |\n| `main` 的圈复杂度 | 10 | ≤ **5** |\n| 文件内任一函数的有效代码行数 | — | ≤ **56** |\n| `main` 的参数列表 | `` | 保持完全不变 |\n\n说明：\n- 「有效代码行数」不含 docstring、空行与纯注释行，所以删注释、压行都无助于达标\n- 最后一项限制的用意是防止「把逻辑整体搬到另一个大函数」这种伪重构\n- 达标的常规做法是：把目标函数中彼此独立的职责，提取为若干个小的私有辅助函数\n",
+  "hints": null,
+  "modified_files": [
+    "tldextract/cli.py"
+  ],
+  "do_not_modify": [
+    "tests/cli_test.py",
+    "tests/test_refactor_guard_swe_synth_0008.py",
+    "tests/test_release.py"
+  ],
+  "test_cmd": "pytest tests/ -q",
+  "FAIL_TO_PASS": [
+    "tests/test_refactor_guard_swe_synth_0008.py::test_no_new_monolithic_function",
+    "tests/test_refactor_guard_swe_synth_0008.py::test_target_function_complexity_reduced",
+    "tests/test_refactor_guard_swe_synth_0008.py::test_target_function_is_simplified"
+  ],
+  "PASS_TO_PASS": [
+    "tests/cli_test.py::test_cli_json_output",
+    "tests/cli_test.py::test_cli_namedargs",
+    "tests/cli_test.py::test_cli_no_input",
+    "tests/cli_test.py::test_cli_parses_args",
+    "tests/cli_test.py::test_cli_posargs",
+    "tests/test_refactor_guard_swe_synth_0008.py::test_signature_unchanged",
+    "tests/test_release.py::test_happy_path"
+  ],
+  "image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0008:v1",
+  "solution_image": "ccr.ccs.tencentyun.com/tcb-100008634787-zbaf/swe-synth-0008:v1-sol",
+  "verify_script": "/task/verify.sh",
+  "generated_by": {
+    "model": "deepseek-v4-pro-202606",
+    "agent": "agent1",
+    "ts": "2026-08-21T20:50:29.641001+00:00",
+    "prompt_version": "refactor-v1",
+    "input_tokens": 405630,
+    "output_tokens": 1883451
+  },
+  "validation": {
+    "local_sanity_passed": true,
+    "local_duration_sec": 2.1821954250335693,
+    "sandbox_tool": null,
+    "sandbox_instance_id": null,
+    "empty_solution_result": null,
+    "golden_solution_result": null,
+    "deterministic": true,
+    "duration_sec": null,
+    "llm_attempt": {
+      "solvable": true,
+      "reason": "题干准确：LLM 第 1 次尝试即依据题干完成任务并通过全部判据",
+      "first_pass_attempt": 1,
+      "difficulty_signal": "easy_for_llm",
+      "n_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "passed": true,
+          "f2p": "3/3",
+          "p2p": "7/7",
+          "error": null
+        }
+      ]
+    },
+    "proof_dir": "/root/swe_synth/data/proofs/swe-synth-0008"
+  },
+  "overlap_check": {
+    "passed": false,
+    "method": "github_search+bm25+embedding+llm_judge",
+    "queried": [],
+    "top_candidates": [],
+    "target_file_last_modified": null,
+    "months_since_last_change": null,
+    "verdict_reason": null
+  },
+  "reject_reason": null
+}

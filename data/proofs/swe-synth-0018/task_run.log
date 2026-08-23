@@ -1,79 +1,84 @@
-_stderr__] SKIPPED [ 90%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_no_vt_support[__stdout__] SKIPPED [ 91%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_no_vt_support[__stderr__] SKIPPED [ 92%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_vt_check_fails[__stdout__] SKIPPED [ 93%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_vt_check_fails[__stderr__] SKIPPED [ 95%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_stream_has_no_fileno[__stdout__] SKIPPED [ 96%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_stream_has_no_fileno[__stderr__] SKIPPED [ 97%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_old_colorama_version[__stdout__] SKIPPED [ 98%]
-tests/test_colorama.py::test_wrap_if_winapi_true_and_old_colorama_version[__stderr__] SKIPPED [100%]
+ImplementedError
+______________ test_retry_after_delay_missing_header_returns_none ______________
 
-=================================== FAILURES ===================================
-______________________ test_target_function_is_simplified ______________________
+    def test_retry_after_delay_missing_header_returns_none():
+        now = datetime.datetime(2023, 1, 1, 0, 0, 0)
+        headers = {'content-type': 'application/json'}
+>       assert retry_after_delay(headers, now) is None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    def test_target_function_is_simplified():
-        """目标函数的有效代码行数必须降下来（把职责拆分到更小的单元中）。"""
-        lines, _, node = _target()
-        n = _effective_body_lines(node, lines)
->       assert n <= MAX_TARGET_BODY_LINES, (
-            "%s 的函数体仍有 %d 行有效代码（重构前 %d 行），要求不超过 %d 行。"
-            "请将独立职责提取为单独的函数/方法，而不是原地压缩代码。"
-            % (SYMBOL, n, BEFORE["body_lines"], MAX_TARGET_BODY_LINES)
-        )
-E       AssertionError: should_colorize 的函数体仍有 37 行有效代码（重构前 37 行），要求不超过 22 行。请将独立职责提取为单独的函数/方法，而不是原地压缩代码。
-E       assert 37 <= 22
+tests/test_retry_after_synth.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-_          = <ast.Module object at 0x10b913250>
-lines      = ['import builtins', 'import os', 'import sys', '', '', 'def should_colorize(stream):', ...]
-n          = 37
-node       = <ast.FunctionDef object at 0x10b9136a0>
+headers = {'content-type': 'application/json'}
+now = datetime.datetime(2023, 1, 1, 0, 0)
 
-tests/test_refactor_guard_swe_synth_0018.py:136: AssertionError
-___________________ test_target_function_complexity_reduced ____________________
+    def retry_after_delay(headers: typing.Mapping[str, str], now: datetime) -> float | None:
+        '''Extract a Retry-After header from a mapping and compute the delay.
+    
+        Header names are matched case-insensitively. If the header is missing
+        or its value cannot be parsed, None is returned.
+        '''
+>       raise NotImplementedError
+E       NotImplementedError
 
-    def test_target_function_complexity_reduced():
-        """目标函数的圈复杂度必须降下来（分支/循环/短路判断更少）。"""
-        _, _, node = _target()
-        cx = _cyclomatic(node)
->       assert cx <= MAX_TARGET_COMPLEXITY, (
-            "%s 的圈复杂度仍为 %d（重构前 %d），要求不超过 %d。"
-            "请减少嵌套分支，把条件判断收敛到辅助函数中。"
-            % (SYMBOL, cx, BEFORE["cyclomatic"], MAX_TARGET_COMPLEXITY)
-        )
-E       AssertionError: should_colorize 的圈复杂度仍为 22（重构前 22），要求不超过 13。请减少嵌套分支，把条件判断收敛到辅助函数中。
-E       assert 22 <= 13
+tenacity/retry_after.py:22: NotImplementedError
+_____________________ test_retry_after_delay_ignores_case ______________________
 
-_          = <ast.Module object at 0x10b9f1f30>
-cx         = 22
-node       = <ast.FunctionDef object at 0x10b9f0790>
+    def test_retry_after_delay_ignores_case():
+        now = datetime.datetime(2023, 1, 1, 0, 0, 0)
+        headers = {'Retry-After': '120'}
+>       assert retry_after_delay(headers, now) == 120.0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-tests/test_refactor_guard_swe_synth_0018.py:147: AssertionError
-_______________________ test_no_new_monolithic_function ________________________
+tests/test_retry_after_synth.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-    def test_no_new_monolithic_function():
-        """防伪重构：不允许把复杂度整体搬运到另一个巨型函数里。"""
-        lines, tree = _load()
-        offenders = [
-            (path, _effective_body_lines(node, lines))
-            for path, node in _iter_defs(tree)
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-            and _effective_body_lines(node, lines) > MAX_ANY_FUNC_BODY_LINES
-        ]
->       assert not offenders, (
-            "以下函数体量超过 %d 行：%r。"
-            "把代码整体搬到另一个大函数不算重构，请真正拆分职责。"
-            % (MAX_ANY_FUNC_BODY_LINES, offenders)
-        )
-E       AssertionError: 以下函数体量超过 20 行：[('should_colorize', 37)]。把代码整体搬到另一个大函数不算重构，请真正拆分职责。
-E       assert not [('should_colorize', 37)]
+headers = {'Retry-After': '120'}, now = datetime.datetime(2023, 1, 1, 0, 0)
 
-lines      = ['import builtins', 'import os', 'import sys', '', '', 'def should_colorize(stream):', ...]
-offenders  = [('should_colorize', 37)]
-tree       = <ast.Module object at 0x10b94c310>
+    def retry_after_delay(headers: typing.Mapping[str, str], now: datetime) -> float | None:
+        '''Extract a Retry-After header from a mapping and compute the delay.
+    
+        Header names are matched case-insensitively. If the header is missing
+        or its value cannot be parsed, None is returned.
+        '''
+>       raise NotImplementedError
+E       NotImplementedError
 
-tests/test_refactor_guard_swe_synth_0018.py:163: AssertionError
+tenacity/retry_after.py:22: NotImplementedError
+_________________ test_retry_after_delay_returns_parsed_value __________________
+
+    def test_retry_after_delay_returns_parsed_value():
+        now = datetime.datetime(2023, 1, 1, 0, 0, 0)
+        headers = {'RETRY-AFTER': 'Sun, 01 Jan 2023 00:00:30 GMT'}
+>       assert retry_after_delay(headers, now) == 30.0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_retry_after_synth.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+headers = {'RETRY-AFTER': 'Sun, 01 Jan 2023 00:00:30 GMT'}
+now = datetime.datetime(2023, 1, 1, 0, 0)
+
+    def retry_after_delay(headers: typing.Mapping[str, str], now: datetime) -> float | None:
+        '''Extract a Retry-After header from a mapping and compute the delay.
+    
+        Header names are matched case-insensitively. If the header is missing
+        or its value cannot be parsed, None is returned.
+        '''
+>       raise NotImplementedError
+E       NotImplementedError
+
+tenacity/retry_after.py:22: NotImplementedError
 =========================== short test summary info ============================
-FAILED tests/test_refactor_guard_swe_synth_0018.py::test_target_function_is_simplified
-FAILED tests/test_refactor_guard_swe_synth_0018.py::test_target_function_complexity_reduced
-FAILED tests/test_refactor_guard_swe_synth_0018.py::test_no_new_monolithic_function
-=================== 3 failed, 56 passed, 24 skipped in 0.06s ===================
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_positive_digit
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_zero_digit - N...
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_negative_digit_returns_none
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_float_string_returns_none
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_future_http_date
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_past_http_date_returns_zero
+FAILED tests/test_retry_after_synth.py::test_parse_retry_after_invalid_string_returns_none
+FAILED tests/test_retry_after_synth.py::test_retry_after_delay_missing_header_returns_none
+FAILED tests/test_retry_after_synth.py::test_retry_after_delay_ignores_case
+FAILED tests/test_retry_after_synth.py::test_retry_after_delay_returns_parsed_value
+============================== 10 failed in 0.06s ==============================
